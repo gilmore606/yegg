@@ -51,6 +51,7 @@ class Parser(inputTokens: List<Token>) {
     private fun pStatement(): N_STATEMENT? {
         pBlock()?.also { return it }
         pIfThen()?.also { return it }
+        pReturn()?.also { return it }
         pAssign()?.also { return it }
         pExpression()?.also { return it }
         return null
@@ -83,6 +84,16 @@ class Parser(inputTokens: List<Token>) {
                 return node(N_IFELSE(condition, eThen))
             } ?: fail("missing then block")
         } ?: fail("missing condition")
+        return null
+    }
+
+    // Look for: return expr
+    private fun pReturn(): N_STATEMENT? {
+        if (!nextIs(T_RETURN)) return null
+        consume()
+        pExpression()?.also { expr ->
+            return node(N_RETURN(expr))
+        } ?: fail("missing return expression")
         return null
     }
 
@@ -123,7 +134,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Look for: expr ? expr : expr
     private fun pConditional(): N_EXPR? {
-        val next = this::pEqual
+        val next = this::pEquals
         val left = next() ?: return null
         if (nextIs(T_QUESTION)) {
             consume()
@@ -140,7 +151,7 @@ class Parser(inputTokens: List<Token>) {
     }
 
     // Look for: expr ==|!= expr
-    private fun pEqual(): N_EXPR? {
+    private fun pEquals(): N_EXPR? {
         val next = this::pCompare
         var left = next() ?: return null
         while (nextIs(T_EQUALS, T_NOTEQUALS)) {
@@ -254,6 +265,7 @@ class Parser(inputTokens: List<Token>) {
         if (nextIs(T_INTEGER)) return node(N_LITERAL_INTEGER(consume().string.toInt()))
         if (nextIs(T_FLOAT)) return node(N_LITERAL_FLOAT(consume().string.toFloat()))
         if (nextIs(T_TRUE, T_FALSE)) return node(N_LITERAL_BOOLEAN(consume().type == T_TRUE))
+        if (nextIs(T_IDENTIFIER)) return node(N_IDENTIFIER(consume().string))
         return next()
     }
 

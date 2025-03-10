@@ -26,14 +26,15 @@ class Lexer(val source: String) {
     //
     fun lex(): List<Token> {
         source.forEach { c ->
+            consume(c)
             if (c == '\n') {
                 lineNum++
                 charNum = 0
             } else {
                 charNum++
             }
-            consume(c)
         }
+        consume('\n')
         return tokens
     }
 
@@ -153,7 +154,11 @@ class Lexer(val source: String) {
 
     // Emit a discovered token.  Reconsume the triggering character, if given.
     private fun emit(tokenType: TokenType, reconsume: Char? = null) {
-        if (tokenType == T_COMMENT) return
+        if (tokenType == T_COMMENT) {
+            inTokenString = ""
+            inTokenType = null
+            return
+        }
         var newType = tokenType
         if (tokenType == T_IDENTIFIER) {
             TokenType.entries.firstOrNull { it.isKeyword && it.literal == inTokenString }?.also {

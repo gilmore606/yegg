@@ -59,7 +59,9 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_TRUE("true", true),
     T_WHILE("while", true),
 
-    T_EOF(""),
+    T_EOF("");
+
+    override fun toString() = literal
 }
 
 // A token lexed from a func source string, with its source string and line/char position for tracebacks.
