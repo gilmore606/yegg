@@ -154,18 +154,15 @@ class Lexer(val source: String) {
 
     // Emit a discovered token.  Reconsume the triggering character, if given.
     private fun emit(tokenType: TokenType, reconsume: Char? = null) {
-        if (tokenType == T_COMMENT) {
-            inTokenString = ""
-            inTokenType = null
-            return
-        }
         var newType = tokenType
         if (tokenType == T_IDENTIFIER) {
             TokenType.entries.firstOrNull { it.isKeyword && it.literal == inTokenString }?.also {
                 newType = it
             }
         }
-        tokens.add(Token(newType, inTokenString, lineNum, charNum))
+        if (tokenType != T_COMMENT) { // don't actually emit comment tokens at all
+            tokens.add(Token(newType, inTokenString, lineNum, charNum))
+        }
         inTokenString = ""
         inTokenType = null
         reconsume?.also { consume(it) }
