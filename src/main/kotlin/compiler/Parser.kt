@@ -65,6 +65,7 @@ class Parser(inputTokens: List<Token>) {
         pWhileLoop()?.also { return it }
         pReturn()?.also { return it }
         pAssign()?.also { return it }
+        pOpAssign()?.also { return it }
         pIncrement()?.also { return it }
         pExpression()?.also { return it }
         return null
@@ -145,6 +146,26 @@ class Parser(inputTokens: List<Token>) {
         pExpression()?.also { right ->
             return node(N_ASSIGN(ident.string, right))
         } ?: fail("missing value for assignment")
+        return null
+    }
+
+    // Look for identifier += expr (or -=, *=, /=)
+    private fun pOpAssign(): N_STATEMENT? {
+        if (!nextIs(T_IDENTIFIER)) return null
+        if (next(1).type in listOf(T_ADD_ASSIGN, T_SUBTRACT_ASSIGN, T_MULT_ASSIGN, T_DIV_ASSIGN)) {
+            val ident = consume()
+            val operator = consume()
+            pExpression()?.also { right ->
+                val receiver = node(N_IDENTIFIER(ident.string))
+                val result = node(when (operator.type) {
+                    T_ADD_ASSIGN -> N_ADD(receiver, right)
+                    T_SUBTRACT_ASSIGN -> N_SUBTRACT(receiver, right)
+                    T_MULT_ASSIGN -> N_MULTIPLY(receiver, right)
+                    else -> N_DIVIDE(receiver, right)
+                })
+                return node(N_ASSIGN(ident.string, result))
+            } ?: fail("missing predicate for assignment")
+        }
         return null
     }
 
