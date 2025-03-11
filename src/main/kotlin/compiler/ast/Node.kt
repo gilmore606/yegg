@@ -6,7 +6,10 @@ abstract class Node {
     var lineNum = 0
     var charNum = 0
 
-    abstract override fun toString(): String
+    override fun toString() = toCode()
+    open fun toCode(depth: Int = 0): String = toCode()
+    open fun toCode(): String = "NODE"
+    fun tab(depth: Int) = "  ".repeat(depth)
 
     open fun kids(): List<Node> = listOf()
 

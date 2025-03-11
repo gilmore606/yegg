@@ -132,13 +132,10 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
-    // Parse: return <expr>
+    // Parse: return [<expr>]
     private fun pReturn(): N_STATEMENT? {
         consume(T_RETURN) ?: return null
-        pExpression()?.also { expr ->
-            return node(N_RETURN(expr))
-        } ?: fail("missing return expression")
-        return null
+        return node(N_RETURN(pExpression()))
     }
 
     // Parse: <ident> = <expr>
@@ -147,7 +144,7 @@ class Parser(inputTokens: List<Token>) {
         val ident = consume()
         consume() // =
         pExpression()?.also { right ->
-            return node(N_ASSIGN(ident.string, right))
+            return node(N_ASSIGN(node(N_IDENTIFIER(ident.string)), right))
         } ?: fail("missing value for assignment")
         return null
     }
@@ -166,7 +163,7 @@ class Parser(inputTokens: List<Token>) {
                     T_MULT_ASSIGN -> N_MULTIPLY(receiver, right)
                     else -> N_DIVIDE(receiver, right)
                 })
-                return node(N_ASSIGN(ident.string, result))
+                return node(N_ASSIGN(node(N_IDENTIFIER(ident.string)), result))
             } ?: fail("missing predicate for assignment")
         }
         return null
@@ -175,10 +172,11 @@ class Parser(inputTokens: List<Token>) {
     // Parse: <ident>++|-- / ++|--<ident>
     private fun pIncrement(): N_STATEMENT? {
         fun make(ident: String, isDec: Boolean): N_STATEMENT {
+            val receiver = node(N_IDENTIFIER(ident))
             val arg1 = node(N_IDENTIFIER(ident))
             val arg2 = node(N_LITERAL_INTEGER(1))
-            return if (isDec) node(N_ASSIGN(ident, node(N_SUBTRACT(arg1, arg2))))
-                        else node(N_ASSIGN(ident, node(N_ADD(arg1, arg2))))
+            return if (isDec) node(N_ASSIGN(receiver, node(N_SUBTRACT(arg1, arg2))))
+                        else node(N_ASSIGN(receiver, node(N_ADD(arg1, arg2))))
         }
         consume(T_INCREMENT, T_DECREMENT)?.also { operator ->
             consume(T_IDENTIFIER)?.also { ident ->
@@ -319,7 +317,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse (as expression): if <expr> <expr> else <expr>
     private fun pIfElse(): N_EXPR? {
-        val next = this::pValue
+        val next = this::pFuncall
         consume(T_IF)?.also {
             pExpression()?.also { condition ->
                 pExpression()?.also { eThen ->
@@ -330,6 +328,49 @@ class Parser(inputTokens: List<Token>) {
                     } ?: fail("expected else in if expression")
                 } ?: fail("missing expression")
             } ?: fail("missing condition")
+        }
+        return next()
+    }
+
+    // Parse a function call: <expr>(<expr>, ...)
+    private fun pFuncall(): N_EXPR? {
+        val next = this::pDotref
+        val left = next() ?: return null
+        consume(T_PAREN_OPEN)?.also {
+            val args = mutableListOf<N_EXPR>()
+            var moreArgs = true
+            while (moreArgs) {
+                pExpression()?.also { arg ->
+                    args.add(arg)
+                    consume(T_COMMA) ?: run { moreArgs = false }
+                } ?: run { moreArgs = false }
+            }
+            consume(T_PAREN_CLOSE) ?: fail("unclosed parens after function args")
+            return node(N_FUNCALL(left, args))
+        }
+        return left
+    }
+
+    // Parse a prop or func ref: <expr>.<expr>
+    private fun pDotref(): N_EXPR? {
+        val next = this::pGeneric
+        var left = next() ?: return null
+        while (nextIs(T_DOT)) {
+            consume(T_DOT)
+            next()?.also { right ->
+                left = node(N_DOTREF(left, right))
+            } ?: fail("expression expected after dot reference")
+        }
+        return left
+    }
+
+    // Parse a generic reference: $<expr>
+    private fun pGeneric(): N_EXPR? {
+        val next = this::pValue
+        consume(T_DOLLAR)?.also {
+            next()?.also { expr ->
+                return node(N_GENERIC(expr))
+            } ?: fail("expected expression after $")
         }
         return next()
     }
