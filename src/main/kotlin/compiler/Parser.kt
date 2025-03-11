@@ -55,6 +55,7 @@ class Parser(inputTokens: List<Token>) {
         pBlock()?.also { return it }
         pIfThen()?.also { return it }
         pForLoop()?.also { return it }
+        pWhileLoop()?.also { return it }
         pReturn()?.also { return it }
         pAssign()?.also { return it }
         pExpression()?.also { return it }
@@ -105,6 +106,17 @@ class Parser(inputTokens: List<Token>) {
                 } ?: fail("missing for-loop increment statement")
             } ?: fail("missing for-loop check expression")
         } ?: fail("missing for-loop init statement")
+        return null
+    }
+
+    // Look for: while (expr) statement
+    private fun pWhileLoop(): N_STATEMENT? {
+        consume(T_WHILE) ?: return null
+        pExpression()?.also { check ->
+            pStatement()?.also { body ->
+                return node(N_WHILELOOP(check, body))
+            } ?: fail("missing while body")
+        } ?: fail("missing while check expression")
         return null
     }
 

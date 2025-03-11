@@ -18,3 +18,8 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
     override fun toString() = "for ($assign; $check; $increment) $body"
     override fun kids() = listOf(assign, check, increment, body)
 }
+
+class N_WHILELOOP(val check: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
+    override fun toString() = "while ($check) $body"
+    override fun kids() = listOf(check, body)
+}
