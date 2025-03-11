@@ -13,3 +13,8 @@ class N_RETURN(val expr: N_EXPR): N_STATEMENT() {
     override fun toString() = "return $expr"
     override fun kids() = listOf(expr)
 }
+
+class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STATEMENT, val body: N_STATEMENT): N_STATEMENT() {
+    override fun toString() = "for ($assign; $check; $increment) $body"
+    override fun kids() = listOf(assign, check, increment, body)
+}

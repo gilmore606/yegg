@@ -18,12 +18,15 @@ class Parser(inputTokens: List<Token>) {
 
     // Pull the next token from the input stream.
     private inline fun consume() = if (tokens.isEmpty()) EOF() else tokens.removeAt(0)
+    // Pull the next token if of the given type, else return null.
+    private inline fun consume(vararg types: TokenType) = if (nextIs(types.toList())) consume() else null
 
     // Peek at the next token in the input stream.
     private inline fun next(skip: Int = 0) = if (skip >= tokens.size) EOF() else tokens[skip]
 
     // Is the next token one of the given types?
     private inline fun nextIs(vararg types: TokenType) = (next().type in types)
+    private inline fun nextIs(types: List<TokenType>) = (next().type in types)
 
     // Tag returned nodes with the current lineNum and charNum for tracebacks.
     private inline fun <T: Node>node(n: T): T = n.apply {
@@ -51,6 +54,7 @@ class Parser(inputTokens: List<Token>) {
     private fun pStatement(): N_STATEMENT? {
         pBlock()?.also { return it }
         pIfThen()?.also { return it }
+        pForLoop()?.also { return it }
         pReturn()?.also { return it }
         pAssign()?.also { return it }
         pExpression()?.also { return it }
@@ -59,8 +63,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Look for: { statement statement... }
     private fun pBlock(): N_STATEMENT? {
-        if (!nextIs(T_BRACE_OPEN)) return null
-        consume()
+        consume(T_BRACE_OPEN) ?: return null
         val statements = ArrayList<N_STATEMENT>()
         while (!nextIs(T_BRACE_CLOSE)) {
             pStatement()?.also { statements.add(it) } ?: fail("unclosed braces")
@@ -71,12 +74,10 @@ class Parser(inputTokens: List<Token>) {
 
     // Look for: if (expr) statement [else statement]
     private fun pIfThen(): N_STATEMENT? {
-        if (!nextIs(T_IF)) return null
-        consume()
+        consume(T_IF) ?: return null
         pExpression()?.also { condition ->
             pStatement()?.also { eThen ->
-                if (nextIs(T_ELSE)) {
-                    consume()
+                consume(T_ELSE)?.also {
                     pStatement()?.also { eElse ->
                         return node(N_IFELSE(condition, eThen, eElse))
                     } ?: fail("missing else block")
@@ -87,10 +88,29 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
+    // Look for: for (assign; expr; assign) statement
+    private fun pForLoop(): N_STATEMENT? {
+        consume(T_FOR) ?: return null
+        var withParens = true
+        consume(T_PAREN_OPEN) ?: { withParens = false }
+        pStatement()?.also { assign ->
+            consume(T_SEMICOLON) ?: fail("expected semicolon after for-loop index assignment")
+            pExpression()?.also { check ->
+                consume(T_SEMICOLON) ?: fail("expected semicolon after for-loop check")
+                pStatement()?.also { increment ->
+                    if (withParens) consume(T_PAREN_CLOSE) ?: fail("unclosed parens around for-loop spec")
+                    pStatement()?.also { body ->
+                        return node(N_FORLOOP(assign, check, increment, body))
+                    } ?: fail("missing for-loop body")
+                } ?: fail("missing for-loop increment statement")
+            } ?: fail("missing for-loop check expression")
+        } ?: fail("missing for-loop init statement")
+        return null
+    }
+
     // Look for: return expr
     private fun pReturn(): N_STATEMENT? {
-        if (!nextIs(T_RETURN)) return null
-        consume()
+        consume(T_RETURN) ?: return null
         pExpression()?.also { expr ->
             return node(N_RETURN(expr))
         } ?: fail("missing return expression")
@@ -136,15 +156,13 @@ class Parser(inputTokens: List<Token>) {
     private fun pConditional(): N_EXPR? {
         val next = this::pEquals
         val left = next() ?: return null
-        if (nextIs(T_QUESTION)) {
-            consume()
+        consume(T_QUESTION)?.also {
             next()?.also { mid ->
-                if (nextIs(T_COLON)) {
-                    consume()
+                consume(T_COLON)?.also {
                     next()?.also { right ->
                         return node(N_CONDITIONAL(left, mid, right))
                     } ?: fail("incomplete conditional")
-                }
+                } ?: fail("missing colon in conditional")
             } ?: fail("incomplete condition")
         }
         return left
@@ -229,8 +247,7 @@ class Parser(inputTokens: List<Token>) {
     // Look for: !expr | -expr
     private fun pInverse(): N_EXPR? {
         val next = this::pIfElse
-        if (nextIs(T_BANG, T_MINUS)) {
-            val operator = consume()
+        consume(T_BANG, T_MINUS)?.also { operator ->
             pExpression()?.also { right ->
                 return node(if (operator.type == T_BANG) N_INVERSE(right)
                             else N_NEGATE(right))
@@ -242,16 +259,14 @@ class Parser(inputTokens: List<Token>) {
     // Look for in an expr context: if expr expr else expr
     private fun pIfElse(): N_EXPR? {
         val next = this::pValue
-        if (nextIs(T_IF)) {
-            consume()
+        consume(T_IF)?.also {
             pExpression()?.also { condition ->
                 pExpression()?.also { eThen ->
-                    if (nextIs(T_ELSE)) {
-                        consume()
+                    consume(T_ELSE)?.also {
                         pExpression()?.also { eElse ->
                             return node(N_IFELSE(condition, eThen, eElse))
                         } ?: fail("missing else expression")
-                    } else fail("expected else in if expression")
+                    } ?: fail("expected else in if expression")
                 } ?: fail("missing expression")
             } ?: fail("missing condition")
         }
@@ -271,8 +286,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Look for: (expr)
     private fun pParens(): N_EXPR? {
-        if (nextIs(T_PAREN_OPEN)) {
-            consume()
+        consume(T_PAREN_OPEN)?.also {
             val expr = pExpression()
             if (expr == null) fail("incomplete expression")
             if (consume().type != T_PAREN_CLOSE) fail("unclosed parens")

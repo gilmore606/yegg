@@ -112,6 +112,7 @@ class Lexer(val source: String) {
                     '{' -> emit(T_BRACE_OPEN)
                     '}' -> emit(T_BRACE_CLOSE)
                     ':' -> emit(T_COLON)
+                    ';' -> emit(T_SEMICOLON)
                     '$' -> emit(T_DOLLAR)
                     ',' -> emit(T_COMMA)
                     '.' -> emit(T_DOT)

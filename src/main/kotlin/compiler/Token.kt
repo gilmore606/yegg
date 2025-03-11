@@ -31,6 +31,7 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_MODULUS("%"),
     T_DOT("."),
     T_COLON(":"),
+    T_SEMICOLON(";"),
     T_DOLLAR("$"),
     T_BANG("!"),
     T_QUESTION("?"),
