@@ -27,6 +27,13 @@ class Parser(inputTokens: List<Token>) {
     // Is the next token one of the given types?
     private inline fun nextIs(vararg types: TokenType) = (next().type in types)
     private inline fun nextIs(types: List<TokenType>) = (next().type in types)
+    // Are the next tokens each of the given ordered types?
+    private inline fun nextAre(vararg types: TokenType): Boolean {
+        for (i in 0 until types.size) {
+            if (next(i).type != types[i]) return false
+        }
+        return true
+    }
 
     // Tag returned nodes with the current lineNum and charNum for tracebacks.
     private inline fun <T: Node>node(n: T): T = n.apply {
@@ -58,6 +65,7 @@ class Parser(inputTokens: List<Token>) {
         pWhileLoop()?.also { return it }
         pReturn()?.also { return it }
         pAssign()?.also { return it }
+        pIncrement()?.also { return it }
         pExpression()?.also { return it }
         return null
     }
@@ -131,13 +139,32 @@ class Parser(inputTokens: List<Token>) {
 
     // Look for: identifier = expr
     private fun pAssign(): N_STATEMENT? {
-        if (!nextIs(T_IDENTIFIER)) return null
-        if (next(1).type !in listOf(T_ASSIGN, T_ADD_ASSIGN, T_SUBTRACT_ASSIGN, T_MULT_ASSIGN, T_DIV_ASSIGN)) return null
+        if (!nextAre(T_IDENTIFIER, T_ASSIGN)) return null
         val ident = consume()
         val operator = consume()
         pExpression()?.also { right ->
-            return node(N_ASSIGN(ident.string, operator.type, right))
+            return node(N_ASSIGN(ident.string, right))
         } ?: fail("missing value for assignment")
+        return null
+    }
+
+    // Look for: ident++ / ident-- / ++ident / --ident
+    // Return a synthetic ADD or SUBTRACT node representing the operation.
+    private fun pIncrement(): N_STATEMENT? {
+        fun make(ident: String, isDec: Boolean): N_STATEMENT {
+            val arg1 = node(N_IDENTIFIER(ident))
+            val arg2 = node(N_LITERAL_INTEGER(1))
+            return if (isDec) node(N_ASSIGN(ident, node(N_SUBTRACT(arg1, arg2))))
+                        else node(N_ASSIGN(ident, node(N_ADD(arg1, arg2))))
+        }
+        consume(T_INCREMENT, T_DECREMENT)?.also { operator ->
+            consume(T_IDENTIFIER)?.also { ident ->
+                return make(ident.string, operator.type == T_DECREMENT)
+            } ?: fail("increment missing identifier")
+        }
+        if (nextIs(T_IDENTIFIER) && next(1).type in listOf(T_INCREMENT, T_DECREMENT)) {
+            return make(consume().string, consume().type == T_DECREMENT)
+        }
         return null
     }
 
