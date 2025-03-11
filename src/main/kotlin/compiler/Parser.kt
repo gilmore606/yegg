@@ -57,7 +57,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Statements
 
-    // Look for any statement type.
+    // Parse any statement type we find next.
     private fun pStatement(): N_STATEMENT? {
         pBlock()?.also { return it }
         pIfThen()?.also { return it }
@@ -71,18 +71,22 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
-    // Look for: { statement statement... }
+    // Parse: { <statement> <statement>... }
     private fun pBlock(): N_STATEMENT? {
         consume(T_BRACE_OPEN) ?: return null
         val statements = ArrayList<N_STATEMENT>()
         while (!nextIs(T_BRACE_CLOSE)) {
             pStatement()?.also { statements.add(it) } ?: fail("unclosed braces")
         }
-        consume()
-        return node(N_BLOCK(statements))
+        consume(T_BRACE_CLOSE) ?: fail("unclosed braces")
+        return when (statements.size) {
+            0 -> null
+            1 -> node(statements[0])
+            else -> node(N_BLOCK(statements))
+        }
     }
 
-    // Look for: if (expr) statement [else statement]
+    // Parse: if <expr> <statement> [else <statement>]
     private fun pIfThen(): N_STATEMENT? {
         consume(T_IF) ?: return null
         pExpression()?.also { condition ->
@@ -98,17 +102,16 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
-    // Look for: for (assign; expr; assign) statement
+    // Parse: for <init>;<check>;<increment> <statement>
     private fun pForLoop(): N_STATEMENT? {
         consume(T_FOR) ?: return null
-        var withParens = true
-        consume(T_PAREN_OPEN) ?: { withParens = false }
+        val withParen = consume(T_PAREN_OPEN)
         pStatement()?.also { assign ->
             consume(T_SEMICOLON) ?: fail("expected semicolon after for-loop index assignment")
             pExpression()?.also { check ->
                 consume(T_SEMICOLON) ?: fail("expected semicolon after for-loop check")
                 pStatement()?.also { increment ->
-                    if (withParens) consume(T_PAREN_CLOSE) ?: fail("unclosed parens around for-loop spec")
+                    withParen?.also { consume(T_PAREN_CLOSE) ?: fail("unclosed parens around for-loop spec") }
                     pStatement()?.also { body ->
                         return node(N_FORLOOP(assign, check, increment, body))
                     } ?: fail("missing for-loop body")
@@ -118,7 +121,7 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
-    // Look for: while (expr) statement
+    // Parse: while <expr> <statement>
     private fun pWhileLoop(): N_STATEMENT? {
         consume(T_WHILE) ?: return null
         pExpression()?.also { check ->
@@ -129,7 +132,7 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
-    // Look for: return expr
+    // Parse: return <expr>
     private fun pReturn(): N_STATEMENT? {
         consume(T_RETURN) ?: return null
         pExpression()?.also { expr ->
@@ -138,18 +141,18 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
-    // Look for: identifier = expr
+    // Parse: <ident> = <expr>
     private fun pAssign(): N_STATEMENT? {
         if (!nextAre(T_IDENTIFIER, T_ASSIGN)) return null
         val ident = consume()
-        val operator = consume()
+        consume() // =
         pExpression()?.also { right ->
             return node(N_ASSIGN(ident.string, right))
         } ?: fail("missing value for assignment")
         return null
     }
 
-    // Look for identifier += expr (or -=, *=, /=)
+    // Parse: <ident> +=|-=|*=|/= <expr>
     private fun pOpAssign(): N_STATEMENT? {
         if (!nextIs(T_IDENTIFIER)) return null
         if (next(1).type in listOf(T_ADD_ASSIGN, T_SUBTRACT_ASSIGN, T_MULT_ASSIGN, T_DIV_ASSIGN)) {
@@ -169,8 +172,7 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
-    // Look for: ident++ / ident-- / ++ident / --ident
-    // Return a synthetic ADD or SUBTRACT node representing the operation.
+    // Parse: <ident>++|-- / ++|--<ident>
     private fun pIncrement(): N_STATEMENT? {
         fun make(ident: String, isDec: Boolean): N_STATEMENT {
             val arg1 = node(N_IDENTIFIER(ident))
@@ -191,14 +193,14 @@ class Parser(inputTokens: List<Token>) {
 
     // Expressions
 
-    // Look for an expression.
+    // Parse any expression we find next.
     // Start with the lowest precedence operation, passing down to look for higher precedence operations.
     private fun pExpression(): N_EXPR? {
         val next = this::pAndOr
         return next()
     }
 
-    // Look for: expr and|or expr
+    // Parse: <expr> and|or <expr>
     private fun pAndOr(): N_EXPR? {
         val next = this::pConditional
         var left = next() ?: return null
@@ -212,7 +214,7 @@ class Parser(inputTokens: List<Token>) {
         return left
     }
 
-    // Look for: expr ? expr : expr
+    // Parse: <expr> ? <expr> : <expr>
     private fun pConditional(): N_EXPR? {
         val next = this::pEquals
         val left = next() ?: return null
@@ -228,7 +230,7 @@ class Parser(inputTokens: List<Token>) {
         return left
     }
 
-    // Look for: expr ==|!= expr
+    // Parse: <expr> ==|!= <expr>
     private fun pEquals(): N_EXPR? {
         val next = this::pCompare
         var left = next() ?: return null
@@ -242,7 +244,7 @@ class Parser(inputTokens: List<Token>) {
         return left
     }
 
-    // Look for: expr >|>=|<|<= expr
+    // Parse: <expr> >|>=|<|<= <expr>
     private fun pCompare(): N_EXPR? {
         val next = this::pAdd
         var left = next() ?: return null
@@ -260,7 +262,7 @@ class Parser(inputTokens: List<Token>) {
         return left
     }
 
-    // Look for: expr +|- expr
+    // Parse: <expr> +|- <expr>
     private fun pAdd(): N_EXPR? {
         val next = this::pPower
         var left = next() ?: return null
@@ -274,12 +276,11 @@ class Parser(inputTokens: List<Token>) {
         return left
     }
 
-    // Look for: expr ^ expr
+    // Parse: <expr> ^ <expr>
     private fun pPower(): N_EXPR? {
         val next = this::pMultiply
         var left = next() ?: return null
-        while (nextIs(T_POWER)) {
-            consume()
+        consume(T_POWER)?.also {
             next()?.also { right ->
                 left = node(N_POWER(left, right))
             }
@@ -287,7 +288,7 @@ class Parser(inputTokens: List<Token>) {
         return left
     }
 
-    // Look for: expr *|/|^ expr
+    // Parse: <expr> *|/|^ <expr>
     private fun pMultiply(): N_EXPR? {
         val next = this::pInverse
         var left = next() ?: return null
@@ -304,7 +305,7 @@ class Parser(inputTokens: List<Token>) {
         return left
     }
 
-    // Look for: !expr | -expr
+    // Parse: !|-<expr>
     private fun pInverse(): N_EXPR? {
         val next = this::pIfElse
         consume(T_BANG, T_MINUS)?.also { operator ->
@@ -316,7 +317,7 @@ class Parser(inputTokens: List<Token>) {
         return next()
     }
 
-    // Look for in an expr context: if expr expr else expr
+    // Parse (as expression): if <expr> <expr> else <expr>
     private fun pIfElse(): N_EXPR? {
         val next = this::pValue
         consume(T_IF)?.also {
@@ -333,24 +334,24 @@ class Parser(inputTokens: List<Token>) {
         return next()
     }
 
-    // Look for a bare value (a literal, or a variable identifier)
+    // Parse a bare value (a literal, or a variable identifier)
     private fun pValue(): N_EXPR? {
         val next = this::pParens
-        if (nextIs(T_STRING)) return node(N_LITERAL_STRING(consume().string))
-        if (nextIs(T_INTEGER)) return node(N_LITERAL_INTEGER(consume().string.toInt()))
-        if (nextIs(T_FLOAT)) return node(N_LITERAL_FLOAT(consume().string.toFloat()))
+        consume(T_STRING)?.also { return node(N_LITERAL_STRING(it.string)) }
+        consume(T_INTEGER)?.also { return node(N_LITERAL_INTEGER(it.string.toInt())) }
+        consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }
+        consume(T_IDENTIFIER)?.also { return node(N_IDENTIFIER(it.string)) }
         if (nextIs(T_TRUE, T_FALSE)) return node(N_LITERAL_BOOLEAN(consume().type == T_TRUE))
-        if (nextIs(T_IDENTIFIER)) return node(N_IDENTIFIER(consume().string))
         return next()
     }
 
-    // Look for: (expr)
+    // Parse: (<expr>)
     private fun pParens(): N_EXPR? {
         consume(T_PAREN_OPEN)?.also {
-            val expr = pExpression()
-            if (expr == null) fail("incomplete expression")
-            if (consume().type != T_PAREN_CLOSE) fail("unclosed parens")
-            return expr
+            pExpression()?.also { expr ->
+                consume(T_PAREN_CLOSE) ?: fail("unclosed parens")
+                return expr
+            } ?: fail("non-expressions in parens")
         }
         return null
     }
