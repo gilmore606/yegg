@@ -6,9 +6,9 @@ abstract class N_STATEMENT: Node() {
     override fun toCode(depth: Int): String = tab(depth) + toCode()
 }
 
-class N_ASSIGN(val ident: N_IDENTIFIER, val right: N_EXPR): N_STATEMENT() {
-    override fun toCode() = "$ident = $right"
-    override fun kids() = listOf(right)
+class N_ASSIGN(val left: N_EXPR, val right: N_EXPR, val operator: TokenType = TokenType.T_ASSIGN): N_STATEMENT() {
+    override fun toCode() = "$left = $right"
+    override fun kids() = listOf(left, right)
 }
 
 class N_RETURN(val expr: N_EXPR?): N_STATEMENT() {

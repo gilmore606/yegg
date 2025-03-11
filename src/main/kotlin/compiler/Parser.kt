@@ -65,7 +65,6 @@ class Parser(inputTokens: List<Token>) {
         pWhileLoop()?.also { return it }
         pReturn()?.also { return it }
         pAssign()?.also { return it }
-        pOpAssign()?.also { return it }
         pIncrement()?.also { return it }
         pExpression()?.also { return it }
         return null
@@ -76,7 +75,7 @@ class Parser(inputTokens: List<Token>) {
         consume(T_BRACE_OPEN) ?: return null
         val statements = ArrayList<N_STATEMENT>()
         while (!nextIs(T_BRACE_CLOSE)) {
-            pStatement()?.also { statements.add(it) } ?: fail("unclosed braces")
+            pStatement()?.also { statements.add(it) } ?: fail("non-statement in braces")
         }
         consume(T_BRACE_CLOSE) ?: fail("unclosed braces")
         return when (statements.size) {
@@ -138,33 +137,16 @@ class Parser(inputTokens: List<Token>) {
         return node(N_RETURN(pExpression()))
     }
 
-    // Parse: <ident> = <expr>
+    // Parse: <expr> = <expr>
     private fun pAssign(): N_STATEMENT? {
-        if (!nextAre(T_IDENTIFIER, T_ASSIGN)) return null
-        val ident = consume()
-        consume() // =
-        pExpression()?.also { right ->
-            return node(N_ASSIGN(node(N_IDENTIFIER(ident.string)), right))
-        } ?: fail("missing value for assignment")
-        return null
-    }
-
-    // Parse: <ident> +=|-=|*=|/= <expr>
-    private fun pOpAssign(): N_STATEMENT? {
-        if (!nextIs(T_IDENTIFIER)) return null
-        if (next(1).type in listOf(T_ADD_ASSIGN, T_SUBTRACT_ASSIGN, T_MULT_ASSIGN, T_DIV_ASSIGN)) {
-            val ident = consume()
-            val operator = consume()
-            pExpression()?.also { right ->
-                val receiver = node(N_IDENTIFIER(ident.string))
-                val result = node(when (operator.type) {
-                    T_ADD_ASSIGN -> N_ADD(receiver, right)
-                    T_SUBTRACT_ASSIGN -> N_SUBTRACT(receiver, right)
-                    T_MULT_ASSIGN -> N_MULTIPLY(receiver, right)
-                    else -> N_DIVIDE(receiver, right)
-                })
-                return node(N_ASSIGN(node(N_IDENTIFIER(ident.string)), result))
-            } ?: fail("missing predicate for assignment")
+        pExpression()?.also { left ->
+            if (nextIs(T_ASSIGN, T_ADD_ASSIGN, T_SUBTRACT_ASSIGN, T_MULT_ASSIGN, T_DIV_ASSIGN)) {
+                val operator = consume()
+                pExpression()?.also { right ->
+                    return node(N_ASSIGN(left, right, operator.type))
+                } ?: fail("missing predicate for assignment")
+            }
+            return left
         }
         return null
     }
@@ -353,13 +335,27 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse a prop or func ref: <expr>.<expr>
     private fun pDotref(): N_EXPR? {
-        val next = this::pGeneric
+        val next = this::pIndex
         var left = next() ?: return null
         while (nextIs(T_DOT)) {
             consume(T_DOT)
             next()?.also { right ->
                 left = node(N_DOTREF(left, right))
             } ?: fail("expression expected after dot reference")
+        }
+        return left
+    }
+
+    // Parse an index ref: <expr>[<expr>]
+    private fun pIndex(): N_EXPR? {
+        val next = this::pGeneric
+        var left = next() ?: return null
+        while (nextIs(T_BRACKET_OPEN)) {
+            consume(T_BRACKET_OPEN)
+            pExpression()?.also { index ->
+                left = node(N_INDEXREF(left, index))
+            } ?: fail("expression expected for index reference")
+            consume(T_BRACKET_CLOSE) ?: fail("missing close bracket for index reference")
         }
         return left
     }

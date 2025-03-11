@@ -48,6 +48,11 @@ class N_LESS_THAN(left: N_EXPR, right: N_EXPR): N_COMPARE_BINOP("<", left, right
 class N_GREATER_EQUAL(left: N_EXPR, right: N_EXPR): N_COMPARE_BINOP(">=", left, right)
 class N_LESS_EQUAL(left: N_EXPR, right: N_EXPR): N_COMPARE_BINOP("<=", left, right)
 
+class N_INDEXREF(val left: N_EXPR, val index: N_EXPR): N_EXPR() {
+    override fun toCode() = "$left[$index]"
+    override fun kids() = listOf(left, index)
+}
+
 class N_DOTREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
     override fun toCode() = "$left.$right"
     override fun kids() = listOf(left, right)
