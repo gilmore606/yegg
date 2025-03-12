@@ -21,6 +21,8 @@ enum class Opcode(val literal: String, val argCount: Int = 0) {
     O_MODULUS("modulus"),
 
     // boolean ops
+    O_AND("and"),       // &&
+    O_OR("or"),         // ||
     O_CMP_EQ("cmpeq"),  // ==
     O_CMP_GT("cmpgt"),  // >
     O_CMP_GE("cmpge"),  // >=

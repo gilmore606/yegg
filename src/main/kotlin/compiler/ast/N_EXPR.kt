@@ -9,13 +9,13 @@ abstract class N_EXPR: N_STATEMENT() {
     open fun codeAssign(coder: Coder) { fail("illegal left side of assignment") }
 }
 
-abstract class N_MATH_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR, val mathOps: List<Opcode>): N_EXPR() {
+abstract class N_MATH_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR, val ops: List<Opcode>): N_EXPR() {
     override fun toText() = "($left $opString $right)"
     override fun kids() = listOf(left, right)
     override fun code(coder: Coder) {
         left.code(coder)
         right.code(coder)
-        mathOps.forEach { coder.code(this, it) }
+        ops.forEach { coder.code(this, it) }
     }
 }
 class N_ADD(left: N_EXPR, right: N_EXPR): N_MATH_BINOP("+", left, right, listOf(O_ADD))
@@ -36,12 +36,17 @@ abstract class N_MATH_UNOP(val opString: String, val expr: N_EXPR, val mutateOp:
 class N_INVERSE(expr: N_EXPR): N_MATH_UNOP("!", expr, O_NEGATE)
 class N_NEGATE(expr: N_EXPR): N_MATH_UNOP("-", expr, O_NEGATE)
 
-abstract class N_LOGIC_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR): N_EXPR() {
+abstract class N_LOGIC_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR, val ops: List<Opcode>): N_EXPR() {
     override fun toText() = "($left $opString $right)"
     override fun kids() = listOf(left, right)
+    override fun code(coder: Coder) {
+        left.code(coder)
+        right.code(coder)
+        ops.forEach { coder.code(this, it) }
+    }
 }
-class N_LOGIC_AND(left: N_EXPR, right: N_EXPR): N_LOGIC_BINOP("&&", left, right)
-class N_LOGIC_OR(left: N_EXPR, right: N_EXPR): N_LOGIC_BINOP("||", left, right)
+class N_LOGIC_AND(left: N_EXPR, right: N_EXPR): N_LOGIC_BINOP("&&", left, right, listOf(O_AND))
+class N_LOGIC_OR(left: N_EXPR, right: N_EXPR): N_LOGIC_BINOP("||", left, right, listOf(O_OR))
 
 class N_CONDITIONAL(val condition: N_EXPR, val eTrue: N_EXPR, val eFalse: N_EXPR): N_EXPR() {
     override fun toText() = "($condition ? $eTrue : $eFalse)"

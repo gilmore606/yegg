@@ -9,38 +9,39 @@ import com.dlfsystems.vm.VMException.Type.*
 
 class VM(val code: List<VMCell>) {
 
-    // Program Counter; index of the opcode we're about to execute.
+    // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
     // The local stack.
     private val stack = Stack<Value>()
-    // Local variables.
+    // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
     private fun fail(c: VMException.Type, m: String) { throw VMException(c, m, code[pc].lineNum, code[pc].charNum) }
     private inline fun push(v: Value) = stack.push(v)
     private inline fun popArg() = stack.pop()
     private inline fun popTwoArgs() = listOf(stack.pop(), stack.pop())
+    private inline fun next() = code[pc++]
 
     fun execute(): Value {
         pc = 0
         stack.clear()
         variables.clear()
         while (pc < code.size) {
-            val opcode = code[pc++]
+            val opcode = next()
             when (opcode.opcode) {
                 O_LITERAL -> {
-                    push(code[pc++].value!!)
+                    push(next().value!!)
                 }
                 O_DISCARD -> {
                     stack.pop()
                 }
                 O_STORE -> {
                     val a = popArg()
-                    val varID = code[pc++].value!!.intV!!
+                    val varID = next().value!!.intV!!
                     variables[varID] = a
                 }
                 O_FETCH -> {
-                    val varID = code[pc++].value!!.intV!!
+                    val varID = next().value!!.intV!!
                     variables[varID]?.also { push(it) } ?: fail(E_VARNF, "variable not found")
                 }
                 O_NEGATE -> {
@@ -51,6 +52,16 @@ class VM(val code: List<VMCell>) {
                         BOOL -> push(boolValue(!a.boolV!!))
                         else -> fail(E_TYPE, "cannot negate ${a.type}")
                     }
+                }
+                O_AND -> {
+                    val (a2, a1) = popTwoArgs()
+                    if (a1.type != BOOL || a2.type != BOOL) fail(E_TYPE, "cannot AND ${a1.type} and ${a2.type}")
+                    push(boolValue(a1.boolV!! && a2.boolV!!))
+                }
+                O_OR -> {
+                    val (a2, a1) = popTwoArgs()
+                    if (a1.type != BOOL || a2.type != BOOL) fail(E_TYPE, "cannot OR ${a1.type} and ${a2.type}")
+                    push(boolValue(a1.boolV!! || a2.boolV!!))
                 }
                 O_CMP_EQ -> {
                     val (a2, a1) = popTwoArgs()
@@ -122,7 +133,7 @@ class VM(val code: List<VMCell>) {
                     }
                 }
                 O_IF -> {
-                    val elseAddr = code[pc++].address!!
+                    val elseAddr = next().address!!
                     val condition = popArg()
                     if (condition.type == BOOL) {
                         if (condition.boolV == false) {
@@ -131,7 +142,7 @@ class VM(val code: List<VMCell>) {
                     } else fail(E_TYPE, "non-boolean if condition")
                 }
                 O_JUMP -> {
-                    val addr = code[pc++].address!!
+                    val addr = next().address!!
                     pc = addr
                 }
                 O_RETURN -> {
@@ -150,5 +161,5 @@ class VMCell(
     val opcode: Opcode? = null, val value: Value? = null, var address: Int? = null
 ) {
     fun fillAddress(newAddress: Int) { address = newAddress }
-    override fun toString() = opcode?.toString() ?: value?.toString() ?: address?.let { "a<$it>" } ?: "!!NULL!!"
+    override fun toString() = opcode?.toString() ?: value?.toString() ?: address?.let { "<$it>" } ?: "!!NULL!!"
 }
