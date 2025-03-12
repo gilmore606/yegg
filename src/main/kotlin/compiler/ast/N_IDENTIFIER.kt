@@ -2,7 +2,7 @@ package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
 import com.dlfsystems.vm.Opcode.*
-import com.dlfsystems.vm.intValue
+import com.dlfsystems.vm.intV
 
 
 class N_IDENTIFIER(val name: String): N_VALUE() {
@@ -15,11 +15,11 @@ class N_IDENTIFIER(val name: String): N_VALUE() {
 
     override fun code(coder: Coder) {
         coder.code(this, O_FETCH)
-        coder.value(this, intValue(variableID!!))
+        coder.value(this, intV(variableID!!))
     }
 
     override fun codeAssign(coder: Coder) {
         coder.code(this, O_STORE)
-        coder.value(this, intValue(variableID!!))
+        coder.value(this, intV(variableID!!))
     }
 }

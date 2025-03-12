@@ -36,67 +36,76 @@ class VM(val code: List<VMWord>) {
                     pop()
                 }
                 O_STORE -> {
-                    val varID = next().intValue
+                    val varID = next().asIntValue
                     val a1 = pop()
                     variables[varID] = a1
                 }
                 O_FETCH -> {
-                    val varID = next().intValue
+                    val varID = next().asIntValue
                     variables[varID]?.also { push(it) } ?: fail(E_VARNF, "variable not found")
                 }
                 O_NEGATE -> {
                     val a1 = pop()
                     when (a1.type) {
-                        INT -> push(intValue(0 - a1.intV!!))
-                        FLOAT -> push(floatValue(0f - a1.floatV!!))
-                        BOOL -> push(boolValue(!a1.boolV!!))
+                        INT -> push(intV(0 - a1.intV!!))
+                        FLOAT -> push(floatV(0f - a1.floatV!!))
+                        BOOL -> push(boolV(!a1.boolV!!))
                         else -> fail(E_TYPE, "cannot negate ${a1.type}")
                     }
                 }
                 O_AND -> {
                     val (a2, a1) = popTwo()
                     if (a1.type != BOOL || a2.type != BOOL) fail(E_TYPE, "cannot AND ${a1.type} and ${a2.type}")
-                    push(boolValue(a1.boolV!! && a2.boolV!!))
+                    push(boolV(a1.boolV!! && a2.boolV!!))
                 }
                 O_OR -> {
                     val (a2, a1) = popTwo()
                     if (a1.type != BOOL || a2.type != BOOL) fail(E_TYPE, "cannot OR ${a1.type} and ${a2.type}")
-                    push(boolValue(a1.boolV!! || a2.boolV!!))
+                    push(boolV(a1.boolV!! || a2.boolV!!))
                 }
                 O_CMP_EQ -> {
-                    // TODO: limit and convert types
                     val (a2, a1) = popTwo()
-                    push(boolValue(a1.equals(a2)))
+                    push(boolV(if (a1.type == a2.type) a1.equals(a2) else false))
                 }
                 O_CMP_GT -> {
-                    // TODO: limit and convert types
                     val (a2, a1) = popTwo()
-                    push(boolValue(a1.greaterThan(a2)))
+                    if (a1.type != a2.type) fail(E_TYPE, "cannot compare disparate types")
+                    when (a1.type) {
+                        INT -> push(boolV(a1.intV!! > a2.intV!!))
+                        FLOAT -> push(boolV(a1.floatV!! > a2.floatV!!))
+                        STRING -> push(boolV(a1.stringV!! > a2.stringV!!))
+                        else -> fail(E_TYPE, "cannot compare ${a1.type}")
+                    }
                 }
                 O_CMP_GE -> {
-                    // TODO: limit and convert types
                     val (a2, a1) = popTwo()
-                    push(boolValue(a1.greaterOrEqual(a2)))
+                    if (a1.type != a2.type) fail(E_TYPE, "cannot compare disparate types")
+                    when (a1.type) {
+                        INT -> push(boolV(a1.intV!! >= a2.intV!!))
+                        FLOAT -> push(boolV(a1.floatV!! >= a2.floatV!!))
+                        STRING -> push(boolV(a1.stringV!! >= a2.stringV!!))
+                        else -> fail(E_TYPE, "cannot compare ${a1.type}")
+                    }
                 }
                 O_ADD -> {
                     val (a2, a1) = popTwo()
                     when (a1.type) {
                         INT -> when (a2.type) {
-                            INT -> push(intValue(a1.intV!! + a2.intV!!))
-                            FLOAT -> push(floatValue(a1.intV!!.toFloat() + a2.floatV!!))
-                            STRING -> push(stringValue(a1.intV!!.toString() + a2.stringV!!))
+                            INT -> push(intV(a1.intV!! + a2.intV!!))
+                            FLOAT -> push(floatV(a1.intV!!.toFloat() + a2.floatV!!))
+                            STRING -> push(stringV(a1.intV!!.toString() + a2.stringV!!))
                             else -> fail(E_TYPE, "cannot add ${a1.type} to ${a2.type}")
                         }
                         FLOAT -> when (a2.type) {
-                            INT -> push(floatValue(a1.intV!!.toFloat() + a2.floatV!!))
-                            FLOAT -> push(floatValue(a1.floatV!! - a2.floatV!!))
-                            STRING -> push(stringValue(a1.floatV!!.toString() + a2.stringV!!))
+                            INT -> push(floatV(a1.intV!!.toFloat() + a2.floatV!!))
+                            FLOAT -> push(floatV(a1.floatV!! - a2.floatV!!))
+                            STRING -> push(stringV(a1.floatV!!.toString() + a2.stringV!!))
                             else -> fail(E_TYPE, "cannot add ${a1.type} to ${a2.type}")
                         }
                         STRING -> when (a2.type) {
-                            INT -> push(stringValue(a1.stringV!! + a2.intV!!.toString()))
-                            FLOAT -> push(stringValue(a1.stringV!! + a2.floatV!!.toString()))
-                            STRING -> push(stringValue(a1.stringV!! + a2.stringV!!))
+                            INT -> push(stringV(a1.stringV!! + a2.intV!!.toString()))
+                            FLOAT -> push(stringV(a1.stringV!! + a2.floatV!!.toString()))
+                            STRING -> push(stringV(a1.stringV!! + a2.stringV!!))
                             else -> fail(E_TYPE, "cannot add ${a1.type} to ${a2.type}")
                         }
                         else -> fail(E_TYPE, "cannot add ${a1.type} to ${a2.type}")
@@ -106,13 +115,13 @@ class VM(val code: List<VMWord>) {
                     val (a2, a1) = popTwo()
                     when (a1.type) {
                         INT -> when (a2.type) {
-                            INT -> push(intValue(a1.intV!! * a2.intV!!))
-                            FLOAT -> push(floatValue(a1.intV!! * a2.floatV!!))
+                            INT -> push(intV(a1.intV!! * a2.intV!!))
+                            FLOAT -> push(floatV(a1.intV!! * a2.floatV!!))
                             else -> fail(E_TYPE, "cannot multiply ${a1.type} and ${a2.type}")
                         }
                         FLOAT -> when (a2.type) {
-                            INT -> push(floatValue(a1.floatV!! * a2.intV!!.toFloat()))
-                            FLOAT -> push(floatValue(a1.floatV!! * a2.floatV!!))
+                            INT -> push(floatV(a1.floatV!! * a2.intV!!.toFloat()))
+                            FLOAT -> push(floatV(a1.floatV!! * a2.floatV!!))
                             else -> fail(E_TYPE, "cannot multiply ${a1.type} and ${a2.type}")
                         }
                         else -> fail(E_TYPE, "cannot multiply ${a1.type} and ${a2.type}")
@@ -123,13 +132,13 @@ class VM(val code: List<VMWord>) {
                     if (a2.intV == 0 || a2.floatV == 0f) fail(E_DIV, "divide by zero")
                     when (a1.type) {
                         INT -> when (a2.type) {
-                            INT -> push(intValue(a1.intV!! / a2.intV!!))
-                            FLOAT -> push(floatValue(a1.intV!! / a2.floatV!!))
+                            INT -> push(intV(a1.intV!! / a2.intV!!))
+                            FLOAT -> push(floatV(a1.intV!! / a2.floatV!!))
                             else -> fail(E_TYPE, "cannot divide ${a1.type} and ${a2.type}")
                         }
                         FLOAT -> when (a2.type) {
-                            INT -> push(floatValue(a1.floatV!! / a2.intV!!))
-                            FLOAT -> push(floatValue(a1.floatV!! / a2.floatV!!))
+                            INT -> push(floatV(a1.floatV!! / a2.intV!!))
+                            FLOAT -> push(floatV(a1.floatV!! / a2.floatV!!))
                             else -> fail(E_TYPE, "cannot divide ${a1.type} and ${a2.type}")
                         }
                         else -> fail(E_TYPE, "cannot divide ${a1.type} and ${a2.type}")
@@ -147,12 +156,12 @@ class VM(val code: List<VMWord>) {
                     pc = addr
                 }
                 O_RETURN -> {
-                    return if (stack.isEmpty()) voidValue() else pop()
+                    return if (stack.isEmpty()) voidV() else pop()
                 }
                 else -> fail(E_SYS, "unknown opcode $opcode")
             }
         }
-        return voidValue()
+        return voidV()
     }
 
 }
@@ -163,7 +172,7 @@ class VMWord(
 ) {
     fun fillAddress(newAddress: Int) { address = newAddress }
     override fun toString() = opcode?.toString() ?: value?.toString() ?: address?.let { "<$it>" } ?: "!!NULL!!"
-    val intValue: Int
+    val asIntValue: Int
         get() = value!!.intV!!
 }
 

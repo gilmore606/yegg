@@ -13,32 +13,11 @@ data class Value(val type: Type, val boolV: Boolean? = null, val intV: Int? = nu
     fun isTrue() = (type == Type.BOOL && boolV == true) || (type == Type.OBJECT && objV != null)
     fun isFalse() = !isTrue()
 
-    fun greaterThan(v2: Value): Boolean {
-        if (type != v2.type) return false
-        return when (type) {
-            Type.BOOL -> (boolV!! > v2.boolV!!)
-            Type.INT -> (intV!! > v2.intV!!)
-            Type.FLOAT -> (floatV!! > v2.floatV!!)
-            Type.STRING -> (stringV!! > v2.stringV!!)
-            else -> false
-        }
-    }
-
-    fun greaterOrEqual(v2: Value): Boolean {
-        if (type != v2.type) return false
-        return when (type) {
-            Type.BOOL -> (boolV!! >= v2.boolV!!)
-            Type.INT -> (intV!! >= v2.intV!!)
-            Type.FLOAT -> (floatV!! >= v2.floatV!!)
-            Type.STRING -> (stringV!! >= v2.stringV!!)
-            else -> false
-        }
-    }
 }
 
-inline fun voidValue() = Value(Value.Type.VOID)
-inline fun intValue(v: Int?) = Value(Value.Type.INT,  intV = v)
-inline fun boolValue(v: Boolean?) = Value(Value.Type.BOOL, boolV = v)
-inline fun floatValue(v: Float?) = Value(Value.Type.FLOAT,  floatV = v)
-inline fun stringValue(v: String?) = Value(Value.Type.STRING, stringV = v)
-inline fun objectValue(v: UUID?) = Value(Value.Type.OBJECT, objV = v)
+inline fun voidV() = Value(Value.Type.VOID)
+inline fun intV(v: Int?) = Value(Value.Type.INT,  intV = v)
+inline fun boolV(v: Boolean?) = Value(Value.Type.BOOL, boolV = v)
+inline fun floatV(v: Float?) = Value(Value.Type.FLOAT,  floatV = v)
+inline fun stringV(v: String?) = Value(Value.Type.STRING, stringV = v)
+inline fun objectV(v: UUID?) = Value(Value.Type.OBJECT, objV = v)

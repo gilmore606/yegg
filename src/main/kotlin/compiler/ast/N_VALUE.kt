@@ -16,7 +16,7 @@ class N_LITERAL_BOOLEAN(val value: Boolean): N_LITERAL() {
     override fun toText() = if (value) "true" else "false"
     override fun code(coder: Coder) {
         coder.code(this, Opcode.O_LITERAL)
-        coder.value(this, boolValue(value))
+        coder.value(this, boolV(value))
     }
 }
 
@@ -24,7 +24,7 @@ class N_LITERAL_INTEGER(val value: Int): N_LITERAL() {
     override fun toText() = "$value"
     override fun code(coder: Coder) {
         coder.code(this, Opcode.O_LITERAL)
-        coder.value(this, intValue(value))
+        coder.value(this, intV(value))
     }
 }
 
@@ -32,7 +32,7 @@ class N_LITERAL_FLOAT(val value: Float): N_LITERAL() {
     override fun toText() = "$value"
     override fun code(coder: Coder) {
         coder.code(this, Opcode.O_LITERAL)
-        coder.value(this, floatValue(value))
+        coder.value(this, floatV(value))
     }
 }
 
@@ -40,6 +40,6 @@ class N_LITERAL_STRING(val value: String): N_LITERAL() {
     override fun toText() = "\"$value\""
     override fun code(coder: Coder) {
         coder.code(this, Opcode.O_LITERAL)
-        coder.value(this, stringValue(value))
+        coder.value(this, stringV(value))
     }
 }
