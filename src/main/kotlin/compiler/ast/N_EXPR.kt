@@ -15,13 +15,13 @@ class N_IFEXPR(val condition: N_EXPR, val eThen: N_EXPR, val eElse: N_EXPR): N_E
     override fun code(coder: Coder) {
         condition.code(coder)
         coder.code(this, O_IF)
-        coder.jumpFuture(this, "ifskip$id")
+        coder.jumpFuture(this, "if$id")
         eThen.code(coder)
         coder.code(this, O_JUMP)
-        coder.jumpFuture(this, "elseskip$id")
-        coder.reachFuture(this, "ifskip$id")
+        coder.jumpFuture(this, "else$id")
+        coder.reachFuture(this, "if$id")
         eElse.code(coder)
-        coder.reachFuture(this, "elseskip$id")
+        coder.reachFuture(this, "else$id")
     }
 }
 
@@ -62,6 +62,17 @@ class N_LOGIC_OR(left: N_EXPR, right: N_EXPR): N_LOGIC_BINOP("||", left, right)
 class N_CONDITIONAL(val condition: N_EXPR, val eTrue: N_EXPR, val eFalse: N_EXPR): N_EXPR() {
     override fun toText() = "($condition ? $eTrue : $eFalse)"
     override fun kids() = listOf(condition, eTrue, eFalse)
+    override fun code(coder: Coder) {
+        condition.code(coder)
+        coder.code(this, O_IF)
+        coder.jumpFuture(this, "cond$id")
+        eTrue.code(coder)
+        coder.code(this, O_JUMP)
+        coder.jumpFuture(this, "condFalse$id")
+        coder.reachFuture(this, "cond$id")
+        eFalse.code(coder)
+        coder.reachFuture(this, "condFalse$id")
+    }
 }
 
 abstract class N_COMPARE_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR, val compareOps: List<Opcode>): N_EXPR() {
