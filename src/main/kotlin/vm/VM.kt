@@ -13,7 +13,7 @@ class VM(val code: List<VMCell>) {
     // The local stack.
     private val stack = Stack<Value>()
     // Local variables.
-    private val vars: MutableMap<Int, Value> = mutableMapOf()
+    private val variables: MutableMap<Int, Value> = mutableMapOf()
 
     private fun fail(m: String) { throw VMException(m, code[pc].lineNum, code[pc].charNum) }
     private inline fun push(v: Value) = stack.push(v)
@@ -23,7 +23,7 @@ class VM(val code: List<VMCell>) {
     fun execute(): Value {
         pc = 0
         stack.clear()
-        vars.clear()
+        variables.clear()
         while (pc < code.size) {
             val opcode = code[pc++]
             when (opcode.opcode) {
@@ -33,34 +33,43 @@ class VM(val code: List<VMCell>) {
                 O_DISCARD -> {
                     stack.pop()
                 }
+                O_STORE -> {
+                    val a = popArg()
+                    val varID = code[pc++].value!!.intV!!
+                    variables[varID] = a
+                }
+                O_FETCH -> {
+                    val varID = code[pc++].value!!.intV!!
+                    push(variables[varID]!!)
+                }
                 O_NEGATE -> {
                     val a = popArg()
                     when (a.type) {
-                        INT -> push(Value(INT, intV = 0 - a.intV!!))
-                        FLOAT -> push(Value(FLOAT, floatV = 0f - a.floatV!!))
-                        BOOL -> push(Value(BOOL, boolV = !a.boolV!!))
+                        INT -> push(intValue(0 - a.intV!!))
+                        FLOAT -> push(floatValue(0f - a.floatV!!))
+                        BOOL -> push(boolValue(!a.boolV!!))
                         else -> fail("cannot negate ${a.type}")
                     }
                 }
                 O_CMP_EQ -> {
                     val (a2, a1) = popTwoArgs()
-                    push(Value(BOOL, boolV = (a1.equals(a2))))
+                    push(boolValue(a1.equals(a2)))
                 }
                 O_CMP_GT -> {
                     val (a2, a1) = popTwoArgs()
-                    push(Value(BOOL, boolV = (a1.greaterThan(a2))))
+                    push(boolValue(a1.greaterThan(a2)))
                 }
                 O_CMP_GE -> {
                     val (a2, a1) = popTwoArgs()
-                    push(Value(BOOL, boolV = (a1.greaterOrEqual(a2))))
+                    push(boolValue(a1.greaterOrEqual(a2)))
                 }
                 O_ADD -> {
                     val (a2, a1) = popTwoArgs()
                     if (a1.type != a2.type) fail("cannot add different types")
                     when (a1.type) {
-                        INT -> push(Value(INT, intV = a1.intV!! + a2.intV!!))
-                        FLOAT -> push(Value(FLOAT, floatV = a1.floatV!! - a2.floatV!!))
-                        STRING -> push(Value(STRING, stringV = a1.stringV!! + a2.stringV!!))
+                        INT -> push(intValue(a1.intV!! + a2.intV!!))
+                        FLOAT -> push(floatValue(a1.floatV!! - a2.floatV!!))
+                        STRING -> push(stringValue(a1.stringV!! + a2.stringV!!))
                         else -> fail("cannot add type ${a1.type}")
                     }
                 }
@@ -68,8 +77,8 @@ class VM(val code: List<VMCell>) {
                     val (a2, a1) = popTwoArgs()
                     if (a1.type != a2.type) fail("cannot multiply different types")
                     when (a1.type) {
-                        INT -> push(Value(INT, intV = a1.intV!! * a2.intV!!))
-                        FLOAT -> push(Value(FLOAT, floatV = a1.floatV!! * a2.floatV!!))
+                        INT -> push(intValue(a1.intV!! * a2.intV!!))
+                        FLOAT -> push(floatValue(a1.floatV!! * a2.floatV!!))
                         else -> fail("cannot multiply type ${a1.type}")
                     }
                 }
@@ -78,9 +87,9 @@ class VM(val code: List<VMCell>) {
                     if (a1.type != a2.type) fail("cannot divide different types")
                     when (a1.type) {
                         INT -> if (a2.intV == 0) fail("divide by zero") else
-                            push(Value(INT, intV = a1.intV!! / a2.intV!!))
+                            push(intValue(a1.intV!! / a2.intV!!))
                         FLOAT -> if (a2.floatV == 0f) fail("divide by zero") else
-                            push(Value(FLOAT, floatV = a1.floatV!! / a2.floatV!!))
+                            push(floatValue(a1.floatV!! / a2.floatV!!))
                         else -> fail("cannot divide type ${a1.type}")
                     }
                 }
@@ -98,13 +107,13 @@ class VM(val code: List<VMCell>) {
                     pc = addr
                 }
                 O_RETURN -> {
-                    if (stack.isEmpty()) return Value(VOID)
+                    if (stack.isEmpty()) return voidValue()
                     return popArg()
                 }
                 else -> fail("!!unknown opcode: $opcode")
             }
         }
-        return Value(VOID)
+        return voidValue()
     }
 
 }

@@ -68,6 +68,7 @@ class Coder(val ast: Node) {
         var pc = 0
         while (pc < mem.size) {
             val cell = mem[pc]
+            s += "<$pc> "
             s += cell.toString()
             cell.opcode?.also { opcode ->
                 repeat (opcode.argCount) {

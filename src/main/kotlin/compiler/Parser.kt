@@ -64,8 +64,8 @@ class Parser(inputTokens: List<Token>) {
         pForLoop()?.also { return it }
         pWhileLoop()?.also { return it }
         pReturn()?.also { return it }
-        pAssign()?.also { return it }
         pIncrement()?.also { return it }
+        pAssign()?.also { return it }
         pExprStatement()?.also { return it }
         return null
     }
@@ -137,20 +137,6 @@ class Parser(inputTokens: List<Token>) {
         return node(N_RETURN(pExpression()))
     }
 
-    // Parse: <expr> = <expr>
-    private fun pAssign(): N_STATEMENT? {
-        pExpression()?.also { left ->
-            if (nextIs(T_ASSIGN, T_ADD_ASSIGN, T_SUBTRACT_ASSIGN, T_MULT_ASSIGN, T_DIV_ASSIGN)) {
-                val operator = consume()
-                pExpression()?.also { right ->
-                    return node(N_ASSIGN(left, right, operator.type))
-                } ?: fail("missing predicate for assignment")
-            }
-            return node(N_EXPRSTATEMENT(left))
-        }
-        return null
-    }
-
     // Parse: <ident>++|-- / ++|--<ident>
     private fun pIncrement(): N_STATEMENT? {
         fun make(ident: String, isDec: Boolean): N_STATEMENT {
@@ -158,7 +144,7 @@ class Parser(inputTokens: List<Token>) {
             val arg1 = node(N_IDENTIFIER(ident))
             val arg2 = node(N_LITERAL_INTEGER(1))
             return if (isDec) node(N_ASSIGN(receiver, node(N_SUBTRACT(arg1, arg2))))
-                        else node(N_ASSIGN(receiver, node(N_ADD(arg1, arg2))))
+            else node(N_ASSIGN(receiver, node(N_ADD(arg1, arg2))))
         }
         consume(T_INCREMENT, T_DECREMENT)?.also { operator ->
             consume(T_IDENTIFIER)?.also { ident ->
@@ -167,6 +153,27 @@ class Parser(inputTokens: List<Token>) {
         }
         if (nextIs(T_IDENTIFIER) && next(1).type in listOf(T_INCREMENT, T_DECREMENT)) {
             return make(consume().string, consume().type == T_DECREMENT)
+        }
+        return null
+    }
+
+    // Parse: <expr> = <expr>
+    // This should run last in statement parsing, since it consumes expressions.
+    private fun pAssign(): N_STATEMENT? {
+        pExpression()?.also { left ->
+            if (nextIs(T_ASSIGN, T_ADD_ASSIGN, T_SUBTRACT_ASSIGN, T_MULT_ASSIGN, T_DIV_ASSIGN)) {
+                val operator = consume()
+                pExpression()?.also { right ->
+                    return node(when (operator.type) {
+                        T_ADD_ASSIGN -> N_ASSIGN(left, node(N_ADD(left, right)))
+                        T_SUBTRACT_ASSIGN -> N_ASSIGN(left, node(N_SUBTRACT(left, right)))
+                        T_MULT_ASSIGN -> N_ASSIGN(left, node(N_MULTIPLY(left, right)))
+                        T_DIV_ASSIGN -> N_ASSIGN(left, node(N_DIVIDE(left, right)))
+                        else -> N_ASSIGN(left, right)
+                    })
+                } ?: fail("missing predicate for assignment")
+            }
+            return node(N_EXPRSTATEMENT(left))
         }
         return null
     }

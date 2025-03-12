@@ -4,7 +4,10 @@ import com.dlfsystems.compiler.Coder
 import com.dlfsystems.vm.Opcode
 import com.dlfsystems.vm.Opcode.*
 
-abstract class N_EXPR: N_STATEMENT()
+abstract class N_EXPR: N_STATEMENT() {
+    // Generate opcodes for this node as the left side of assignment.
+    open fun codeAssign(coder: Coder) { fail("illegal left side of assignment") }
+}
 
 class N_IFEXPR(val condition: N_EXPR, val eThen: N_EXPR, val eElse: N_EXPR): N_EXPR() {
     override fun toText() = "(if $condition $eThen else $eElse)"
@@ -85,9 +88,15 @@ class N_INDEXREF(val left: N_EXPR, val index: N_EXPR): N_EXPR() {
 class N_DOTREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
     override fun toText() = "$left.$right"
     override fun kids() = listOf(left, right)
+    override fun identify() {
+        if (right is N_IDENTIFIER) right.type = N_IDENTIFIER.Type.PROPREF
+    }
 }
 
 class N_FUNCALL(val left: N_EXPR, val args: List<N_EXPR>): N_EXPR() {
     override fun toText() = "$left($args)"
     override fun kids() = mutableListOf(left).apply { addAll(args) }
+    override fun identify() {
+        if (left is N_IDENTIFIER) left.type = N_IDENTIFIER.Type.FUNCREF
+    }
 }

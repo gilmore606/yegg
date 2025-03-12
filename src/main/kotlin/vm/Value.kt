@@ -29,3 +29,9 @@ data class Value(val type: Type, val boolV: Boolean? = null, val intV: Int? = nu
         }
     }
 }
+
+inline fun voidValue() = Value(Value.Type.VOID)
+inline fun intValue(v: Int) = Value(Value.Type.INT,  intV = v)
+inline fun boolValue(v: Boolean) = Value(Value.Type.BOOL, boolV = v)
+inline fun floatValue(v: Float) = Value(Value.Type.FLOAT,  floatV = v)
+inline fun stringValue(v: String) = Value(Value.Type.STRING, stringV = v)

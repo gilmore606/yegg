@@ -1,16 +1,19 @@
 package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.TokenType
 import com.dlfsystems.vm.Opcode.*
 
 abstract class N_STATEMENT: Node() {
     override fun toText(depth: Int): String = tab(depth) + toText()
 }
 
-class N_ASSIGN(val left: N_EXPR, val right: N_EXPR, val operator: TokenType = TokenType.T_ASSIGN): N_STATEMENT() {
+class N_ASSIGN(val left: N_EXPR, val right: N_EXPR): N_STATEMENT() {
     override fun toText() = "$left = $right"
     override fun kids() = listOf(left, right)
+    override fun code(coder: Coder) {
+        right.code(coder)
+        left.codeAssign(coder)
+    }
 }
 
 class N_RETURN(val expr: N_EXPR?): N_STATEMENT() {
@@ -30,11 +33,11 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
         assign.code(coder)
         coder.reachPast(this, "forStart$id")
         check.code(coder)
-        coder.code(this, O_NEGATE)
         coder.code(this, O_IF)
         coder.jumpFuture(this, "forEnd$id")
         body.code(coder)
         increment.code(coder)
+        coder.code(this, O_JUMP)
         coder.jumpPast(this, "forStart$id")
         coder.reachFuture(this, "forEnd$id")
     }

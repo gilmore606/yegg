@@ -1,6 +1,8 @@
 package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
+import com.dlfsystems.compiler.CompileException
+import com.dlfsystems.compiler.Shaker
 import java.util.UUID
 
 // A node in the syntax tree.
@@ -15,6 +17,7 @@ abstract class Node {
     open fun toText(depth: Int = 0): String = toText()
     open fun toText(): String = "NODE"
     fun tab(depth: Int) = "  ".repeat(depth)
+    fun fail(m: String) { throw CompileException(m, lineNum, charNum)}
 
     open fun kids(): List<Node> = listOf()
 
@@ -23,5 +26,9 @@ abstract class Node {
         predicate(this)
     }
 
-    open fun code(coder: Coder) { }
+    // Identify the type of any identifiers we point to.
+    open fun identify() { }
+
+    // Generate opcodes for this node.
+    open fun code(code: Coder) { }
 }

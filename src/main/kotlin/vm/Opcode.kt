@@ -5,8 +5,8 @@ package com.dlfsystems.vm
 enum class Opcode(val literal: String, val argCount: Int = 0) {
 
     // stack ops
-    O_LITERAL("push", 1),
     O_DISCARD("discard"),
+    O_LITERAL("push", 1),
 
     // flow ops
     O_IF("if", 1),
@@ -24,6 +24,10 @@ enum class Opcode(val literal: String, val argCount: Int = 0) {
     O_CMP_EQ("cmpeq"),  // ==
     O_CMP_GT("cmpgt"),  // >
     O_CMP_GE("cmpge"),  // >=
+
+    // variable ops
+    O_STORE("store", 1),
+    O_FETCH("fetch", 1),
 
     // func ops
     O_RETURN("return"),
