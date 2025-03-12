@@ -40,7 +40,7 @@ class VM(val code: List<VMCell>) {
                 }
                 O_FETCH -> {
                     val varID = code[pc++].value!!.intV!!
-                    push(variables[varID]!!)
+                    variables[varID]?.also { push(it) } ?: fail("variable not found")
                 }
                 O_NEGATE -> {
                     val a = popArg()
@@ -65,32 +65,59 @@ class VM(val code: List<VMCell>) {
                 }
                 O_ADD -> {
                     val (a2, a1) = popTwoArgs()
-                    if (a1.type != a2.type) fail("cannot add different types")
                     when (a1.type) {
-                        INT -> push(intValue(a1.intV!! + a2.intV!!))
-                        FLOAT -> push(floatValue(a1.floatV!! - a2.floatV!!))
-                        STRING -> push(stringValue(a1.stringV!! + a2.stringV!!))
-                        else -> fail("cannot add type ${a1.type}")
+                        INT -> when (a2.type) {
+                            INT -> push(intValue(a1.intV!! + a2.intV!!))
+                            FLOAT -> push(floatValue(a1.intV!!.toFloat() + a2.floatV!!))
+                            STRING -> push(stringValue(a1.intV!!.toString() + a2.stringV!!))
+                            else -> fail("type error")
+                        }
+                        FLOAT -> when (a2.type) {
+                            INT -> push(floatValue(a1.intV!!.toFloat() + a2.floatV!!))
+                            FLOAT -> push(floatValue(a1.floatV!! - a2.floatV!!))
+                            STRING -> push(stringValue(a1.floatV!!.toString() + a2.stringV!!))
+                            else -> fail("type error")
+                        }
+                        STRING -> when (a2.type) {
+                            INT -> push(stringValue(a1.stringV!! + a2.intV!!.toString()))
+                            FLOAT -> push(stringValue(a1.stringV!! + a2.floatV!!.toString()))
+                            STRING -> push(stringValue(a1.stringV!! + a2.stringV!!))
+                            else -> fail("type error")
+                        }
+                        else -> fail("type error")
                     }
                 }
                 O_MULT -> {
                     val (a2, a1) = popTwoArgs()
-                    if (a1.type != a2.type) fail("cannot multiply different types")
                     when (a1.type) {
-                        INT -> push(intValue(a1.intV!! * a2.intV!!))
-                        FLOAT -> push(floatValue(a1.floatV!! * a2.floatV!!))
-                        else -> fail("cannot multiply type ${a1.type}")
+                        INT -> when (a2.type) {
+                            INT -> push(intValue(a1.intV!! * a2.intV!!))
+                            FLOAT -> push(floatValue(a1.intV!! * a2.floatV!!))
+                            else -> fail("type error")
+                        }
+                        FLOAT -> when (a2.type) {
+                            INT -> push(floatValue(a1.floatV!! * a2.intV!!.toFloat()))
+                            FLOAT -> push(floatValue(a1.floatV!! * a2.floatV!!))
+                            else -> fail("type error")
+                        }
+                        else -> fail("type error")
                     }
                 }
                 O_DIV -> {
                     val (a2, a1) = popTwoArgs()
-                    if (a1.type != a2.type) fail("cannot divide different types")
+                    if (a2.intV == 0 || a2.floatV == 0f) fail("divide by zero")
                     when (a1.type) {
-                        INT -> if (a2.intV == 0) fail("divide by zero") else
-                            push(intValue(a1.intV!! / a2.intV!!))
-                        FLOAT -> if (a2.floatV == 0f) fail("divide by zero") else
-                            push(floatValue(a1.floatV!! / a2.floatV!!))
-                        else -> fail("cannot divide type ${a1.type}")
+                        INT -> when (a2.type) {
+                            INT -> push(intValue(a1.intV!! / a2.intV!!))
+                            FLOAT -> push(floatValue(a1.intV!! / a2.floatV!!))
+                            else -> fail("type error")
+                        }
+                        FLOAT -> when (a2.type) {
+                            INT -> push(floatValue(a1.floatV!! / a2.intV!!))
+                            FLOAT -> push(floatValue(a1.floatV!! / a2.floatV!!))
+                            else -> fail("type error")
+                        }
+                        else -> fail("type error")
                     }
                 }
                 O_IF -> {
@@ -100,15 +127,14 @@ class VM(val code: List<VMCell>) {
                         if (condition.boolV == false) {
                             pc = elseAddr
                         }
-                    }
+                    } else fail("non-boolean if condition")
                 }
                 O_JUMP -> {
                     val addr = code[pc++].address!!
                     pc = addr
                 }
                 O_RETURN -> {
-                    if (stack.isEmpty()) return voidValue()
-                    return popArg()
+                    return if (stack.isEmpty()) voidValue() else popArg()
                 }
                 else -> fail("!!unknown opcode: $opcode")
             }

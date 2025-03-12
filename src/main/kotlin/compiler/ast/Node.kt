@@ -2,7 +2,6 @@ package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
 import com.dlfsystems.compiler.CompileException
-import com.dlfsystems.compiler.Shaker
 import java.util.UUID
 
 // A node in the syntax tree.
