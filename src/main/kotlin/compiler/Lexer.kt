@@ -134,13 +134,7 @@ class Lexer(val source: String) {
         tokens.isEmpty() || tokens.last().type !in listOf(T_PAREN_CLOSE, T_INTEGER, T_FLOAT, T_IDENTIFIER)
 
     // Is this a legal char for an identifier name?
-    private fun isIdentifierChar(c: Char): Boolean {
-        if (c in 'a'..'z') return true
-        if (c in 'A'..'Z') return true
-        if (c in '0'..'9') return true
-        if (c == '_') return true
-        return false
-    }
+    private fun isIdentifierChar(c: Char) = (c in 'a'..'z') || (c in 'A'..'Z') || (c in '0'..'9') || (c == '_')
 
     // Begin a new accumulating token of (possibly) type.  Start with acc if given.
     private fun begin(type: TokenType, acc: Char? = null) {

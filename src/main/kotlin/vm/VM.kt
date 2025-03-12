@@ -18,8 +18,8 @@ class VM(val code: List<VMCell>) {
 
     private fun fail(c: VMException.Type, m: String) { throw VMException(c, m, code[pc].lineNum, code[pc].charNum) }
     private inline fun push(v: Value) = stack.push(v)
-    private inline fun popArg() = stack.pop()
-    private inline fun popTwoArgs() = listOf(stack.pop(), stack.pop())
+    private inline fun pop() = stack.pop()
+    private inline fun popTwo() = listOf(stack.pop(), stack.pop())
     private inline fun next() = code[pc++]
 
     fun execute(): Value {
@@ -33,19 +33,19 @@ class VM(val code: List<VMCell>) {
                     push(next().value!!)
                 }
                 O_DISCARD -> {
-                    stack.pop()
+                    pop()
                 }
                 O_STORE -> {
-                    val a = popArg()
-                    val varID = next().value!!.intV!!
+                    val varID = next().intValue
+                    val a = pop()
                     variables[varID] = a
                 }
                 O_FETCH -> {
-                    val varID = next().value!!.intV!!
+                    val varID = next().intValue
                     variables[varID]?.also { push(it) } ?: fail(E_VARNF, "variable not found")
                 }
                 O_NEGATE -> {
-                    val a = popArg()
+                    val a = pop()
                     when (a.type) {
                         INT -> push(intValue(0 - a.intV!!))
                         FLOAT -> push(floatValue(0f - a.floatV!!))
@@ -54,29 +54,32 @@ class VM(val code: List<VMCell>) {
                     }
                 }
                 O_AND -> {
-                    val (a2, a1) = popTwoArgs()
+                    val (a2, a1) = popTwo()
                     if (a1.type != BOOL || a2.type != BOOL) fail(E_TYPE, "cannot AND ${a1.type} and ${a2.type}")
                     push(boolValue(a1.boolV!! && a2.boolV!!))
                 }
                 O_OR -> {
-                    val (a2, a1) = popTwoArgs()
+                    val (a2, a1) = popTwo()
                     if (a1.type != BOOL || a2.type != BOOL) fail(E_TYPE, "cannot OR ${a1.type} and ${a2.type}")
                     push(boolValue(a1.boolV!! || a2.boolV!!))
                 }
                 O_CMP_EQ -> {
-                    val (a2, a1) = popTwoArgs()
+                    // TODO: limit and convert types
+                    val (a2, a1) = popTwo()
                     push(boolValue(a1.equals(a2)))
                 }
                 O_CMP_GT -> {
-                    val (a2, a1) = popTwoArgs()
+                    // TODO: limit and convert types
+                    val (a2, a1) = popTwo()
                     push(boolValue(a1.greaterThan(a2)))
                 }
                 O_CMP_GE -> {
-                    val (a2, a1) = popTwoArgs()
+                    // TODO: limit and convert types
+                    val (a2, a1) = popTwo()
                     push(boolValue(a1.greaterOrEqual(a2)))
                 }
                 O_ADD -> {
-                    val (a2, a1) = popTwoArgs()
+                    val (a2, a1) = popTwo()
                     when (a1.type) {
                         INT -> when (a2.type) {
                             INT -> push(intValue(a1.intV!! + a2.intV!!))
@@ -100,7 +103,7 @@ class VM(val code: List<VMCell>) {
                     }
                 }
                 O_MULT -> {
-                    val (a2, a1) = popTwoArgs()
+                    val (a2, a1) = popTwo()
                     when (a1.type) {
                         INT -> when (a2.type) {
                             INT -> push(intValue(a1.intV!! * a2.intV!!))
@@ -116,7 +119,7 @@ class VM(val code: List<VMCell>) {
                     }
                 }
                 O_DIV -> {
-                    val (a2, a1) = popTwoArgs()
+                    val (a2, a1) = popTwo()
                     if (a2.intV == 0 || a2.floatV == 0f) fail(E_DIV, "divide by zero")
                     when (a1.type) {
                         INT -> when (a2.type) {
@@ -134,19 +137,17 @@ class VM(val code: List<VMCell>) {
                 }
                 O_IF -> {
                     val elseAddr = next().address!!
-                    val condition = popArg()
-                    if (condition.type == BOOL) {
-                        if (condition.boolV == false) {
-                            pc = elseAddr
-                        }
-                    } else fail(E_TYPE, "non-boolean if condition")
+                    val condition = pop()
+                    if (condition.isFalse()) {
+                        pc = elseAddr
+                    }
                 }
                 O_JUMP -> {
                     val addr = next().address!!
                     pc = addr
                 }
                 O_RETURN -> {
-                    return if (stack.isEmpty()) voidValue() else popArg()
+                    return if (stack.isEmpty()) voidValue() else pop()
                 }
                 else -> fail(E_SYS, "unknown opcode $opcode")
             }
@@ -162,4 +163,6 @@ class VMCell(
 ) {
     fun fillAddress(newAddress: Int) { address = newAddress }
     override fun toString() = opcode?.toString() ?: value?.toString() ?: address?.let { "<$it>" } ?: "!!NULL!!"
+    val intValue: Int
+        get() = value!!.intV!!
 }

@@ -7,6 +7,9 @@ data class Value(val type: Type, val boolV: Boolean? = null, val intV: Int? = nu
 
     override fun toString() = if (type == Type.VOID) "VOID" else boolV?.toString() ?: intV?.toString() ?: floatV?.toString() ?: stringV ?: "null"
 
+    fun isTrue() = type == Type.BOOL && boolV == true
+    fun isFalse() = type == Type.BOOL && boolV == false
+
     fun greaterThan(v2: Value): Boolean {
         if (type != v2.type) return false
         return when (type) {
