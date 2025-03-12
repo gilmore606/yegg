@@ -2,13 +2,13 @@ package com.dlfsystems.compiler
 
 import com.dlfsystems.compiler.ast.Node
 import com.dlfsystems.vm.VM
-import com.dlfsystems.vm.VMCell
+import com.dlfsystems.vm.VMWord
 
 object Compiler {
 
     sealed class Result {
         class Success(
-            val code: List<VMCell>,
+            val code: List<VMWord>,
             val tokens: List<Token>? = null,
             val ast: Node? = null,
             val dump: String? = null

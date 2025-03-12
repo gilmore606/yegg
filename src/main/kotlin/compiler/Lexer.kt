@@ -13,6 +13,8 @@ class Lexer(val source: String) {
     private var inTokenType: TokenType? = null
     // If so, buffer its characters as we get them.
     private var inTokenString: String = ""
+    // Are we expecting a backslashed escaped string char next?
+    private var inStringEscape: Boolean = false
 
     // Track line and char position as we go, to tag tokens for tracebacks.
     var lineNum: Int = 0
@@ -35,6 +37,8 @@ class Lexer(val source: String) {
             }
         }
         consume('\n')
+        if (inTokenType == T_STRING) fail("unterminated string")
+        if (inTokenType != null) fail("incomplete token")
         return tokens
     }
 
@@ -75,7 +79,10 @@ class Lexer(val source: String) {
             T_LOGIC_AND ->
                 if (c == '&') emit(T_LOGIC_AND) else fail("expected &&")
             T_STRING ->
-                if (c == '"') emit(T_STRING) else accumulate(c)
+                if (inStringEscape) { accumulate(c) ; inStringEscape = false }
+                else if (c == '\\') inStringEscape = true
+                else if (c == '"') emit(T_STRING)
+                else accumulate(c)
             T_COMMENT ->
                 if (c == '\n') emit(T_COMMENT) else accumulate(c)
             T_INTEGER -> when (c) {

@@ -1,14 +1,17 @@
 package com.dlfsystems.vm
 
+import java.util.UUID
+
 // A literal value in VM language.
 
-data class Value(val type: Type, val boolV: Boolean? = null, val intV: Int? = null, val floatV: Float? = null, val stringV: String? = null) {
-    enum class Type { VOID, BOOL, INT, FLOAT, STRING }
+data class Value(val type: Type, val boolV: Boolean? = null, val intV: Int? = null, val floatV: Float? = null, val stringV: String? = null, val objV: UUID? = null) {
+    enum class Type { VOID, BOOL, INT, FLOAT, STRING, OBJECT }
 
-    override fun toString() = if (type == Type.VOID) "VOID" else boolV?.toString() ?: intV?.toString() ?: floatV?.toString() ?: stringV ?: "null"
+    override fun toString() = if (type == Type.VOID) "VOID"
+                              else boolV?.toString() ?: intV?.toString() ?: floatV?.toString() ?: stringV ?: objV?.toString() ?: "null"
 
-    fun isTrue() = type == Type.BOOL && boolV == true
-    fun isFalse() = type == Type.BOOL && boolV == false
+    fun isTrue() = (type == Type.BOOL && boolV == true) || (type == Type.OBJECT && objV != null)
+    fun isFalse() = !isTrue()
 
     fun greaterThan(v2: Value): Boolean {
         if (type != v2.type) return false
@@ -34,7 +37,8 @@ data class Value(val type: Type, val boolV: Boolean? = null, val intV: Int? = nu
 }
 
 inline fun voidValue() = Value(Value.Type.VOID)
-inline fun intValue(v: Int) = Value(Value.Type.INT,  intV = v)
-inline fun boolValue(v: Boolean) = Value(Value.Type.BOOL, boolV = v)
-inline fun floatValue(v: Float) = Value(Value.Type.FLOAT,  floatV = v)
-inline fun stringValue(v: String) = Value(Value.Type.STRING, stringV = v)
+inline fun intValue(v: Int?) = Value(Value.Type.INT,  intV = v)
+inline fun boolValue(v: Boolean?) = Value(Value.Type.BOOL, boolV = v)
+inline fun floatValue(v: Float?) = Value(Value.Type.FLOAT,  floatV = v)
+inline fun stringValue(v: String?) = Value(Value.Type.STRING, stringV = v)
+inline fun objectValue(v: UUID?) = Value(Value.Type.OBJECT, objV = v)

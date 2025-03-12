@@ -7,7 +7,7 @@ import com.dlfsystems.vm.VMException.Type.*
 
 // A stack machine for executing a func.
 
-class VM(val code: List<VMCell>) {
+class VM(val code: List<VMWord>) {
 
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
@@ -22,7 +22,7 @@ class VM(val code: List<VMCell>) {
     private inline fun popTwo() = listOf(stack.pop(), stack.pop())
     private inline fun next() = code[pc++]
 
-    fun execute(): Value {
+    fun execute(context: Context? = null): Value {
         pc = 0
         stack.clear()
         variables.clear()
@@ -37,20 +37,20 @@ class VM(val code: List<VMCell>) {
                 }
                 O_STORE -> {
                     val varID = next().intValue
-                    val a = pop()
-                    variables[varID] = a
+                    val a1 = pop()
+                    variables[varID] = a1
                 }
                 O_FETCH -> {
                     val varID = next().intValue
                     variables[varID]?.also { push(it) } ?: fail(E_VARNF, "variable not found")
                 }
                 O_NEGATE -> {
-                    val a = pop()
-                    when (a.type) {
-                        INT -> push(intValue(0 - a.intV!!))
-                        FLOAT -> push(floatValue(0f - a.floatV!!))
-                        BOOL -> push(boolValue(!a.boolV!!))
-                        else -> fail(E_TYPE, "cannot negate ${a.type}")
+                    val a1 = pop()
+                    when (a1.type) {
+                        INT -> push(intValue(0 - a1.intV!!))
+                        FLOAT -> push(floatValue(0f - a1.floatV!!))
+                        BOOL -> push(boolValue(!a1.boolV!!))
+                        else -> fail(E_TYPE, "cannot negate ${a1.type}")
                     }
                 }
                 O_AND -> {
@@ -157,7 +157,7 @@ class VM(val code: List<VMCell>) {
 
 }
 
-class VMCell(
+class VMWord(
     val lineNum: Int, val charNum: Int,
     val opcode: Opcode? = null, val value: Value? = null, var address: Int? = null
 ) {
@@ -165,4 +165,10 @@ class VMCell(
     override fun toString() = opcode?.toString() ?: value?.toString() ?: address?.let { "<$it>" } ?: "!!NULL!!"
     val intValue: Int
         get() = value!!.intV!!
+}
+
+class VMCallstack {
+    class Call()
+
+    private val stack = Stack<Call>()
 }

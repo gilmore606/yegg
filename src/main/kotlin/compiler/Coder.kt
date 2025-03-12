@@ -3,12 +3,12 @@ package com.dlfsystems.compiler
 import com.dlfsystems.compiler.ast.Node
 import com.dlfsystems.vm.Opcode
 import com.dlfsystems.vm.Opcode.*
-import com.dlfsystems.vm.VMCell
+import com.dlfsystems.vm.VMWord
 import com.dlfsystems.vm.Value
 
 class Coder(val ast: Node) {
 
-    val mem = ArrayList<VMCell>()
+    val mem = ArrayList<VMWord>()
     val futureJumps = HashMap<String, MutableSet<Int>>()
     val pastJumps = HashMap<String, Int>()
 
@@ -20,15 +20,16 @@ class Coder(val ast: Node) {
     }
 
     fun code(from: Node, op: Opcode) {
+        // optimization: remove doubled O_NEGATE
         if (op == O_NEGATE && last()?.opcode == O_NEGATE) {
             mem.removeLast()
             return
         }
-        mem.add(VMCell(from.lineNum, from.charNum, opcode = op))
+        mem.add(VMWord(from.lineNum, from.charNum, opcode = op))
     }
 
     fun value(from: Node, value: Value) {
-        mem.add(VMCell(from.lineNum, from.charNum, value = value))
+        mem.add(VMWord(from.lineNum, from.charNum, value = value))
     }
 
     // Write a placeholder address for a jump we'll locate in the future.
@@ -39,7 +40,7 @@ class Coder(val ast: Node) {
         } else {
             futureJumps[name] = mutableSetOf(address)
         }
-        mem.add(VMCell(from.lineNum, from.charNum, address = -1))
+        mem.add(VMWord(from.lineNum, from.charNum, address = -1))
     }
 
     // Reach a previously named jump point.  Fill in all previous references with the current address.
@@ -60,7 +61,7 @@ class Coder(val ast: Node) {
     // Write address of a jump located in the past.
     fun jumpPast(from: Node, name: String) {
         val dest = pastJumps[name]
-        mem.add(VMCell(from.lineNum, from.charNum, address = dest))
+        mem.add(VMWord(from.lineNum, from.charNum, address = dest))
     }
 
     fun dumpText(): String {
