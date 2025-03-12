@@ -2,7 +2,7 @@ package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
 import com.dlfsystems.vm.Opcode.*
-import com.dlfsystems.vm.intV
+import com.dlfsystems.vm.Value.*
 
 abstract class N_STATEMENT: Node() {
     override fun toText(depth: Int): String = tab(depth) + toText()
@@ -93,6 +93,6 @@ class N_INCREMENT(val identifier: N_IDENTIFIER, val isDecrement: Boolean = false
     override fun code(coder: Coder) {
         if (!identifier.isVariable()) fail("cannot increment non-variable identifier")
         if (isDecrement) coder.code(this, O_DECVAR) else coder.code(this, O_INCVAR)
-        coder.value(this, intV(identifier.variableID!!))
+        coder.value(this, identifier.variableID!!)
     }
 }

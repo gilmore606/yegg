@@ -4,20 +4,41 @@ import java.util.UUID
 
 // A literal value in VM language.
 
-data class Value(val type: Type, val boolV: Boolean? = null, val intV: Int? = null, val floatV: Float? = null, val stringV: String? = null, val objV: UUID? = null) {
-    enum class Type { VOID, BOOL, INT, FLOAT, STRING, OBJECT }
+sealed class Value {
+    enum class Type { VOID, BOOL, INT, FLOAT, STR, THING }
+    abstract val type: Type
+    open fun isTrue(): Boolean = false
+    open fun isFalse(): Boolean = !isTrue()
 
-    override fun toString() = if (type == Type.VOID) "VOID"
-                              else boolV?.toString() ?: intV?.toString() ?: floatV?.toString() ?: stringV ?: objV?.toString() ?: "null"
+    data class VVoid(val v: Boolean = true): Value() {
+        override val type = Type.VOID
+        override fun toString() = "<VOID>"
+    }
 
-    fun isTrue() = (type == Type.BOOL && boolV == true) || (type == Type.OBJECT && objV != null)
-    fun isFalse() = !isTrue()
+    data class VBool(val v: Boolean): Value() {
+        override val type = Type.BOOL
+        override fun isTrue() = v
+        override fun toString() = v.toString()
+    }
 
+    data class VInt(val v: Int): Value() {
+        override val type = Type.INT
+        override fun toString() = v.toString()
+    }
+
+    data class VFloat(val v: Float): Value() {
+        override val type = Type.FLOAT
+        override fun toString() = v.toString()
+    }
+
+    data class VString(val v: String): Value() {
+        override val type = Type.STR
+        override fun toString() = "\"$v\""
+    }
+
+    data class VThing(val v: UUID?): Value() {
+        override val type = Type.THING
+        override fun isTrue() = v != null
+        override fun toString() = "#$v"
+    }
 }
-
-inline fun voidV() = Value(Value.Type.VOID)
-inline fun intV(v: Int?) = Value(Value.Type.INT,  intV = v)
-inline fun boolV(v: Boolean?) = Value(Value.Type.BOOL, boolV = v)
-inline fun floatV(v: Float?) = Value(Value.Type.FLOAT,  floatV = v)
-inline fun stringV(v: String?) = Value(Value.Type.STRING, stringV = v)
-inline fun objectV(v: UUID?) = Value(Value.Type.OBJECT, objV = v)
