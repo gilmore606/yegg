@@ -1,11 +1,13 @@
 package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
-import com.dlfsystems.vm.VMCell
+import java.util.UUID
 
 // A node in the syntax tree.
 
 abstract class Node {
+    val id = UUID.randomUUID()
+
     var lineNum = 0
     var charNum = 0
 

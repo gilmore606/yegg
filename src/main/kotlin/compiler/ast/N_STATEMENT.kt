@@ -33,3 +33,30 @@ class N_WHILELOOP(val check: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
     override fun toText() = toText(0)
     override fun kids() = listOf(check, body)
 }
+
+class N_EXPRSTATEMENT(val expr: N_EXPR): N_STATEMENT() {
+    override fun toText() = expr.toText()
+    override fun kids() = listOf(expr)
+    override fun code(coder: Coder) {
+        expr.code(coder)
+        coder.code(this, O_DISCARD)
+    }
+}
+
+class N_IFSTATEMENT(val condition: N_EXPR, val sThen: N_STATEMENT, val sElse: N_STATEMENT? = null): N_STATEMENT() {
+    override fun toText() = sElse?.let { "(if $condition $sThen else $sElse)" } ?: "if $condition $sThen"
+    override fun kids() = mutableListOf(condition, sThen).apply { sElse?.also { add(it) }}
+    override fun code(coder: Coder) {
+        condition.code(coder)
+        coder.code(this, O_IF)
+        coder.jumpFuture(this, "ifskip$id")
+        sThen.code(coder)
+        sElse?.also { sElse ->
+            coder.code(this, O_JUMP)
+            coder.jumpFuture(this, "elseskip$id")
+            coder.reachFuture(this, "ifskip$id")
+            sElse.code(coder)
+            coder.reachFuture(this, "elseskip$id")
+        } ?: coder.reachFuture(this, "ifskip$id")
+    }
+}

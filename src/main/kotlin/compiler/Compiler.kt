@@ -18,8 +18,8 @@ object Compiler {
             val result = VM(coder.mem).execute()
 
             return "tokens:\n\n$tokens\n\nnodes:\n\n$ast\n\ncode:\n\n${coder.dumpText()}\n\nresult: $result\n"
-        } catch (e: CompileException) {
-            return "tokens:\n\n$tokens\n\nERROR:\n\n$e\n"
+        } catch (e: Exception) {
+            return "tokens:\n\n$tokens\n\nnodes:\n\n$ast\n\ncode:\n\n${coder?.dumpText()}\n\nERROR:\n\n$e\n"
         }
     }
 }

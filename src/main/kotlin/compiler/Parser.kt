@@ -66,7 +66,7 @@ class Parser(inputTokens: List<Token>) {
         pReturn()?.also { return it }
         pAssign()?.also { return it }
         pIncrement()?.also { return it }
-        pExpression()?.also { return it }
+        pExprStatement()?.also { return it }
         return null
     }
 
@@ -92,10 +92,10 @@ class Parser(inputTokens: List<Token>) {
             pStatement()?.also { eThen ->
                 consume(T_ELSE)?.also {
                     pStatement()?.also { eElse ->
-                        return node(N_IFELSE(condition, eThen, eElse))
+                        return node(N_IFSTATEMENT(condition, eThen, eElse))
                     } ?: fail("missing else block")
                 }
-                return node(N_IFELSE(condition, eThen))
+                return node(N_IFSTATEMENT(condition, eThen))
             } ?: fail("missing then block")
         } ?: fail("missing condition")
         return null
@@ -146,7 +146,7 @@ class Parser(inputTokens: List<Token>) {
                     return node(N_ASSIGN(left, right, operator.type))
                 } ?: fail("missing predicate for assignment")
             }
-            return left
+            return node(N_EXPRSTATEMENT(left))
         }
         return null
     }
@@ -167,6 +167,14 @@ class Parser(inputTokens: List<Token>) {
         }
         if (nextIs(T_IDENTIFIER) && next(1).type in listOf(T_INCREMENT, T_DECREMENT)) {
             return make(consume().string, consume().type == T_DECREMENT)
+        }
+        return null
+    }
+
+    // Parse a bare expression whose return value is ignored.
+    private fun pExprStatement(): N_STATEMENT? {
+        pExpression()?.also { expr ->
+            return node(N_EXPRSTATEMENT(expr))
         }
         return null
     }
@@ -305,7 +313,7 @@ class Parser(inputTokens: List<Token>) {
                 pExpression()?.also { eThen ->
                     consume(T_ELSE)?.also {
                         pExpression()?.also { eElse ->
-                            return node(N_IFELSE(condition, eThen, eElse))
+                            return node(N_IFEXPR(condition, eThen, eElse))
                         } ?: fail("missing else expression")
                     } ?: fail("expected else in if expression")
                 } ?: fail("missing expression")
