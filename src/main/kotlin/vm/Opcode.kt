@@ -5,7 +5,7 @@ package com.dlfsystems.vm
 enum class Opcode(val literal: String, val argCount: Int = 0) {
 
     // stack ops
-    O_PUSH("push", 1),
+    O_LITERAL("push", 1),
     O_DISCARD("discard"),
 
     // flow ops
