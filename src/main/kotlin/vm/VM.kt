@@ -4,7 +4,7 @@ import java.util.*
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.vm.Value.Type.*
 
-// A virtual machine for executing a func.
+// A stack machine for executing a func.
 
 class VM(val code: List<VMCell>) {
 
@@ -15,6 +15,7 @@ class VM(val code: List<VMCell>) {
 
     fun execute(): Value {
         pc = 0
+        stack.clear()
         while (pc < code.size) {
             val opcode = code[pc++]
             when (opcode.opcode) {
@@ -108,9 +109,6 @@ class VMCell(
     val lineNum: Int, val charNum: Int,
     val opcode: Opcode? = null, val value: Value? = null, var address: Int? = null
 ) {
-    fun isOpcode() = opcode != null
-    fun isValue() = value != null
-    fun isAddress() = address != null
     fun fillAddress(newAddress: Int) { address = newAddress }
     override fun toString() = opcode?.toString() ?: value?.toString() ?: address?.let { "a<$it>" } ?: "!!NULL!!"
 }

@@ -26,12 +26,34 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
     override fun toText(depth: Int) = tab(depth) + "for ($assign; $check; $increment) " + body.toText(depth + 1)
     override fun toText() = toText(0)
     override fun kids() = listOf(assign, check, increment, body)
+    override fun code(coder: Coder) {
+        assign.code(coder)
+        coder.reachPast(this, "forStart$id")
+        check.code(coder)
+        coder.code(this, O_NEGATE)
+        coder.code(this, O_IF)
+        coder.jumpFuture(this, "forEnd$id")
+        body.code(coder)
+        increment.code(coder)
+        coder.jumpPast(this, "forStart$id")
+        coder.reachFuture(this, "forEnd$id")
+    }
 }
 
 class N_WHILELOOP(val check: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
     override fun toText(depth: Int) = tab(depth) + "while $check " + body.toText(depth + 1)
     override fun toText() = toText(0)
     override fun kids() = listOf(check, body)
+    override fun code(coder: Coder) {
+        coder.reachPast(this, "whileStart$id")
+        check.code(coder)
+        coder.code(this, O_IF)
+        coder.jumpFuture(this, "whileEnd$id")
+        body.code(coder)
+        coder.code(this, O_JUMP)
+        coder.jumpPast(this, "whileStart$id")
+        coder.reachFuture(this, "whileEnd$id")
+    }
 }
 
 class N_EXPRSTATEMENT(val expr: N_EXPR): N_STATEMENT() {
