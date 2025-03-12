@@ -2,24 +2,51 @@ package com.dlfsystems.compiler
 
 import com.dlfsystems.compiler.ast.Node
 import com.dlfsystems.vm.VM
+import com.dlfsystems.vm.VMCell
 
 object Compiler {
 
-    fun eval(code: String): String {
-        var tokens: List<Token>? = null
-        var ast: Node? = null
-        var coder: Coder? = null
+    sealed class Result {
+        class Success(
+            val code: List<VMCell>,
+            val tokens: List<Token>? = null,
+            val ast: Node? = null,
+            val dump: String? = null
+        ): Result()
+        class Failure(val e: Exception): Result()
+    }
 
+    fun compile(code: String, withDebug: Boolean = false): Result {
         try {
-            tokens = Lexer(code).lex()
-            ast = Shaker(Parser(tokens).parse()).shake()
-            coder = Coder(ast)
-            coder.generate()
-            val result = VM(coder.mem).execute()
+            // Stage 1: Lex source into tokens.
+            val tokens = Lexer(code).lex()
+            // Stage 2: Parse tokens into AST nodes.
+            val parser = Parser(tokens)
+            // Stage 3: Find variables and optimize tree nodes.
+            val ast = Shaker(parser.parse()).shake()
+            // Stage 4: Generate VM opcodes.
+            val coder = Coder(ast).apply { generate() }
 
-            return "tokens:\n\n$tokens\n\nnodes:\n\n$ast\n\ncode:\n\n${coder.dumpText()}\n\nresult: $result\n"
+            if (withDebug) return Result.Success(coder.mem, tokens, ast, coder.dumpText())
+            else return Result.Success(coder.mem)
         } catch (e: Exception) {
-            return "tokens:\n\n$tokens\n\nnodes:\n\n$ast\n\ncode:\n\n${coder?.dumpText()}\n\nERROR:\n\n$e\n"
+            return Result.Failure(e)
         }
     }
+
+    fun eval(code: String): String {
+        val result = compile(code, withDebug = true)
+        when (result) {
+            is Result.Failure -> return "Compilation error: ${result.e}"
+            is Result.Success -> {
+                try {
+                    val codeReturn = VM(result.code).execute()
+                    return "TOKENS:\n${result.tokens}\n\nNODES:\n${result.ast}\n\nCODE:\n${result.dump}\n\nRESULT:\n${codeReturn}\n"
+                } catch (e: Exception) {
+                    return "TOKENS:\n${result.tokens}\n\nNODES:\n${result.ast}\n\nCODE:\n${result.dump}\n\nERROR:\n${e}\n"
+                }
+            }
+        }
+    }
+
 }

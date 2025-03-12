@@ -9,22 +9,6 @@ abstract class N_EXPR: N_STATEMENT() {
     open fun codeAssign(coder: Coder) { fail("illegal left side of assignment") }
 }
 
-class N_IFEXPR(val condition: N_EXPR, val eThen: N_EXPR, val eElse: N_EXPR): N_EXPR() {
-    override fun toText() = "(if $condition $eThen else $eElse)"
-    override fun kids() = listOf(condition, eThen, eElse)
-    override fun code(coder: Coder) {
-        condition.code(coder)
-        coder.code(this, O_IF)
-        coder.jumpFuture(this, "if$id")
-        eThen.code(coder)
-        coder.code(this, O_JUMP)
-        coder.jumpFuture(this, "else$id")
-        coder.reachFuture(this, "if$id")
-        eElse.code(coder)
-        coder.reachFuture(this, "else$id")
-    }
-}
-
 abstract class N_MATH_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR, val mathOps: List<Opcode>): N_EXPR() {
     override fun toText() = "($left $opString $right)"
     override fun kids() = listOf(left, right)

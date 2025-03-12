@@ -320,7 +320,7 @@ class Parser(inputTokens: List<Token>) {
                 pExpression()?.also { eThen ->
                     consume(T_ELSE)?.also {
                         pExpression()?.also { eElse ->
-                            return node(N_IFEXPR(condition, eThen, eElse))
+                            return node(N_CONDITIONAL(condition, eThen, eElse))
                         } ?: fail("missing else expression")
                     } ?: fail("expected else in if expression")
                 } ?: fail("missing expression")
