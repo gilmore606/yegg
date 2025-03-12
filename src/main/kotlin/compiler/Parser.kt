@@ -140,11 +140,8 @@ class Parser(inputTokens: List<Token>) {
     // Parse: <ident>++|-- / ++|--<ident>
     private fun pIncrement(): N_STATEMENT? {
         fun make(ident: String, isDec: Boolean): N_STATEMENT {
-            val receiver = node(N_IDENTIFIER(ident))
-            val arg1 = node(N_IDENTIFIER(ident))
-            val arg2 = node(N_LITERAL_INTEGER(1))
-            return if (isDec) node(N_ASSIGN(receiver, node(N_SUBTRACT(arg1, arg2))))
-            else node(N_ASSIGN(receiver, node(N_ADD(arg1, arg2))))
+            val identifier = node(N_IDENTIFIER(ident))
+            return node(N_INCREMENT(identifier, isDec))
         }
         consume(T_INCREMENT, T_DECREMENT)?.also { operator ->
             consume(T_IDENTIFIER)?.also { ident ->

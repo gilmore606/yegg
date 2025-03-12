@@ -16,6 +16,8 @@ enum class Opcode(val literal: String, val argCount: Int = 0) {
     // variable ops
     O_STORE("store", 1),
     O_FETCH("fetch", 1),
+    O_INCVAR("incvar", 1),
+    O_DECVAR("decvar", 1),
 
     // boolean ops
     O_NEGATE("negate"),

@@ -71,6 +71,13 @@ class VM(val code: List<VMWord>) {
                     val varID = next().asIntValue
                     variables[varID]?.also { push(it) } ?: fail(E_VARNF, "variable not found")
                 }
+                O_INCVAR, O_DECVAR -> {
+                    val varID = next().asIntValue
+                    variables[varID]?.also {
+                        if (it.type != INT) fail(E_TYPE, "cannot increment ${it.type}")
+                        variables[varID] = intV(it.intV!! + if (word.opcode == O_INCVAR) 1 else -1)
+                    } ?: fail(E_VARNF, "variable not found")
+                }
 
                 // Boolean ops
 
