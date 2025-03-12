@@ -22,19 +22,46 @@ class VM(val code: List<VMWord>) {
     private inline fun popTwo() = listOf(stack.pop(), stack.pop())
     private inline fun next() = code[pc++]
 
+    // Given a Context, execute each word of the input code starting from pc=0.
+    // Mutate the stack and variables as we go.
+    // Return back a Value (type VOID if no explicit return).
+
     fun execute(context: Context? = null): Value {
         pc = 0
         stack.clear()
         variables.clear()
         while (pc < code.size) {
-            val opcode = next()
-            when (opcode.opcode) {
-                O_LITERAL -> {
-                    push(next().value!!)
-                }
+            val word = next()
+            when (word.opcode) {
+
+                // Stack ops
+
                 O_DISCARD -> {
                     pop()
                 }
+                O_LITERAL -> {
+                    push(next().value!!)
+                }
+
+                // Control flow ops
+
+                O_IF -> {
+                    val elseAddr = next().address!!
+                    val condition = pop()
+                    if (condition.isFalse()) {
+                        pc = elseAddr
+                    }
+                }
+                O_JUMP -> {
+                    val addr = next().address!!
+                    pc = addr
+                }
+                O_RETURN -> {
+                    return if (stack.isEmpty()) voidV() else pop()
+                }
+
+                // Variable ops
+
                 O_STORE -> {
                     val varID = next().asIntValue
                     val a1 = pop()
@@ -44,6 +71,9 @@ class VM(val code: List<VMWord>) {
                     val varID = next().asIntValue
                     variables[varID]?.also { push(it) } ?: fail(E_VARNF, "variable not found")
                 }
+
+                // Boolean ops
+
                 O_NEGATE -> {
                     val a1 = pop()
                     when (a1.type) {
@@ -67,26 +97,37 @@ class VM(val code: List<VMWord>) {
                     val (a2, a1) = popTwo()
                     push(boolV(if (a1.type == a2.type) a1.equals(a2) else false))
                 }
-                O_CMP_GT -> {
+                O_CMP_GT, O_CMP_GE, O_CMP_LT, O_CMP_LE -> {
                     val (a2, a1) = popTwo()
                     if (a1.type != a2.type) fail(E_TYPE, "cannot compare disparate types")
                     when (a1.type) {
-                        INT -> push(boolV(a1.intV!! > a2.intV!!))
-                        FLOAT -> push(boolV(a1.floatV!! > a2.floatV!!))
-                        STRING -> push(boolV(a1.stringV!! > a2.stringV!!))
+                        INT -> when (word.opcode) {
+                            O_CMP_GT -> push(boolV(a1.intV!! > a2.intV!!))
+                            O_CMP_GE -> push(boolV(a1.intV!! >= a2.intV!!))
+                            O_CMP_LT -> push(boolV(a1.intV!! < a2.intV!!))
+                            O_CMP_LE -> push(boolV(a1.intV!! <= a2.intV!!))
+                            else -> { }
+                        }
+                        FLOAT -> when (word.opcode) {
+                            O_CMP_GT -> push(boolV(a1.floatV!! > a2.floatV!!))
+                            O_CMP_GE -> push(boolV(a1.floatV!! >= a2.floatV!!))
+                            O_CMP_LT -> push(boolV(a1.floatV!! < a2.floatV!!))
+                            O_CMP_LE -> push(boolV(a1.floatV!! <= a2.floatV!!))
+                            else -> { }
+                        }
+                        STRING -> when (word.opcode) {
+                            O_CMP_GT -> push(boolV(a1.stringV!! > a2.stringV!!))
+                            O_CMP_GE -> push(boolV(a1.stringV!! >= a2.stringV!!))
+                            O_CMP_LT -> push(boolV(a1.stringV!! < a2.stringV!!))
+                            O_CMP_LE -> push(boolV(a1.stringV!! <= a2.stringV!!))
+                            else -> { }
+                        }
                         else -> fail(E_TYPE, "cannot compare ${a1.type}")
                     }
                 }
-                O_CMP_GE -> {
-                    val (a2, a1) = popTwo()
-                    if (a1.type != a2.type) fail(E_TYPE, "cannot compare disparate types")
-                    when (a1.type) {
-                        INT -> push(boolV(a1.intV!! >= a2.intV!!))
-                        FLOAT -> push(boolV(a1.floatV!! >= a2.floatV!!))
-                        STRING -> push(boolV(a1.stringV!! >= a2.stringV!!))
-                        else -> fail(E_TYPE, "cannot compare ${a1.type}")
-                    }
-                }
+
+                // Math ops
+
                 O_ADD -> {
                     val (a2, a1) = popTwo()
                     when (a1.type) {
@@ -144,21 +185,8 @@ class VM(val code: List<VMWord>) {
                         else -> fail(E_TYPE, "cannot divide ${a1.type} and ${a2.type}")
                     }
                 }
-                O_IF -> {
-                    val elseAddr = next().address!!
-                    val condition = pop()
-                    if (condition.isFalse()) {
-                        pc = elseAddr
-                    }
-                }
-                O_JUMP -> {
-                    val addr = next().address!!
-                    pc = addr
-                }
-                O_RETURN -> {
-                    return if (stack.isEmpty()) voidV() else pop()
-                }
-                else -> fail(E_SYS, "unknown opcode $opcode")
+
+                else -> fail(E_SYS, "unknown opcode $word")
             }
         }
         return voidV()
@@ -166,16 +194,22 @@ class VM(val code: List<VMWord>) {
 
 }
 
+// An atom of VM opcode memory.
+// Can hold an Opcode, a Value, or an int representing a memory address (for jumps).
 class VMWord(
     val lineNum: Int, val charNum: Int,
     val opcode: Opcode? = null, val value: Value? = null, var address: Int? = null
 ) {
+    // In compilation, address may be filled in later by Shaker.
     fun fillAddress(newAddress: Int) { address = newAddress }
+
     override fun toString() = opcode?.toString() ?: value?.toString() ?: address?.let { "<$it>" } ?: "!!NULL!!"
+
     val asIntValue: Int
         get() = value!!.intV!!
 }
 
+// A stack recording the history of a chain of nested func calls, held by a Context.
 class VMCallstack {
     class Call()
 

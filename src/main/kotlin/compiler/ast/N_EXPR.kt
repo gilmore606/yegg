@@ -76,9 +76,9 @@ abstract class N_COMPARE_BINOP(val opString: String, val left: N_EXPR, val right
 class N_EQUALS(left: N_EXPR, right: N_EXPR): N_COMPARE_BINOP("==", left, right, listOf(O_CMP_EQ))
 class N_NOTEQUALS(left: N_EXPR, right: N_EXPR): N_COMPARE_BINOP("!=", left, right, listOf(O_CMP_EQ, O_NEGATE))
 class N_GREATER_THAN(left: N_EXPR, right: N_EXPR): N_COMPARE_BINOP(">", left, right, listOf(O_CMP_GT))
-class N_LESS_THAN(left: N_EXPR, right: N_EXPR): N_COMPARE_BINOP("<", left, right, listOf(O_CMP_GE, O_NEGATE))
+class N_LESS_THAN(left: N_EXPR, right: N_EXPR): N_COMPARE_BINOP("<", left, right, listOf(O_CMP_LT))
 class N_GREATER_EQUAL(left: N_EXPR, right: N_EXPR): N_COMPARE_BINOP(">=", left, right, listOf(O_CMP_GE))
-class N_LESS_EQUAL(left: N_EXPR, right: N_EXPR): N_COMPARE_BINOP("<=", left, right, listOf(O_CMP_GT, O_NEGATE))
+class N_LESS_EQUAL(left: N_EXPR, right: N_EXPR): N_COMPARE_BINOP("<=", left, right, listOf(O_CMP_LE))
 
 class N_INDEXREF(val left: N_EXPR, val index: N_EXPR): N_EXPR() {
     override fun toText() = "$left[$index]"
