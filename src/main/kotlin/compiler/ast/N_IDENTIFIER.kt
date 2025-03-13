@@ -13,8 +13,20 @@ class N_IDENTIFIER(val name: String): N_VALUE() {
     override fun toText() = "$name"
 
     override fun code(coder: Coder) {
-        coder.code(this, O_FETCHVAR)
-        coder.value(this, variableID!!)
+        when (type) {
+            Type.VARIABLE -> {
+                coder.code(this, O_FETCHVAR)
+                coder.value(this, variableID!!)
+            }
+            Type.PROPREF -> {
+                coder.code(this, O_LITERAL)
+                coder.value(this, name)
+            }
+            Type.FUNCREF -> {
+                coder.code(this, O_LITERAL)
+                coder.value(this, name)
+            }
+        }
     }
 
     override fun codeAssign(coder: Coder) {

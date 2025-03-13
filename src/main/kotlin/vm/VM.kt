@@ -99,12 +99,14 @@ class VM(val code: List<VMWord>) {
 
                 O_FETCHPROP -> {
                     val (a2, a1) = popTwo()
-                    a2.getProp((a1 as VString).v)?.also { push(it) }
-                        ?: fail(E_PROPNF, "property not found")
+                    if (a2 is VString) {
+                        a1.getProp(a2.v)?.also { push(it) }
+                            ?: fail(E_PROPNF, "property not found")
+                    } else fail(E_PROPNF, "property name must be string")
                 }
                 O_STOREPROP -> {
                     val (a3, a2, a1) = popTwo()
-                    if (!a2.setProp((a1 as VString).v, a3))
+                    if (!a1.setProp((a2 as VString).v, a3))
                         fail(E_PROPNF, "property not found")
                 }
 

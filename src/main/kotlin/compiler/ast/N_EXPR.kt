@@ -4,9 +4,20 @@ import com.dlfsystems.compiler.Coder
 import com.dlfsystems.vm.Opcode
 import com.dlfsystems.vm.Opcode.*
 
+// An expression which reduces to a Value.
+
 abstract class N_EXPR: N_STATEMENT() {
     // Generate opcodes for this node as the left side of assignment.
     open fun codeAssign(coder: Coder) { fail("illegal left side of assignment") }
+}
+
+// Parenthetical expressions are parsed to N_PARENS to prevent X.(identifier) from binding as a literal reference.
+class N_PARENS(val expr: N_EXPR): N_EXPR() {
+    override fun toText() = "($expr)"
+    override fun kids() = listOf(expr)
+    override fun code(coder: Coder) {
+        expr.code(coder)
+    }
 }
 
 abstract class N_MATH_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR, val ops: List<Opcode>): N_EXPR() {
@@ -90,6 +101,11 @@ class N_DOTREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
     override fun kids() = listOf(left, right)
     override fun identify() {
         if (right is N_IDENTIFIER) right.type = N_IDENTIFIER.Type.PROPREF
+    }
+    override fun code(coder: Coder) {
+        left.code(coder)
+        right.code(coder)
+        coder.code(this, O_FETCHPROP)
     }
 }
 

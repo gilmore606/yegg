@@ -399,7 +399,7 @@ class Parser(inputTokens: List<Token>) {
         consume(T_PAREN_OPEN)?.also {
             pExpression()?.also { expr ->
                 consume(T_PAREN_CLOSE) ?: fail("unclosed parens")
-                return expr
+                return node(N_PARENS(expr))
             } ?: fail("non-expressions in parens")
         }
         return null
