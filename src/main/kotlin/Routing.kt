@@ -18,12 +18,21 @@ import kotlin.time.Duration.Companion.seconds
 
 fun Application.configureRouting() {
     routing {
-        get("/") {
-            call.respondText("Hello World!")
-        }
         post("/eval") {
             val code = call.receiveText()
-            call.respondText(Compiler.eval(code))
+            call.respondText(
+                Compiler.eval(code)
+            )
+        }
+        post("/program/{traitName}/{funcName}")  {
+            val code = call.receiveText()
+            var result = ""
+            call.parameters["traitName"]?.also { traitName ->
+                call.parameters["funcName"]?.also { funcName ->
+                    result = Yegg.programFunc(traitName, funcName, code)
+                }
+            }
+            call.respondText(result)
         }
     }
 }

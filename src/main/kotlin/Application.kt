@@ -14,4 +14,6 @@ fun Application.module() {
     configureSerialization()
     configureSockets()
     configureRouting()
+
+    Yegg.start()
 }

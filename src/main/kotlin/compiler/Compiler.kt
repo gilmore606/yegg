@@ -1,8 +1,11 @@
 package com.dlfsystems.compiler
 
+import com.dlfsystems.Yegg
 import com.dlfsystems.compiler.ast.Node
+import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VM
 import com.dlfsystems.vm.VMWord
+import com.dlfsystems.vm.Value.*
 
 object Compiler {
 
@@ -40,8 +43,14 @@ object Compiler {
             is Result.Failure -> return "Compilation error: ${result.e}"
             is Result.Success -> {
                 try {
-                    val codeReturn = VM(result.code).execute()
-                    return "TOKENS:\n${result.tokens}\n\nNODES:\n${result.ast}\n\nCODE:\n${result.dump}\n\nRESULT:\n${codeReturn}\n"
+
+                    val context = Context(Yegg.world).apply {
+                        vPlayer = VThing(null)
+                        vThis = VThing(null)
+                    }
+                    val returnValue = VM(result.code).execute(context)
+
+                    return "TOKENS:\n${result.tokens}\n\nNODES:\n${result.ast}\n\nCODE:\n${result.dump}\n\nRESULT:\n${returnValue}\n"
                 } catch (e: Exception) {
                     return "TOKENS:\n${result.tokens}\n\nNODES:\n${result.ast}\n\nCODE:\n${result.dump}\n\nERROR:\n${e}\n"
                 }
