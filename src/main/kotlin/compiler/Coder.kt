@@ -4,7 +4,7 @@ import com.dlfsystems.compiler.ast.Node
 import com.dlfsystems.vm.Opcode
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.vm.VMWord
-import com.dlfsystems.vm.Value
+import com.dlfsystems.value.*
 
 class Coder(val ast: Node) {
 
@@ -35,16 +35,16 @@ class Coder(val ast: Node) {
         mem.add(VMWord(from.lineNum, from.charNum, value = value))
     }
     fun value(from: Node, intValue: Int) {
-        value(from, Value.VInt(intValue))
+        value(from, VInt(intValue))
     }
     fun value(from: Node, boolValue: Boolean) {
-        value(from, Value.VBool(boolValue))
+        value(from, VBool(boolValue))
     }
     fun value(from: Node, floatValue: Float) {
-        value(from, Value.VFloat(floatValue))
+        value(from, VFloat(floatValue))
     }
     fun value(from: Node, stringValue: String) {
-        value(from, Value.VString(stringValue))
+        value(from, VString(stringValue))
     }
 
     // Write a placeholder address for a jump we'll locate in the future.

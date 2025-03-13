@@ -1,8 +1,9 @@
 package com.dlfsystems.vm
 
+import com.dlfsystems.value.Value
 import java.util.*
 import com.dlfsystems.vm.Opcode.*
-import com.dlfsystems.vm.Value.*
+import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
 
 // A stack machine for executing a func.
@@ -75,15 +76,15 @@ class VM(val code: List<VMWord>) {
 
                 // Variable ops
 
-                O_STORE -> {
-                    val varID = next().intFromV
-                    val a1 = pop()
-                    variables[varID] = a1
-                }
-                O_FETCH -> {
+                O_FETCHVAR -> {
                     val varID = next().intFromV
                     variables[varID]?.also { push(it) }
                         ?: fail(E_VARNF, "variable not found")
+                }
+                O_STOREVAR -> {
+                    val varID = next().intFromV
+                    val a1 = pop()
+                    variables[varID] = a1
                 }
                 O_INCVAR, O_DECVAR -> {
                     val varID = next().intFromV
@@ -92,6 +93,19 @@ class VM(val code: List<VMWord>) {
                             variables[varID] = VInt(it.v + if (word.opcode == O_INCVAR) 1 else -1)
                         else fail(E_TYPE, "cannot increment ${it.type}")
                     } ?: fail(E_VARNF, "variable not found")
+                }
+
+                // Property ops
+
+                O_FETCHPROP -> {
+                    val (a2, a1) = popTwo()
+                    a2.getProp((a1 as VString).v)?.also { push(it) }
+                        ?: fail(E_PROPNF, "property not found")
+                }
+                O_STOREPROP -> {
+                    val (a3, a2, a1) = popTwo()
+                    if (!a2.setProp((a1 as VString).v, a3))
+                        fail(E_PROPNF, "property not found")
                 }
 
                 // Boolean ops

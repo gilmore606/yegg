@@ -4,6 +4,7 @@ class VMException(c: Type, m: String, lineNum: Int, charNum: Int): Exception("$c
     enum class Type {
         E_TYPE,
         E_VARNF,
+        E_PROPNF,
         E_DIV,
         E_SYS,
     }

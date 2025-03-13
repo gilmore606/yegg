@@ -14,10 +14,14 @@ enum class Opcode(val literal: String, val argCount: Int = 0) {
     O_RETURN("return"),
 
     // variable ops
-    O_STORE("store", 1),
-    O_FETCH("fetch", 1),
+    O_FETCHVAR("fetchvar", 1),
+    O_STOREVAR("storevar", 1),
     O_INCVAR("incvar", 1),
     O_DECVAR("decvar", 1),
+
+    // property ops
+    O_FETCHPROP("fetchprop"),
+    O_STOREPROP("storeprop"),
 
     // boolean ops
     O_NEGATE("negate"),

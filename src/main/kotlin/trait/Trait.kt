@@ -12,6 +12,7 @@ class Trait(val name: String) {
 
     val traits: MutableList<UUID> = mutableListOf()
     val funcs: MutableList<Func> = mutableListOf()
+    val props: MutableMap<String, Prop> = mutableMapOf()
 
     fun programFunc(name: String, code: List<VMWord>) {
         funcs.firstOrNull { it.name == name }?.also {

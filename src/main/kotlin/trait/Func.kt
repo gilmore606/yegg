@@ -11,11 +11,9 @@ import com.dlfsystems.vm.VMWord
 class Func(
     val name: String,
 ) {
-    var code: List<VMWord>? = null
     var vm: VM? = null
 
     fun program(newCode: List<VMWord>) {
-        code = newCode
         vm = VM(newCode)
     }
 

@@ -1,7 +1,6 @@
 package com.dlfsystems.world.thing
 
-import com.dlfsystems.trait.Trait
-import com.dlfsystems.vm.Value
+import com.dlfsystems.value.Value
 import java.util.*
 
 // An instance in the world.

@@ -2,7 +2,6 @@ package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
 import com.dlfsystems.vm.Opcode.*
-import com.dlfsystems.vm.Value.*
 
 abstract class N_STATEMENT: Node() {
     override fun toText(depth: Int): String = tab(depth) + toText()

@@ -5,7 +5,7 @@ import com.dlfsystems.compiler.ast.Node
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VM
 import com.dlfsystems.vm.VMWord
-import com.dlfsystems.vm.Value.*
+import com.dlfsystems.value.*
 
 object Compiler {
 

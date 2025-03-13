@@ -1,7 +1,7 @@
 package com.dlfsystems.vm
 
 import com.dlfsystems.world.World
-import com.dlfsystems.vm.Value.*
+import com.dlfsystems.value.*
 
 // Variables from the world which a VM uses to execute a func.
 // A persistent VM will own a context whose values are updated from outside it.
