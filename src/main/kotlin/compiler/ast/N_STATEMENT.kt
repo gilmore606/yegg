@@ -65,6 +65,7 @@ class N_EXPRSTATEMENT(val expr: N_EXPR): N_STATEMENT() {
     override fun kids() = listOf(expr)
     override fun code(coder: Coder) {
         expr.code(coder)
+        // Since this expression is in a statement context, discard its result to avoid stack pollution.
         coder.code(this, O_DISCARD)
     }
 }

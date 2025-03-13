@@ -24,12 +24,25 @@ class VM(val code: List<VMWord>) {
 
     // Given a Context, execute each word of the input code starting from pc=0.
     // Mutate the stack and variables as we go.
-    // Return back a Value (type VOID if no explicit return).
-
+    // Return back a Value (VVoid if no explicit return).
     fun execute(context: Context? = null): Value {
-        pc = 0
+        var returnValue: Value? = null
+        var exception: Exception? = null
+        try {
+            returnValue = executeCode(context)
+        } catch (e: Exception) {
+            exception = e
+        }
+        // Win or lose, we clean up after.
         stack.clear()
         variables.clear()
+        // Then we do what we were going to do.
+        exception?.also { throw it }
+        return returnValue!!
+    }
+
+    private fun executeCode(context: Context?): Value {
+        pc = 0
         while (pc < code.size) {
             val word = next()
             when (word.opcode) {
@@ -63,18 +76,20 @@ class VM(val code: List<VMWord>) {
                 // Variable ops
 
                 O_STORE -> {
-                    val varID = next().asIntValue
+                    val varID = next().intFromV
                     val a1 = pop()
                     variables[varID] = a1
                 }
                 O_FETCH -> {
-                    val varID = next().asIntValue
-                    variables[varID]?.also { push(it) } ?: fail(E_VARNF, "variable not found")
+                    val varID = next().intFromV
+                    variables[varID]?.also { push(it) }
+                        ?: fail(E_VARNF, "variable not found")
                 }
                 O_INCVAR, O_DECVAR -> {
-                    val varID = next().asIntValue
+                    val varID = next().intFromV
                     variables[varID]?.also {
-                        if (it is VInt) variables[varID] = VInt(it.v + if (word.opcode == O_INCVAR) 1 else -1)
+                        if (it is VInt)
+                            variables[varID] = VInt(it.v + if (word.opcode == O_INCVAR) 1 else -1)
                         else fail(E_TYPE, "cannot increment ${it.type}")
                     } ?: fail(E_VARNF, "variable not found")
                 }
@@ -100,36 +115,15 @@ class VM(val code: List<VMWord>) {
                     if (a1 is VBool && a2 is VBool) push(VBool(a1.v || a2.v))
                     else fail(E_TYPE, "cannot OR ${a1.type} and ${a2.type}")
                 }
-                O_CMP_EQ -> {
+                O_CMP_EQ, O_CMP_GT, O_CMP_GE, O_CMP_LT, O_CMP_LE -> {
                     val (a2, a1) = popTwo()
-                    push(VBool(if (a1.type == a2.type) a1.equals(a2) else false))
-                }
-                O_CMP_GT, O_CMP_GE, O_CMP_LT, O_CMP_LE -> {
-                    val (a2, a1) = popTwo()
-                    if (a1.type != a2.type) fail(E_TYPE, "cannot compare disparate types")
-                    when (a1) {
-                        is VInt -> when (word.opcode) {
-                            O_CMP_GT -> push(VBool(a1.v > (a2 as VInt).v))
-                            O_CMP_GE -> push(VBool(a1.v >= (a2 as VInt).v))
-                            O_CMP_LT -> push(VBool(a1.v < (a2 as VInt).v))
-                            O_CMP_LE -> push(VBool(a1.v <= (a2 as VInt).v))
-                            else -> { }
-                        }
-                        is VFloat -> when (word.opcode) {
-                            O_CMP_GT -> push(VBool(a1.v > (a2 as VFloat).v))
-                            O_CMP_GE -> push(VBool(a1.v >= (a2 as VFloat).v))
-                            O_CMP_LT -> push(VBool(a1.v < (a2 as VFloat).v))
-                            O_CMP_LE -> push(VBool(a1.v <= (a2 as VFloat).v))
-                            else -> { }
-                        }
-                        is VString -> when (word.opcode) {
-                            O_CMP_GT -> push(VBool(a1.v > (a2 as VString).v))
-                            O_CMP_GE -> push(VBool(a1.v >= (a2 as VString).v))
-                            O_CMP_LT -> push(VBool(a1.v < (a2 as VString).v))
-                            O_CMP_LE -> push(VBool(a1.v <= (a2 as VString).v))
-                            else -> { }
-                        }
-                        else -> fail(E_TYPE, "cannot compare ${a1.type}")
+                    when (word.opcode) {
+                        O_CMP_EQ -> push(VBool(a1.cmpEq(a2)))
+                        O_CMP_GT -> push(VBool(a1.cmpGt(a2)))
+                        O_CMP_GE -> push(VBool(a1.cmpGe(a2)))
+                        O_CMP_LT -> push(VBool(a1.cmpLt(a2)))
+                        O_CMP_LE -> push(VBool(a1.cmpLe(a2)))
+                        else -> { }
                     }
                 }
 
@@ -137,60 +131,19 @@ class VM(val code: List<VMWord>) {
 
                 O_ADD -> {
                     val (a2, a1) = popTwo()
-                    when (a1) {
-                        is VInt -> when (a2) {
-                            is VInt -> push(VInt(a1.v + a2.v))
-                            is VFloat -> push(VFloat(a1.v.toFloat() + a2.v))
-                            is VString -> push(VString(a1.v.toString() + a2.v))
-                            else -> fail(E_TYPE, "cannot add ${a1.type} to ${a2.type}")
-                        }
-                        is VFloat -> when (a2) {
-                            is VInt -> push(VFloat(a1.v + a2.v.toFloat()))
-                            is VFloat -> push(VFloat(a1.v + a2.v))
-                            is VString -> push(VString(a1.v.toString() + a2.v))
-                            else -> fail(E_TYPE, "cannot add ${a1.type} to ${a2.type}")
-                        }
-                        is VString -> when (a2) {
-                            is VInt -> push(VString(a1.v + a2.v.toString()))
-                            is VFloat -> push(VString(a1.v + a2.v.toString()))
-                            is VString -> push(VString(a1.v + a2.v))
-                            else -> fail(E_TYPE, "cannot add ${a1.type} to ${a2.type}")
-                        }
-                        else -> fail(E_TYPE, "cannot add ${a1.type} to ${a2.type}")
-                    }
+                    a1.plus(a2)?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot add types ${a1.type} and ${a2.type}")
                 }
                 O_MULT -> {
                     val (a2, a1) = popTwo()
-                    when (a1) {
-                        is VInt -> when (a2) {
-                            is VInt -> push(VInt(a1.v * a2.v))
-                            is VFloat -> push(VFloat(a1.v.toFloat() * a2.v))
-                            else -> fail(E_TYPE, "cannot multiply ${a1.type} and ${a2.type}")
-                        }
-                        is VFloat -> when (a2) {
-                            is VInt -> push(VFloat(a1.v * a2.v.toFloat()))
-                            is VFloat -> push(VFloat(a1.v * a2.v))
-                            else -> fail(E_TYPE, "cannot multiply ${a1.type} and ${a2.type}")
-                        }
-                        else -> fail(E_TYPE, "cannot multiply ${a1.type} and ${a2.type}")
-                    }
+                    a1.multiply(a2)?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot multiply ${a1.type} and ${a2.type}")
                 }
                 O_DIV -> {
                     val (a2, a1) = popTwo()
-                    if ((a2 is VInt && a2.v == 0) || (a2 is VFloat && a2.v == 0f)) fail(E_DIV, "divide by zero")
-                    when (a1) {
-                        is VInt -> when (a2) {
-                            is VInt -> push(VInt(a1.v / a2.v))
-                            is VFloat -> push(VFloat(a1.v.toFloat() / a2.v))
-                            else -> fail(E_TYPE, "cannot divide ${a1.type} and ${a2.type}")
-                        }
-                        is VFloat -> when (a2) {
-                            is VInt -> push(VFloat(a1.v / a2.v.toFloat()))
-                            is VFloat -> push(VFloat(a1.v / a2.v))
-                            else -> fail(E_TYPE, "cannot divide ${a1.type} and ${a2.type}")
-                        }
-                        else -> fail(E_TYPE, "cannot divide ${a1.type} and ${a2.type}")
-                    }
+                    if (a2.isZero() || a1.isZero()) fail(E_DIV, "divide by zero")
+                    a1.divide(a2)?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot divide ${a1.type} and ${a2.type}")
                 }
 
                 else -> fail(E_SYS, "unknown opcode $word")
@@ -207,12 +160,14 @@ class VMWord(
     val lineNum: Int, val charNum: Int,
     val opcode: Opcode? = null, val value: Value? = null, var address: Int? = null
 ) {
-    // In compilation, address may be filled in later by Shaker.
+    // In compilation, an address word may be written before the address it points to is known.
+    // fillAddress is called to set it once calculated.
     fun fillAddress(newAddress: Int) { address = newAddress }
 
     override fun toString() = opcode?.toString() ?: value?.toString() ?: address?.let { "<$it>" } ?: "!!NULL!!"
 
-    val asIntValue: Int
+    // If this is known to be an int opcode arg, just get the int value.
+    val intFromV: Int
         get() = (value as VInt).v
 }
 
