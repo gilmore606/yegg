@@ -13,6 +13,8 @@ data class VInt(val v: Int): Value() {
     override fun cmpGt(a2: Value) = (a2 is VInt) && (v > a2.v)
     override fun cmpGe(a2: Value) = (a2 is VInt) && (v >= a2.v)
 
+    override fun negate() = VInt(-v)
+
     override fun plus(a2: Value) = when (a2) {
         is VInt -> VInt(v + a2.v)
         is VFloat -> VFloat(v.toFloat() + a2.v)

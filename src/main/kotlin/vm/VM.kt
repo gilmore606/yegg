@@ -51,8 +51,8 @@ class VM(val code: List<VMWord> = listOf()) {
         var ticks = 0
         while (pc < code.size) {
 
-            if (ticks++ > TICK_LIMIT) fail(E_RESOURCE, "tick limit exceeded")
-            if (stack.size > STACK_LIMIT) fail(E_RESOURCE, "stack depth exceeded")
+            if (ticks++ > TICK_LIMIT) fail(E_LIMIT, "tick limit exceeded")
+            if (stack.size > STACK_LIMIT) fail(E_LIMIT, "stack depth exceeded")
 
             val word = next()
             when (word.opcode) {
@@ -123,12 +123,8 @@ class VM(val code: List<VMWord> = listOf()) {
 
                 O_NEGATE -> {
                     val a1 = pop()
-                    when (a1) {
-                        is VInt -> push(VInt(0 - a1.v))
-                        is VFloat -> push(VFloat(0f - a1.v))
-                        is VBool -> push(VBool(!a1.v))
-                        else -> fail(E_TYPE, "cannot negate ${a1.type}")
-                    }
+                    a1.negate()?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot negate ${a1.type}")
                 }
                 O_AND -> {
                     val (a2, a1) = popTwo()
@@ -157,7 +153,7 @@ class VM(val code: List<VMWord> = listOf()) {
                 O_ADD -> {
                     val (a2, a1) = popTwo()
                     a1.plus(a2)?.also { push(it) }
-                        ?: fail(E_TYPE, "cannot add types ${a1.type} and ${a2.type}")
+                        ?: fail(E_TYPE, "cannot add ${a1.type} and ${a2.type}")
                 }
                 O_MULT -> {
                     val (a2, a1) = popTwo()

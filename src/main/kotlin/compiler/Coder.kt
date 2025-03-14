@@ -65,7 +65,7 @@ class Coder(val ast: Node) {
 
     // Reach a previously named jump point.  Fill in all previous references with the current address.
     // Nodes call this when a previously named jumpFuture address is reached.
-    fun reachFuture(from: Node, name: String) {
+    fun setFutureAddress(from: Node, name: String) {
         val dest = mem.size
         futureJumps[name]!!.forEach { loc ->
             mem[loc].fillAddress(dest)
@@ -75,7 +75,7 @@ class Coder(val ast: Node) {
 
     // Record a jump address we'll jump back to later.
     // Nodes call this to mark a named address which they'll jumpPast back to.
-    fun reachPast(from: Node, name: String) {
+    fun setPastAddress(from: Node, name: String) {
         val dest = mem.size
         pastJumps[name] = dest
     }

@@ -13,6 +13,8 @@ data class VBool(val v: Boolean): Value() {
     override fun cmpGt(a2: Value) = v && (a2 is VBool) && !a2.v
     override fun cmpGe(a2: Value) = v && (a2 is VBool)
 
+    override fun negate() = VBool(!v)
+
     override fun plus(a2: Value) = if (a2 is VString) VString(v.toString() + a2.v) else null
 
     override fun getProp(context: Context?, propname: String): Value? {

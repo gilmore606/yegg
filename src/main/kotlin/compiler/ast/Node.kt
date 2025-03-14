@@ -12,11 +12,12 @@ abstract class Node {
     var lineNum = 0
     var charNum = 0
 
+    // TODO: get rid of this failed attempt at tabbed output
     override fun toString() = toText()
     open fun toText(depth: Int = 0): String = toText()
     open fun toText(): String = "NODE"
-    fun tab(depth: Int) = "  ".repeat(depth)
-    fun fail(m: String) { throw CompileException(m, lineNum, charNum)}
+    private fun tab(depth: Int) = "  ".repeat(depth)
+    private fun fail(m: String) { throw CompileException(m, lineNum, charNum)}
 
     open fun kids(): List<Node> = listOf()
 

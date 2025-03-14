@@ -21,6 +21,7 @@ sealed class Value {
     fun cmpLe(a2: Value): Boolean = !cmpGt(a2)
 
     // Math between this type and any other value.  Null raises E_TYPE.
+    open fun negate(): Value? = null
     open fun plus(a2: Value): Value? = null
     open fun multiply(a2: Value): Value? = null
     open fun divide(a2: Value): Value? = null

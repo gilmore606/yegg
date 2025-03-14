@@ -31,7 +31,7 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
     override fun kids() = listOf(assign, check, increment, body)
     override fun code(coder: Coder) {
         assign.code(coder)
-        coder.reachPast(this, "forStart$id")
+        coder.setPastAddress(this, "forStart$id")
         check.code(coder)
         coder.code(this, O_IF)
         coder.jumpFuture(this, "forEnd$id")
@@ -39,7 +39,7 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
         increment.code(coder)
         coder.code(this, O_JUMP)
         coder.jumpPast(this, "forStart$id")
-        coder.reachFuture(this, "forEnd$id")
+        coder.setFutureAddress(this, "forEnd$id")
     }
 }
 
@@ -48,14 +48,14 @@ class N_WHILELOOP(val check: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
     override fun toText() = toText(0)
     override fun kids() = listOf(check, body)
     override fun code(coder: Coder) {
-        coder.reachPast(this, "whileStart$id")
+        coder.setPastAddress(this, "whileStart$id")
         check.code(coder)
         coder.code(this, O_IF)
         coder.jumpFuture(this, "whileEnd$id")
         body.code(coder)
         coder.code(this, O_JUMP)
         coder.jumpPast(this, "whileStart$id")
-        coder.reachFuture(this, "whileEnd$id")
+        coder.setFutureAddress(this, "whileEnd$id")
     }
 }
 
@@ -80,10 +80,10 @@ class N_IFSTATEMENT(val condition: N_EXPR, val sThen: N_STATEMENT, val sElse: N_
         sElse?.also { sElse ->
             coder.code(this, O_JUMP)
             coder.jumpFuture(this, "elseskip$id")
-            coder.reachFuture(this, "ifskip$id")
+            coder.setFutureAddress(this, "ifskip$id")
             sElse.code(coder)
-            coder.reachFuture(this, "elseskip$id")
-        } ?: coder.reachFuture(this, "ifskip$id")
+            coder.setFutureAddress(this, "elseskip$id")
+        } ?: coder.setFutureAddress(this, "ifskip$id")
     }
 }
 

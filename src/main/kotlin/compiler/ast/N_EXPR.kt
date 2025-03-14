@@ -69,9 +69,9 @@ class N_CONDITIONAL(val condition: N_EXPR, val eTrue: N_EXPR, val eFalse: N_EXPR
         eTrue.code(coder)
         coder.code(this, O_JUMP)
         coder.jumpFuture(this, "condFalse$id")
-        coder.reachFuture(this, "cond$id")
+        coder.setFutureAddress(this, "cond$id")
         eFalse.code(coder)
-        coder.reachFuture(this, "condFalse$id")
+        coder.setFutureAddress(this, "condFalse$id")
     }
 }
 
