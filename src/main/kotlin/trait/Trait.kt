@@ -7,12 +7,11 @@ import java.util.*
 
 // A collection of funcs and props, which can apply to Things.
 
-class Trait(val name: String) {
+open class Trait(val name: String) {
 
     val id: UUID = UUID.randomUUID()
 
     val funcs: MutableMap<String, Func> = mutableMapOf()
-    val props: MutableMap<String, Prop> = mutableMapOf()
 
     fun programFunc(name: String, code: List<VMWord>) {
         funcs[name]?.also {
@@ -22,6 +21,8 @@ class Trait(val name: String) {
         }
     }
 
-    fun callFunc(c: Context, name: String): Value? = funcs[name]?.execute(c)
+    open fun callFunc(c: Context, name: String): Value? = funcs[name]?.execute(c)
+
+    open fun getProp(c: Context, name: String): Value? = null
 
 }

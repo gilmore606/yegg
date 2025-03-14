@@ -4,6 +4,9 @@ import com.dlfsystems.vm.Context
 import java.util.*
 
 data class VTrait(val v: UUID?): Value() {
+
+    fun getTrait(c: Context?) = v?.let { c?.world?.getTrait(it) }
+
     override val type = Type.TRAIT
 
     override fun toString() = "\$$v"
@@ -12,16 +15,17 @@ data class VTrait(val v: UUID?): Value() {
 
     override fun cmpEq(a2: Value) = (a2 is VTrait) && (v == a2.v)
 
-    override fun getProp(context: Context?, propname: String): Value? {
+    override fun getProp(c: Context, propname: String): Value? {
+        val trait = getTrait(c)
         when (propname) {
             "asString" -> v?.also { v ->
-                return VString("$" + context?.world?.getTrait(v)?.name)
+                return VString("$" + c?.world?.getTrait(v)?.name)
             } ?: return VString(toString())
         }
-        return null
+        return trait?.getProp(c, propname)
     }
 
-    override fun setProp(context: Context?, propname: String, value: Value): Boolean {
+    override fun setProp(c: Context, propname: String, value: Value): Boolean {
         return false
     }
 

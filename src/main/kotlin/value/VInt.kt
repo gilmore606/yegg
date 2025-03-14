@@ -32,7 +32,7 @@ data class VInt(val v: Int): Value() {
         else -> null
     }
 
-    override fun getProp(context: Context?, propname: String): Value? {
+    override fun getProp(c: Context, propname: String): Value? {
         when (propname) {
             "asFloat" -> return VFloat(v.toFloat())
             "asString" -> return VString(toString())

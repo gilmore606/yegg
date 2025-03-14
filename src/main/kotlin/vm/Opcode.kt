@@ -14,24 +14,25 @@ enum class Opcode(val literal: String, val argCount: Int = 0) {
     O_RETURN("return"),
 
     // variable ops
-    O_FETCHVAR("fetchvar", 1),
-    O_STOREVAR("storevar", 1),
-    O_INCVAR("incvar", 1),
-    O_DECVAR("decvar", 1),
+    O_FETCHVAR("fetchVar", 1),
+    O_STOREVAR("storeVar", 1),
+    O_INCVAR("incVar", 1),
+    O_DECVAR("decVar", 1),
 
     // property ops
-    O_FETCHPROP("fetchprop"),
-    O_STOREPROP("storeprop"),
+    O_FETCHPROP("fetchProp"),
+    O_STOREPROP("storeProp"),
+    O_FETCHTRAIT("fetchTrait"),
 
     // boolean ops
     O_NEGATE("negate"),
     O_AND("and"),       // &&
     O_OR("or"),         // ||
-    O_CMP_EQ("cmpeq"),  // ==
-    O_CMP_GT("cmpgt"),  // >
-    O_CMP_GE("cmpge"),  // >=
-    O_CMP_LT("cmplt"),  // <
-    O_CMP_LE("cmple"),  // <=
+    O_CMP_EQ("cmpEq"),  // ==
+    O_CMP_GT("cmpGt"),  // >
+    O_CMP_GE("cmpGe"),  // >=
+    O_CMP_LT("cmpLt"),  // <
+    O_CMP_LE("cmpLe"),  // <=
 
     // math ops
     O_ADD("add"),

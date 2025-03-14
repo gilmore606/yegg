@@ -1,6 +1,7 @@
 package com.dlfsystems.world
 
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.trait.SysTrait
 import com.dlfsystems.trait.Trait
 import java.util.UUID
 
@@ -16,7 +17,7 @@ class World {
 
     fun createTrait(name: String): Trait {
         if (traits.values.none { it.name == name }) {
-            return Trait(name).also {
+            return (if (name == "sys") SysTrait() else Trait(name)).also {
                 traits[it.id] = it
                 traitIDs[it.name] = it.id
             }

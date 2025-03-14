@@ -95,24 +95,3 @@ class N_INDEXREF(val left: N_EXPR, val index: N_EXPR): N_EXPR() {
     override fun toText() = "$left[$index]"
     override fun kids() = listOf(left, index)
 }
-
-class N_DOTREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
-    override fun toText() = "$left.$right"
-    override fun kids() = listOf(left, right)
-    override fun identify() {
-        if (right is N_IDENTIFIER) right.type = N_IDENTIFIER.Type.PROPREF
-    }
-    override fun code(coder: Coder) {
-        left.code(coder)
-        right.code(coder)
-        coder.code(this, O_FETCHPROP)
-    }
-}
-
-class N_FUNCALL(val left: N_EXPR, val args: List<N_EXPR>): N_EXPR() {
-    override fun toText() = "$left($args)"
-    override fun kids() = mutableListOf(left).apply { addAll(args) }
-    override fun identify() {
-        if (left is N_IDENTIFIER) left.type = N_IDENTIFIER.Type.FUNCREF
-    }
-}

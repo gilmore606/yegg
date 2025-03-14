@@ -17,7 +17,7 @@ data class VBool(val v: Boolean): Value() {
 
     override fun plus(a2: Value) = if (a2 is VString) VString(v.toString() + a2.v) else null
 
-    override fun getProp(context: Context?, propname: String): Value? {
+    override fun getProp(c: Context, propname: String): Value? {
         when (propname) {
             "asInt" -> return VInt(if (v) 1 else 0)
             "asString" -> return VString(toString())

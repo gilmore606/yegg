@@ -29,8 +29,11 @@ object Compiler {
             // Stage 4: Generate VM opcodes.
             val coder = Coder(ast).apply { generate() }
 
-            if (withDebug) return Result.Success(coder.mem, tokens, ast, coder.dumpText())
-            else return Result.Success(coder.mem)
+            return if (withDebug)
+                Result.Success(coder.mem, tokens, ast, coder.dumpText())
+            else
+                Result.Success(coder.mem)
+
         } catch (e: Exception) {
             return Result.Failure(e)
         }

@@ -79,6 +79,7 @@ class Coder(val ast: Node) {
         mem.add(VMWord(from.lineNum, from.charNum, address = dest))
     }
 
+
     fun dumpText(): String {
         var s = ""
         var pc = 0

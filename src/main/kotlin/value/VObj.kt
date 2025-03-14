@@ -14,14 +14,14 @@ data class VObj(val v: UUID?): Value() {
 
     override fun plus(a2: Value) = if (a2 is VString) VString(v.toString() + a2.v) else null
 
-    override fun getProp(context: Context?, propname: String): Value? {
+    override fun getProp(c: Context, propname: String): Value? {
         when (propname) {
             "asString" -> return VString(toString())
         }
         return null
     }
 
-    override fun setProp(context: Context?, propname: String, value: Value): Boolean {
+    override fun setProp(c: Context, propname: String, value: Value): Boolean {
         return false
     }
 

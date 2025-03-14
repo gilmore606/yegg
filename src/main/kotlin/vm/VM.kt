@@ -34,7 +34,7 @@ class VM(val code: List<VMWord> = listOf()) {
         var returnValue: Value? = null
         var exception: Exception? = null
         try {
-            returnValue = executeCode(context)
+            returnValue = executeCode(context ?: Context())
         } catch (e: Exception) {
             exception = e
         }
@@ -46,7 +46,7 @@ class VM(val code: List<VMWord> = listOf()) {
         return returnValue!!
     }
 
-    private fun executeCode(context: Context?): Value {
+    private fun executeCode(c: Context): Value {
         pc = 0
         var ticks = 0
         while (pc < code.size) {
@@ -109,14 +109,21 @@ class VM(val code: List<VMWord> = listOf()) {
                 O_FETCHPROP -> {
                     val (a2, a1) = popTwo()
                     if (a2 is VString) {
-                        a1.getProp(context, a2.v)?.also { push(it) }
+                        a1.getProp(c, a2.v)?.also { push(it) }
                             ?: fail(E_PROPNF, "property not found")
                     } else fail(E_PROPNF, "property name must be string")
                 }
                 O_STOREPROP -> {
                     val (a3, a2, a1) = popTwo()
-                    if (!a1.setProp(context, (a2 as VString).v, a3))
+                    if (!a1.setProp(c, (a2 as VString).v, a3))
                         fail(E_PROPNF, "property not found")
+                }
+                O_FETCHTRAIT -> {
+                    val a1 = pop()
+                    if (a1 is VString) {
+                        c?.getTrait(a1.v)?.also { push(VTrait(it.id)) }
+                            ?: fail (E_TRAITNF, "trait not found")
+                    } else fail(E_TRAITNF, "trait name must be string")
                 }
 
                 // Boolean ops

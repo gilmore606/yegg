@@ -27,7 +27,7 @@ sealed class Value {
     open fun divide(a2: Value): Value? = null
 
     // Getting or setting a prop on this type.  Null raises E_PROPNF.
-    open fun getProp(context: Context?, propname: String): Value? = null
-    open fun setProp(context: Context?, propname: String, value: Value): Boolean = false
+    open fun getProp(c: Context, propname: String): Value? = null
+    open fun setProp(c: Context, propname: String, value: Value): Boolean = false
 
 }

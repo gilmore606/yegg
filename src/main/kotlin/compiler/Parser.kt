@@ -340,7 +340,7 @@ class Parser(inputTokens: List<Token>) {
                 } ?: run { moreArgs = false }
             }
             consume(T_PAREN_CLOSE) ?: fail("unclosed parens after function args")
-            return node(N_FUNCALL(left, args))
+            return node(N_FUNCREF(left, args))
         }
         return left
     }
@@ -352,7 +352,7 @@ class Parser(inputTokens: List<Token>) {
         while (nextIs(T_DOT)) {
             consume(T_DOT)
             next()?.also { right ->
-                left = node(N_DOTREF(left, right))
+                left = node(N_PROPREF(left, right))
             } ?: fail("expression expected after dot reference")
         }
         return left
@@ -360,7 +360,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse an index ref: <expr>[<expr>]
     private fun pIndex(): N_EXPR? {
-        val next = this::pGeneric
+        val next = this::pTrait
         var left = next() ?: return null
         while (nextIs(T_BRACKET_OPEN)) {
             consume(T_BRACKET_OPEN)
@@ -372,12 +372,12 @@ class Parser(inputTokens: List<Token>) {
         return left
     }
 
-    // Parse a generic reference: $<expr>
-    private fun pGeneric(): N_EXPR? {
+    // Parse a trait reference: $<expr>
+    private fun pTrait(): N_EXPR? {
         val next = this::pValue
         consume(T_DOLLAR)?.also {
             next()?.also { expr ->
-                return node(N_GENERIC(expr))
+                return node(N_TRAITREF(expr))
             } ?: fail("expected expression after $")
         }
         return next()
