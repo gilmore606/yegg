@@ -44,10 +44,7 @@ object Compiler {
             is Result.Success -> {
                 try {
 
-                    val context = Context(Yegg.world).apply {
-                        vPlayer = VThing(null)
-                        vThis = VThing(null)
-                    }
+                    val context = Context(Yegg.world)
                     val returnValue = VM(result.code).execute(context)
 
                     return "TOKENS:\n${result.tokens}\n\nNODES:\n${result.ast}\n\nCODE:\n${result.dump}\n\nRESULT:\n${returnValue}\n"

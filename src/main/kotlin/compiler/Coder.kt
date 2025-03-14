@@ -5,6 +5,7 @@ import com.dlfsystems.vm.Opcode
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.vm.VMWord
 import com.dlfsystems.value.*
+import java.util.UUID
 
 class Coder(val ast: Node) {
 
@@ -45,6 +46,9 @@ class Coder(val ast: Node) {
     }
     fun value(from: Node, stringValue: String) {
         value(from, VString(stringValue))
+    }
+    fun value(from: Node, thingValue: UUID) {
+        value(from, VThing(thingValue))
     }
 
     // Write a placeholder address for a jump we'll locate in the future.

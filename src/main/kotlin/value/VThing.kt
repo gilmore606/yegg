@@ -1,5 +1,6 @@
 package com.dlfsystems.value
 
+import com.dlfsystems.vm.Context
 import java.util.*
 
 data class VThing(val v: UUID?): Value() {
@@ -13,12 +14,14 @@ data class VThing(val v: UUID?): Value() {
 
     override fun plus(a2: Value) = if (a2 is VString) VString(v.toString() + a2.v) else null
 
-    override fun getProp(propname: String): Value? {
-
+    override fun getProp(context: Context?, propname: String): Value? {
+        when (propname) {
+            "asString" -> return VString(toString())
+        }
         return null
     }
-    override fun setProp(propname: String, value: Value): Boolean {
 
+    override fun setProp(context: Context?, propname: String, value: Value): Boolean {
         return false
     }
 

@@ -1,5 +1,6 @@
 package com.dlfsystems.value
 
+import com.dlfsystems.vm.Context
 
 data class VString(val v: String): Value() {
     override val type = Type.STRING
@@ -18,9 +19,11 @@ data class VString(val v: String): Value() {
         else -> null
     }
 
-    override fun getProp(propname: String): Value? {
+    override fun getProp(context: Context?, propname: String): Value? {
         when (propname) {
             "length" -> return VInt(v.length)
+            "asInt" -> return VInt(v.toInt())
+            "asFloat" -> return VFloat(v.toFloat())
         }
         return null
     }

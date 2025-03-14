@@ -6,6 +6,7 @@ class VMException(c: Type, m: String, lineNum: Int, charNum: Int): Exception("$c
         E_VARNF,
         E_PROPNF,
         E_DIV,
+        E_RESOURCE,
         E_SYS,
     }
 }

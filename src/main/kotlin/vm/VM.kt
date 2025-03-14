@@ -8,7 +8,10 @@ import com.dlfsystems.vm.VMException.Type.*
 
 // A stack machine for executing a func.
 
-class VM(val code: List<VMWord>) {
+class VM(val code: List<VMWord> = listOf()) {
+
+    val TICK_LIMIT = 100000
+    val STACK_LIMIT = 1000
 
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
@@ -27,6 +30,7 @@ class VM(val code: List<VMWord>) {
     // Mutate the stack and variables as we go.
     // Return back a Value (VVoid if no explicit return).
     fun execute(context: Context? = null): Value {
+        // Intercept success or failure, so we get to clean up either way.
         var returnValue: Value? = null
         var exception: Exception? = null
         try {
@@ -37,14 +41,19 @@ class VM(val code: List<VMWord>) {
         // Win or lose, we clean up after.
         stack.clear()
         variables.clear()
-        // Then we do what we were going to do.
+        // Then we succeed or fail.
         exception?.also { throw it }
         return returnValue!!
     }
 
     private fun executeCode(context: Context?): Value {
         pc = 0
+        var ticks = 0
         while (pc < code.size) {
+
+            if (ticks++ > TICK_LIMIT) fail(E_RESOURCE, "tick limit exceeded")
+            if (stack.size > STACK_LIMIT) fail(E_RESOURCE, "stack depth exceeded")
+
             val word = next()
             when (word.opcode) {
 
@@ -100,13 +109,13 @@ class VM(val code: List<VMWord>) {
                 O_FETCHPROP -> {
                     val (a2, a1) = popTwo()
                     if (a2 is VString) {
-                        a1.getProp(a2.v)?.also { push(it) }
+                        a1.getProp(context, a2.v)?.also { push(it) }
                             ?: fail(E_PROPNF, "property not found")
                     } else fail(E_PROPNF, "property name must be string")
                 }
                 O_STOREPROP -> {
                     val (a3, a2, a1) = popTwo()
-                    if (!a1.setProp((a2 as VString).v, a3))
+                    if (!a1.setProp(context, (a2 as VString).v, a3))
                         fail(E_PROPNF, "property not found")
                 }
 
@@ -172,6 +181,7 @@ class VM(val code: List<VMWord>) {
 
 // An atom of VM opcode memory.
 // Can hold an Opcode, a Value, or an int representing a memory address (for jumps).
+// TODO: rework this as a sealed class like Value
 class VMWord(
     val lineNum: Int, val charNum: Int,
     val opcode: Opcode? = null, val value: Value? = null, var address: Int? = null

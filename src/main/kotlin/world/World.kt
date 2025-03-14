@@ -12,8 +12,8 @@ class World {
 
     val things: MutableMap<UUID, Thing> = mutableMapOf()
 
-    fun trait(named: String) = traits[traitIDs[named]]
-    fun trait(id: UUID) = traits[id]
+    fun getTrait(named: String) = traits[traitIDs[named]]
+    fun getTrait(id: UUID) = traits[id]
 
     fun createTrait(name: String): Trait {
         if (traits.values.none { it.name == name }) {
@@ -33,7 +33,7 @@ class World {
         when (result) {
             is Compiler.Result.Failure -> return result.toString()
             is Compiler.Result.Success -> {
-                trait(traitName)!!.programFunc(funcName, result.code)
+                getTrait(traitName)!!.programFunc(funcName, result.code)
                 return "programmed \$${traitName}.${funcName} (${result.code.size} words)"
             }
         }

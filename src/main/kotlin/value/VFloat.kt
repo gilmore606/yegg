@@ -1,5 +1,7 @@
 package com.dlfsystems.value
 
+import com.dlfsystems.vm.Context
+
 data class VFloat(val v: Float): Value() {
     override val type = Type.FLOAT
 
@@ -28,9 +30,10 @@ data class VFloat(val v: Float): Value() {
         else -> null
     }
 
-    override fun getProp(propname: String): Value? {
+    override fun getProp(context: Context?, propname: String): Value? {
         when (propname) {
-            "toInt" -> return VInt(v.toInt())
+            "asInt" -> return VInt(v.toInt())
+            "asString" -> return VString(toString())
         }
         return null
     }
