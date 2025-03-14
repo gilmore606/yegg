@@ -19,13 +19,14 @@ data class VTrait(val v: UUID?): Value() {
         val trait = getTrait(c)
         when (propname) {
             "asString" -> v?.also { v ->
-                return VString("$" + c?.world?.getTrait(v)?.name)
+                return VString("$" + c.world?.getTrait(v)?.name)
             } ?: return VString(toString())
         }
         return trait?.getProp(c, propname)
     }
 
     override fun setProp(c: Context, propname: String, value: Value): Boolean {
+        // TODO: set default property
         return false
     }
 

@@ -199,8 +199,8 @@ class Parser(inputTokens: List<Token>) {
         while (nextIs(T_AND, T_OR)) {
             val operator = consume()
             next()?.also { right ->
-                left = node(if (operator.type == T_AND) N_LOGIC_AND(left, right)
-                            else N_LOGIC_OR(left, right))
+                left = node(if (operator.type == T_AND) N_AND(left, right)
+                            else N_OR(left, right))
             }
         }
         return left
@@ -229,8 +229,8 @@ class Parser(inputTokens: List<Token>) {
         while (nextIs(T_EQUALS, T_NOTEQUALS)) {
             val operator = consume()
             next()?.also { right ->
-                left = node(if (operator.type == T_EQUALS) N_EQUALS(left, right)
-                            else N_NOTEQUALS(left, right))
+                left = node(if (operator.type == T_EQUALS) N_CMP_EQ(left, right)
+                            else N_CMP_NEQ(left, right))
             }
         }
         return left
@@ -244,10 +244,10 @@ class Parser(inputTokens: List<Token>) {
             val operator = consume()
             next()?.also { right ->
                 left = node(when (operator.type) {
-                    T_GREATER_THAN -> N_GREATER_THAN(left, right)
-                    T_GREATER_EQUAL -> N_GREATER_EQUAL(left, right)
-                    T_LESS_THAN -> N_LESS_THAN(left, right)
-                    else -> N_LESS_EQUAL(left, right)
+                    T_GREATER_THAN -> N_CMP_GT(left, right)
+                    T_GREATER_EQUAL -> N_CMP_GE(left, right)
+                    T_LESS_THAN -> N_CMP_LT(left, right)
+                    else -> N_CMP_LE(left, right)
                 })
             }
         }
@@ -302,9 +302,8 @@ class Parser(inputTokens: List<Token>) {
         val next = this::pIfElse
         consume(T_BANG, T_MINUS)?.also { operator ->
             pExpression()?.also { right ->
-                return node(if (operator.type == T_BANG) N_INVERSE(right)
-                            else N_NEGATE(right))
-            } ?: fail("expression expected after unary operator")
+                return node(N_NEGATE(right))
+            } ?: fail("expression expected after $operator")
         }
         return next()
     }
@@ -365,7 +364,7 @@ class Parser(inputTokens: List<Token>) {
         while (nextIs(T_BRACKET_OPEN)) {
             consume(T_BRACKET_OPEN)
             pExpression()?.also { index ->
-                left = node(N_INDEXREF(left, index))
+                left = node(N_INDEX(left, index))
             } ?: fail("expression expected for index reference")
             consume(T_BRACKET_CLOSE) ?: fail("missing close bracket for index reference")
         }
