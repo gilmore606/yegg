@@ -65,13 +65,13 @@ class N_CONDITIONAL(val condition: N_EXPR, val eTrue: N_EXPR, val eFalse: N_EXPR
     override fun code(coder: Coder) {
         condition.code(coder)
         coder.code(this, O_IF)
-        coder.jumpFuture(this, "cond$id")
+        coder.jumpForward(this, "cond$id")
         eTrue.code(coder)
         coder.code(this, O_JUMP)
-        coder.jumpFuture(this, "condFalse$id")
-        coder.setFutureAddress(this, "cond$id")
+        coder.jumpForward(this, "condFalse$id")
+        coder.setForwardJump(this, "cond$id")
         eFalse.code(coder)
-        coder.setFutureAddress(this, "condFalse$id")
+        coder.setForwardJump(this, "condFalse$id")
     }
 }
 

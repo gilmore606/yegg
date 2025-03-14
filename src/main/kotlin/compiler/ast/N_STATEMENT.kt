@@ -31,15 +31,15 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
     override fun kids() = listOf(assign, check, increment, body)
     override fun code(coder: Coder) {
         assign.code(coder)
-        coder.setPastAddress(this, "forStart$id")
+        coder.setBackJump(this, "forStart$id")
         check.code(coder)
         coder.code(this, O_IF)
-        coder.jumpFuture(this, "forEnd$id")
+        coder.jumpForward(this, "forEnd$id")
         body.code(coder)
         increment.code(coder)
         coder.code(this, O_JUMP)
-        coder.jumpPast(this, "forStart$id")
-        coder.setFutureAddress(this, "forEnd$id")
+        coder.jumpBack(this, "forStart$id")
+        coder.setForwardJump(this, "forEnd$id")
     }
 }
 
@@ -48,14 +48,14 @@ class N_WHILELOOP(val check: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
     override fun toText() = toText(0)
     override fun kids() = listOf(check, body)
     override fun code(coder: Coder) {
-        coder.setPastAddress(this, "whileStart$id")
+        coder.setBackJump(this, "whileStart$id")
         check.code(coder)
         coder.code(this, O_IF)
-        coder.jumpFuture(this, "whileEnd$id")
+        coder.jumpForward(this, "whileEnd$id")
         body.code(coder)
         coder.code(this, O_JUMP)
-        coder.jumpPast(this, "whileStart$id")
-        coder.setFutureAddress(this, "whileEnd$id")
+        coder.jumpBack(this, "whileStart$id")
+        coder.setForwardJump(this, "whileEnd$id")
     }
 }
 
@@ -75,15 +75,15 @@ class N_IFSTATEMENT(val condition: N_EXPR, val sThen: N_STATEMENT, val sElse: N_
     override fun code(coder: Coder) {
         condition.code(coder)
         coder.code(this, O_IF)
-        coder.jumpFuture(this, "ifskip$id")
+        coder.jumpForward(this, "ifskip$id")
         sThen.code(coder)
         sElse?.also { sElse ->
             coder.code(this, O_JUMP)
-            coder.jumpFuture(this, "elseskip$id")
-            coder.setFutureAddress(this, "ifskip$id")
+            coder.jumpForward(this, "elseskip$id")
+            coder.setForwardJump(this, "ifskip$id")
             sElse.code(coder)
-            coder.setFutureAddress(this, "elseskip$id")
-        } ?: coder.setFutureAddress(this, "ifskip$id")
+            coder.setForwardJump(this, "elseskip$id")
+        } ?: coder.setForwardJump(this, "ifskip$id")
     }
 }
 
