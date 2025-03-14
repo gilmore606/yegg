@@ -20,6 +20,7 @@ class N_PARENS(val expr: N_EXPR): N_EXPR() {
     }
 }
 
+// Negation of a numeric or boolean.
 class N_NEGATE(val expr: N_EXPR): N_EXPR() {
     override fun toText() = "-$expr"
     override fun kids() = listOf(expr)
@@ -30,6 +31,28 @@ class N_NEGATE(val expr: N_EXPR): N_EXPR() {
     }
 }
 
+// A string with code substitutions.
+class N_STRING_SUB(val parts: List<N_EXPR>): N_EXPR() {
+    override fun toText() = parts.joinToString { if (it is N_LITERAL_STRING) it.value else "\${$it}" }
+    override fun kids() = parts
+
+    override fun code(coder: Coder) {
+        when (parts.size) {
+            0 -> N_LITERAL_STRING("").code(coder)
+            else -> {
+                parts[0].code(coder)
+                var i = 1
+                while (i < parts.size) {
+                    parts[i].code(coder)
+                    coder.code(this, O_ADD)
+                    i++
+                }
+            }
+        }
+    }
+}
+
+// A three-part conditional expression: (cond) ? trueExpr : falseExpr
 class N_CONDITIONAL(val condition: N_EXPR, val eTrue: N_EXPR, val eFalse: N_EXPR): N_EXPR() {
     override fun toText() = "($condition ? $eTrue : $eFalse)"
     override fun kids() = listOf(condition, eTrue, eFalse)

@@ -10,11 +10,16 @@ class Lexer(val source: String) {
     private val tokens = ArrayList<Token>()
 
     // Are we constructing some kind of token?
-    private var inTokenType: TokenType? = null
+    private var tokenType: TokenType? = null
     // If so, buffer its characters as we get them.
-    private var inTokenString: String = ""
+    private var tokenString: String = ""
+
     // Are we expecting a backslashed escaped string char next?
     private var inStringEscape: Boolean = false
+    // Are we inside a string $var substitution?
+    private var inStringVarsub: Boolean = false
+    // Are we inside a string ${code} substitution?
+    private var inStringCodesub: Boolean = false
 
     // Track line and char position as we go, to tag tokens for tracebacks.
     var lineNum: Int = 0
@@ -37,15 +42,28 @@ class Lexer(val source: String) {
             }
         }
         consume('\n')
-        if (inTokenType == T_STRING) fail("unterminated string")
-        if (inTokenType != null) fail("incomplete token")
+        if (tokenType == T_STRING) fail("unterminated string")
+        if (tokenType != null) fail("incomplete token")
         return tokens
     }
 
 
     // Consume a character and, depending on what kind of token we might already be in, possibly generate a completed token.
     private fun consume(c: Char) {
-        when (inTokenType) {
+        if (inStringVarsub) {
+            if (c == '{') { inStringVarsub = false ; inStringCodesub = true }
+            else if (isIdentifierChar(c)) accumulate(c)
+            else {
+                inStringVarsub = false
+                emit(T_IDENTIFIER)
+                emit(T_STRING_SUB_END)
+                when (c) {
+                    '\"' -> { }
+                    '\$' -> { emit(T_STRING_SUB_START) ; begin(T_IDENTIFIER) ; inStringVarsub = true }
+                    else -> begin(T_STRING, c)
+                }
+            }
+        } else when (tokenType) {
             T_ASSIGN ->
                 if (c == '=') emit(T_EQUALS) else emit(T_ASSIGN, c)
             T_NOTEQUALS ->
@@ -81,6 +99,7 @@ class Lexer(val source: String) {
             T_STRING ->
                 if (inStringEscape) { accumulate(c) ; inStringEscape = false }
                 else if (c == '\\') inStringEscape = true
+                else if (c == '$') { emit(T_STRING_SUB_START) ; begin(T_IDENTIFIER) ; inStringVarsub = true }
                 else if (c == '"') emit(T_STRING)
                 else accumulate(c)
             T_COMMENT ->
@@ -117,7 +136,8 @@ class Lexer(val source: String) {
                     '[' -> emit(T_BRACKET_OPEN)
                     ']' -> emit(T_BRACKET_CLOSE)
                     '{' -> emit(T_BRACE_OPEN)
-                    '}' -> emit(T_BRACE_CLOSE)
+                    '}' -> if (inStringCodesub) { emit(T_STRING_SUB_END) ; begin(T_STRING) ; inStringCodesub = false }
+                            else emit(T_BRACE_CLOSE)
                     ':' -> emit(T_COLON)
                     ';' -> emit(T_SEMICOLON)
                     '$' -> emit(T_DOLLAR)
@@ -145,28 +165,28 @@ class Lexer(val source: String) {
 
     // Begin a new accumulating token of (possibly) type.  Start with acc if given.
     private fun begin(type: TokenType, acc: Char? = null) {
-        inTokenType = type
+        tokenType = type
         acc?.also { accumulate(it) }
     }
 
     // Add this char to the token string we're currently accumulating.
     private fun accumulate(c: Char) {
-        inTokenString += c
+        tokenString += c
     }
 
     // Emit a discovered token.  Reconsume the triggering character, if given.
     private fun emit(tokenType: TokenType, reconsume: Char? = null) {
         var newType = tokenType
         if (tokenType == T_IDENTIFIER) {
-            TokenType.entries.firstOrNull { it.isKeyword && it.literal == inTokenString }?.also {
+            TokenType.entries.firstOrNull { it.isKeyword && it.literal == tokenString }?.also {
                 newType = it
             }
         }
         if (tokenType != T_COMMENT) { // don't actually emit comment tokens at all
-            tokens.add(Token(newType, inTokenString, lineNum, charNum))
+            tokens.add(Token(newType, tokenString, lineNum, charNum))
         }
-        inTokenString = ""
-        inTokenType = null
+        tokenString = ""
+        this.tokenType = null
         reconsume?.also { consume(it) }
     }
 

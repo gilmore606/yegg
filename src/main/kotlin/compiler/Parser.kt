@@ -373,11 +373,28 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse a trait reference: $<expr>
     private fun pTrait(): N_EXPR? {
-        val next = this::pValue
+        val next = this::pStringSub
         consume(T_DOLLAR)?.also {
             next()?.also { expr ->
                 return node(N_TRAITREF(expr))
             } ?: fail("expected expression after $")
+        }
+        return next()
+    }
+
+    // Parse a substituted string, consuming all its parts.
+    private fun pStringSub(): N_EXPR? {
+        val next = this::pValue
+        if (nextIs(T_STRING_SUB_START)) {
+            val parts = mutableListOf<N_EXPR>()
+            while (nextIs(T_STRING_SUB_START)) {
+                val start = consume()
+                parts.add(node(N_LITERAL_STRING(start.string)))
+                pExpression()?.also { parts.add(it) } ?: fail("expression expected in string sub")
+                consume(T_STRING_SUB_END) ?: fail("unterminated string sub")
+                consume(T_STRING)?.also { parts.add(node(N_LITERAL_STRING(it.string))) }
+            }
+            return node(N_STRING_SUB(parts))
         }
         return next()
     }
@@ -389,7 +406,7 @@ class Parser(inputTokens: List<Token>) {
         consume(T_INTEGER)?.also { return node(N_LITERAL_INTEGER(it.string.toInt())) }
         consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }
         consume(T_IDENTIFIER)?.also { return node(N_IDENTIFIER(it.string)) }
-        if (nextIs(T_TRUE, T_FALSE)) return node(N_LITERAL_BOOLEAN(consume().type == T_TRUE))
+        consume(T_TRUE, T_FALSE)?.also { return node(N_LITERAL_BOOLEAN(it.type == T_TRUE)) }
         return next()
     }
 

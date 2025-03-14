@@ -45,6 +45,8 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_IDENTIFIER("foo"),
     T_COMMENT("//"),
     T_STRING("\"\""),
+    T_STRING_SUB_START("\"{"),
+    T_STRING_SUB_END("}"),
     T_INTEGER("n"),
     T_FLOAT("n.n"),
 
