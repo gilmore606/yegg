@@ -35,21 +35,11 @@ class Coder(val ast: Node) {
     fun value(from: Node, value: Value) {
         mem.add(VMWord(from.lineNum, from.charNum, value = value))
     }
-    fun value(from: Node, intValue: Int) {
-        value(from, VInt(intValue))
-    }
-    fun value(from: Node, boolValue: Boolean) {
-        value(from, VBool(boolValue))
-    }
-    fun value(from: Node, floatValue: Float) {
-        value(from, VFloat(floatValue))
-    }
-    fun value(from: Node, stringValue: String) {
-        value(from, VString(stringValue))
-    }
-    fun value(from: Node, objValue: UUID) {
-        value(from, VObj(objValue))
-    }
+    fun value(from: Node, intValue: Int) { value(from, VInt(intValue)) }
+    fun value(from: Node, boolValue: Boolean) { value(from, VBool(boolValue)) }
+    fun value(from: Node, floatValue: Float) { value(from, VFloat(floatValue)) }
+    fun value(from: Node, stringValue: String) { value(from, VString(stringValue)) }
+    fun value(from: Node, objValue: UUID) { value(from, VObj(objValue)) }
 
     // Write a placeholder address for a jump we'll locate in the future.
     // Nodes call this to jump to a named future address.
