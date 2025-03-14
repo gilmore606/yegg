@@ -5,7 +5,7 @@ import com.dlfsystems.vm.Context
 // A literal value in VM language.
 
 sealed class Value {
-    enum class Type { VOID, BOOL, INT, FLOAT, STRING, OBJ, TRAIT }
+    enum class Type { VOID, BOOL, INT, FLOAT, STRING, LIST, MAP, OBJ, TRAIT }
     abstract val type: Type
 
     // Is this value considered true/false/zero in code?
@@ -27,7 +27,7 @@ sealed class Value {
     open fun divide(a2: Value): Value? = null
 
     // Getting or setting a prop on this type.  Null raises E_PROPNF.
-    open fun getProp(c: Context, propname: String): Value? = null
-    open fun setProp(c: Context, propname: String, value: Value): Boolean = false
+    open fun getProp(c: Context, name: String): Value? = null
+    open fun setProp(c: Context, name: String, value: Value): Boolean = false
 
 }

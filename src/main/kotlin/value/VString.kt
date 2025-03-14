@@ -19,8 +19,8 @@ data class VString(val v: String): Value() {
         else -> null
     }
 
-    override fun getProp(c: Context, propname: String): Value? {
-        when (propname) {
+    override fun getProp(c: Context, name: String): Value? {
+        when (name) {
             "length" -> return VInt(v.length)
             "asInt" -> return VInt(v.toInt())
             "asFloat" -> return VFloat(v.toFloat())

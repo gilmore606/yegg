@@ -1,8 +1,8 @@
 package com.dlfsystems.world
 
 import com.dlfsystems.compiler.Compiler
-import com.dlfsystems.trait.SysTrait
-import com.dlfsystems.trait.Trait
+import com.dlfsystems.world.trait.SysTrait
+import com.dlfsystems.world.trait.Trait
 import java.util.UUID
 
 class World {

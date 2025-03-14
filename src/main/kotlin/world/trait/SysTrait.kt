@@ -1,4 +1,4 @@
-package com.dlfsystems.trait
+package com.dlfsystems.world.trait
 
 import com.dlfsystems.value.VInt
 import com.dlfsystems.value.Value

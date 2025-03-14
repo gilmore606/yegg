@@ -9,8 +9,8 @@ data class VVoid(val v: Unit = Unit): Value() {
 
     override fun cmpEq(a2: Value): Boolean = a2 is VVoid
 
-    override fun getProp(c: Context, propname: String): Value? {
-        when (propname) {
+    override fun getProp(c: Context, name: String): Value? {
+        when (name) {
             "asString" -> return VString(toString())
         }
         return null

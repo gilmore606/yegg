@@ -15,19 +15,19 @@ data class VTrait(val v: UUID?): Value() {
 
     override fun cmpEq(a2: Value) = (a2 is VTrait) && (v == a2.v)
 
-    override fun getProp(c: Context, propname: String): Value? {
+    override fun getProp(c: Context, name: String): Value? {
         val trait = getTrait(c)
-        when (propname) {
+        when (name) {
             "asString" -> v?.also { v ->
                 return VString("$" + c.world?.getTrait(v)?.name)
             } ?: return VString(toString())
         }
-        return trait?.getProp(c, propname)
+        return trait?.getProp(c, name)
     }
 
-    override fun setProp(c: Context, propname: String, value: Value): Boolean {
-        // TODO: set default property
-        return false
+    override fun setProp(c: Context, name: String, value: Value): Boolean {
+        val trait = getTrait(c)
+        return trait?.setProp(c, name, value) ?: false
     }
 
 }

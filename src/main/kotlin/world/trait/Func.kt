@@ -1,4 +1,4 @@
-package com.dlfsystems.trait
+package com.dlfsystems.world.trait
 
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VM
