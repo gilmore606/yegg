@@ -24,6 +24,7 @@ class VM(val code: List<VMWord> = listOf()) {
     private inline fun push(v: Value) = stack.push(v)
     private inline fun pop() = stack.pop()
     private inline fun popTwo() = listOf(stack.pop(), stack.pop())
+    private inline fun popThree() = listOf(stack.pop(), stack.pop(), stack.pop())
     private inline fun next() = code[pc++]
 
     // Given a Context, execute each word of the input code starting from pc=0.
@@ -62,8 +63,33 @@ class VM(val code: List<VMWord> = listOf()) {
                 O_DISCARD -> {
                     pop()
                 }
-                O_LITERAL -> {
+
+                // Value ops
+
+                O_VAL -> {
                     push(next().value!!)
+                }
+                O_LISTVAL -> {
+                    val count = next().intFromV
+                    val elements = mutableListOf<Value>()
+                    repeat(count) { elements.add(0, pop()) }
+                    push(VList(elements))
+                }
+                O_MAPVAL -> {
+                    val count = next().intFromV
+                    val entries = mutableMapOf<Value, Value>()
+                    repeat(count) { entries.put(pop(), pop()) }
+                    push(VMap(entries))
+                }
+                O_INDEX -> {
+                    val (a2, a1) = popTwo()
+                    a1.getIndex(c, a2)?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot index into ${a1.type} with ${a2.type}")
+                }
+                O_RANGE -> {
+                    val (a3, a2, a1) = popThree()
+                    a1.getRange(c, a2, a3)?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
                 }
 
                 // Control flow ops

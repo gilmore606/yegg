@@ -26,7 +26,7 @@ class N_IDENTIFIER(val name: String): N_EXPR() {
                 coder.value(this, variableID!!)
             }
             else -> {
-                coder.code(this, O_LITERAL)
+                coder.code(this, O_VAL)
                 coder.value(this, name)
             }
         }

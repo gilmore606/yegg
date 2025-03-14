@@ -1,12 +1,15 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
+import com.dlfsystems.vm.VMException
 
 // A literal value in VM language.
 
 sealed class Value {
     enum class Type { VOID, BOOL, INT, FLOAT, STRING, LIST, MAP, OBJ, TRAIT }
     abstract val type: Type
+
+    fun fail(type: VMException.Type, m: String) { throw VMException(type, m, 0, 0) } // TODO: get line+char here somehow
 
     // Is this value considered true/false/zero in code?
     open fun isTrue(): Boolean = false
@@ -29,5 +32,9 @@ sealed class Value {
     // Getting or setting a prop on this type.  Null raises E_PROPNF.
     open fun getProp(c: Context, name: String): Value? = null
     open fun setProp(c: Context, name: String, value: Value): Boolean = false
+
+    // Getting or setting an index/range on this type.  Null raises E_TYPE.
+    open fun getIndex(c: Context, index: Value): Value? = null
+    open fun getRange(c: Context, index1: Value, index2: Value): Value? = null
 
 }

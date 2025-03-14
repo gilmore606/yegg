@@ -85,6 +85,10 @@ class Lexer(val source: String) {
                 '>' -> emit(T_ARROW)
                 else -> emit(T_MINUS, c)
             }
+            T_DOT -> when (c) {
+                '.' -> emit(T_DOTDOT)
+                else -> emit(T_DOT, c)
+            }
             T_MULTIPLY ->
                 if (c == '=') emit(T_MULT_ASSIGN) else emit(T_MULTIPLY, c)
             T_DIVIDE -> when (c) {
@@ -110,6 +114,11 @@ class Lexer(val source: String) {
                 else -> emit(T_INTEGER, c)
             }
             T_FLOAT -> when (c) {
+                '.' -> {
+                    tokenString = tokenString.filter { it.isDigit() }
+                    emit(T_INTEGER)
+                    emit(T_DOTDOT)
+                }
                 in '0'..'9' -> accumulate(c)
                 else -> emit(T_FLOAT, c)
             }
@@ -120,6 +129,8 @@ class Lexer(val source: String) {
                 when (c) {
                     ' ', '\t', '\n' -> { }
                     in '0'..'9' -> begin(T_INTEGER, c)
+                    '}' -> if (inStringCodesub) { emit(T_STRING_SUB_END) ; begin(T_STRING) ; inStringCodesub = false }
+                            else emit(T_BRACE_CLOSE)
                     '"' -> begin(T_STRING)
                     '=' -> begin(T_ASSIGN)
                     '>' -> begin(T_GREATER_THAN)
@@ -131,18 +142,16 @@ class Lexer(val source: String) {
                     '!' -> begin(T_NOTEQUALS)
                     '|' -> begin(T_LOGIC_OR)
                     '&' -> begin(T_LOGIC_AND)
+                    '.' -> begin(T_DOT)
                     '(' -> emit(T_PAREN_OPEN)
                     ')' -> emit(T_PAREN_CLOSE)
                     '[' -> emit(T_BRACKET_OPEN)
                     ']' -> emit(T_BRACKET_CLOSE)
                     '{' -> emit(T_BRACE_OPEN)
-                    '}' -> if (inStringCodesub) { emit(T_STRING_SUB_END) ; begin(T_STRING) ; inStringCodesub = false }
-                            else emit(T_BRACE_CLOSE)
                     ':' -> emit(T_COLON)
                     ';' -> emit(T_SEMICOLON)
                     '$' -> emit(T_DOLLAR)
                     ',' -> emit(T_COMMA)
-                    '.' -> emit(T_DOT)
                     '?' -> emit(T_QUESTION)
                     '^' -> emit(T_POWER)
                     '@' -> emit(T_AT)

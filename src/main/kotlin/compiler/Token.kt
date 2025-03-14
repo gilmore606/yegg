@@ -30,6 +30,7 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_POWER("^"),
     T_MODULUS("%"),
     T_DOT("."),
+    T_DOTDOT(".."),
     T_COLON(":"),
     T_SEMICOLON(";"),
     T_DOLLAR("$"),
@@ -42,7 +43,7 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_ARROW("->"),
 
     // Literals
-    T_IDENTIFIER("foo"),
+    T_IDENTIFIER("ident"),
     T_COMMENT("//"),
     T_STRING("\"\""),
     T_STRING_SUB_START("\"{"),
@@ -63,8 +64,6 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_WHILE("while", true),
 
     T_EOF("");
-
-    override fun toString() = literal
 }
 
 // A token lexed from a func source string, with its source string and line/char position for tracebacks.
@@ -74,5 +73,10 @@ data class Token(
     val lineNum: Int,
     val charNum: Int,
 ) {
-    override fun toString() = if (string.isEmpty()) type.literal else string
+    override fun toString() = when (type) {
+        TokenType.T_STRING -> "\"$string\""
+        TokenType.T_INTEGER, TokenType.T_FLOAT -> "NUM($string)"
+        TokenType.T_IDENTIFIER -> "IDENT($string)"
+        else -> type.toString()
+    }
 }

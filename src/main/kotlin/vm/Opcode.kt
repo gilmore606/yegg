@@ -6,18 +6,24 @@ enum class Opcode(val argCount: Int = 0) {
 
     // stack ops
     O_DISCARD,
-    O_LITERAL(1),
+
+    // value ops
+    O_VAL(1), // value to push
+    O_LISTVAL(1), // number of values (from stack) for pushed list value
+    O_MAPVAL(1), // number of pairs (from stack) for pushed map value
+    O_INDEX,
+    O_RANGE,
 
     // flow ops
-    O_IF(1),
-    O_JUMP(1),
+    O_IF(1), // address to jump if false
+    O_JUMP(1),  // address to jump
     O_RETURN,
 
     // variable ops
-    O_FETCHVAR(1),
-    O_STOREVAR(1),
-    O_INCVAR(1),
-    O_DECVAR(1),
+    O_FETCHVAR(1), // variable ID to fetch
+    O_STOREVAR(1), // variable ID to store
+    O_INCVAR(1), // variable ID to inc
+    O_DECVAR(1), // variable ID to dec
 
     // property ops
     O_FETCHPROP,

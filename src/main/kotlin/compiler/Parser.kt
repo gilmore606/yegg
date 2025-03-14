@@ -364,7 +364,13 @@ class Parser(inputTokens: List<Token>) {
         while (nextIs(T_BRACKET_OPEN)) {
             consume(T_BRACKET_OPEN)
             pExpression()?.also { index ->
-                left = node(N_INDEX(left, index))
+                consume(T_DOTDOT)?.also {
+                    pExpression()?.also { index2 ->
+                        left = node(N_RANGE(left, index, index2))
+                    } ?: fail("expression expected after range token")
+                } ?: run {
+                    left = node(N_INDEX(left, index))
+                }
             } ?: fail("expression expected for index reference")
             consume(T_BRACKET_CLOSE) ?: fail("missing close bracket for index reference")
         }
@@ -401,12 +407,43 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse a bare value (a literal, or a variable identifier)
     private fun pValue(): N_EXPR? {
-        val next = this::pParens
+        val next = this::pCollection
         consume(T_STRING)?.also { return node(N_LITERAL_STRING(it.string)) }
         consume(T_INTEGER)?.also { return node(N_LITERAL_INTEGER(it.string.toInt())) }
         consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }
         consume(T_IDENTIFIER)?.also { return node(N_IDENTIFIER(it.string)) }
         consume(T_TRUE, T_FALSE)?.also { return node(N_LITERAL_BOOLEAN(it.type == T_TRUE)) }
+        return next()
+    }
+
+    // Parse a literal list or map: [<expr>, ...] or [<expr>:<expr>, ...]
+    private fun pCollection(): N_EXPR? {
+        var next = this::pParens
+        consume(T_BRACKET_OPEN)?.also {
+            var done = false
+            var isMap: Boolean? = null
+            var listArgs = mutableListOf<N_EXPR>()
+            var mapArgs = mutableMapOf<N_EXPR, N_EXPR>()
+            while (!done) {
+                pExpression()?.also { arg ->
+                    consume(T_COLON)?.also {
+                        if (isMap == false) fail("colon in list element (was this supposed to be a map?)")
+                        isMap = true
+                        pExpression()?.also { value ->
+                            mapArgs.put(arg, value)
+                        } ?: fail("expression expected for map element value")
+                    } ?: run {
+                        if (isMap == true) fail("colon missing in map element")
+                        isMap = false
+                        listArgs.add(arg)
+                    }
+                }
+                consume(T_COMMA) ?: run { done = true }
+            }
+            consume(T_BRACKET_CLOSE)?.also {
+                return node(if (isMap == true) N_LITERAL_MAP(mapArgs) else N_LITERAL_LIST(listArgs))
+            } ?: fail("missing close bracket on collection literal")
+        }
         return next()
     }
 
