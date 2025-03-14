@@ -11,8 +11,8 @@ class Context(
     val world: World? = null
 ) {
 
-    var vThis: VThing = VThing(null)
-    var vPlayer: VThing = VThing(null)
+    var vThis: VObj = VObj(null)
+    var vPlayer: VObj = VObj(null)
 
     val callStack = VMCallstack()
 

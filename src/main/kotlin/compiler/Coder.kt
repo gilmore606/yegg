@@ -47,8 +47,8 @@ class Coder(val ast: Node) {
     fun value(from: Node, stringValue: String) {
         value(from, VString(stringValue))
     }
-    fun value(from: Node, thingValue: UUID) {
-        value(from, VThing(thingValue))
+    fun value(from: Node, objValue: UUID) {
+        value(from, VObj(objValue))
     }
 
     // Write a placeholder address for a jump we'll locate in the future.

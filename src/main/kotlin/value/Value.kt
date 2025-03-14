@@ -1,12 +1,11 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
-import java.util.UUID
 
 // A literal value in VM language.
 
 sealed class Value {
-    enum class Type { VOID, BOOL, INT, FLOAT, STRING, THING, TRAIT }
+    enum class Type { VOID, BOOL, INT, FLOAT, STRING, OBJ, TRAIT }
     abstract val type: Type
 
     // Is this value considered true/false/zero in code?

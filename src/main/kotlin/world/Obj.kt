@@ -1,16 +1,16 @@
-package com.dlfsystems.world.thing
+package com.dlfsystems.world
 
-import com.dlfsystems.value.VThing
+import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import java.util.*
 
 // An instance in the world.
 
-class Thing {
+class Obj {
 
     val id: UUID = UUID.randomUUID()
-    private val vThis = VThing(id)
+    private val vThis = VObj(id)
 
     val traits: MutableList<UUID> = mutableListOf()
 

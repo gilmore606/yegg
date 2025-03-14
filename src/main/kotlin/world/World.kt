@@ -2,7 +2,6 @@ package com.dlfsystems.world
 
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.trait.Trait
-import com.dlfsystems.world.thing.Thing
 import java.util.UUID
 
 class World {
@@ -10,7 +9,7 @@ class World {
     val traits: MutableMap<UUID, Trait> = mutableMapOf()
     val traitIDs: MutableMap<String, UUID> = mutableMapOf()
 
-    val things: MutableMap<UUID, Thing> = mutableMapOf()
+    val objs: MutableMap<UUID, Obj> = mutableMapOf()
 
     fun getTrait(named: String) = traits[traitIDs[named]]
     fun getTrait(id: UUID) = traits[id]
@@ -25,7 +24,7 @@ class World {
         throw IllegalArgumentException("Trait with id $name already exists")
     }
 
-    fun createThing() = Thing().also { things[it.id] = it }
+    fun createObj() = Obj().also { objs[it.id] = it }
 
     fun programFunc(traitName: String, funcName: String, code: String): String {
         if (!traitIDs.contains(traitName)) { return "ERR: unknown trait" }
