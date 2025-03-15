@@ -3,9 +3,11 @@ package com.dlfsystems.value
 import com.dlfsystems.vm.Context
 
 data class VFloat(val v: Float): Value() {
+
     override val type = Type.FLOAT
 
     override fun toString() = v.toString()
+    override fun asMapKey() = "$v FLOAT"
 
     override fun isZero() = v == 0F
 

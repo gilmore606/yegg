@@ -4,6 +4,7 @@ import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.*
 
 class VList(val v: MutableList<Value>): Value() {
+
     override val type = Type.LIST
 
     override fun toString() = "[${v.joinToString(", ")}]"
@@ -30,4 +31,5 @@ class VList(val v: MutableList<Value>): Value() {
         }
         return null
     }
+
 }

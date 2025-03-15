@@ -79,7 +79,7 @@ class VM(val code: List<VMWord> = listOf()) {
                     val count = next().intFromV
                     val entries = mutableMapOf<Value, Value>()
                     repeat(count) { entries.put(pop(), pop()) }
-                    push(VMap(entries))
+                    push(VMap.make(entries))
                 }
                 O_INDEX -> {
                     val (a2, a1) = popTwo()
@@ -97,9 +97,7 @@ class VM(val code: List<VMWord> = listOf()) {
                 O_IF -> {
                     val elseAddr = next().address!!
                     val condition = pop()
-                    if (condition.isFalse()) {
-                        pc = elseAddr
-                    }
+                    if (condition.isFalse()) pc = elseAddr
                 }
                 O_JUMP -> {
                     val addr = next().address!!

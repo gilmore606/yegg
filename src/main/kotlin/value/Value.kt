@@ -11,6 +11,9 @@ sealed class Value {
 
     fun fail(type: VMException.Type, m: String) { throw VMException(type, m, 0, 0) } // TODO: get line+char here somehow
 
+    // String equivalent for use as a map key.  Null if this value can't be a map key.
+    open fun asMapKey(): String? = null
+
     // Is this value considered true/false/zero in code?
     open fun isTrue(): Boolean = false
     fun isFalse(): Boolean = !isTrue()

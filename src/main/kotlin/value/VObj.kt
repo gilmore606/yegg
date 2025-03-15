@@ -4,9 +4,11 @@ import com.dlfsystems.vm.Context
 import java.util.*
 
 data class VObj(val v: UUID?): Value() {
+
     override val type = Type.OBJ
 
     override fun toString() = "#$v"
+    override fun asMapKey() = "$v OBJ"
 
     override fun isTrue() = v != null
 

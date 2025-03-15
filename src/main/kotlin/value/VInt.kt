@@ -3,9 +3,11 @@ package com.dlfsystems.value
 import com.dlfsystems.vm.Context
 
 data class VInt(val v: Int): Value() {
+
     override val type = Type.INT
 
     override fun toString() = v.toString()
+    override fun asMapKey() = "$v INT"
 
     override fun isZero() = v == 0
 

@@ -3,6 +3,7 @@ package com.dlfsystems.value
 import com.dlfsystems.vm.Context
 
 data class VBool(val v: Boolean): Value() {
+
     override val type = Type.BOOL
 
     override fun toString() = v.toString()

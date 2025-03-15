@@ -7,6 +7,7 @@ data class VString(val v: String): Value() {
     override val type = Type.STRING
 
     override fun toString() = "\"$v\""
+    override fun asMapKey() = v
 
     override fun cmpEq(a2: Value) = (a2 is VString) && (v == a2.v)
     override fun cmpGt(a2: Value) = (a2 is VString) && (v > a2.v)
