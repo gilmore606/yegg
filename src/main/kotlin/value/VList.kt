@@ -3,11 +3,12 @@ package com.dlfsystems.value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.*
 
-class VList(val v: MutableList<Value>): Value() {
+data class VList(var v: MutableList<Value>): Value() {
 
     override val type = Type.LIST
 
     override fun toString() = "[${v.joinToString(", ")}]"
+    override fun asString() = v.joinToString(", ")
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
@@ -24,12 +25,37 @@ class VList(val v: MutableList<Value>): Value() {
         return null
     }
 
-    override fun getRange(c: Context, index1: Value, index2: Value): Value? {
-        if (index1 is VInt && index2 is VInt) {
-            if (index1.v < 0 || index2.v >= v.size) fail(E_RANGE, "list range ${index1.v}..${index2.v} out of bounds")
-            return VList(v.subList(index1.v, index2.v))
+    override fun getRange(c: Context, from: Value, to: Value): Value? {
+        if (from is VInt && to is VInt) {
+            if (from.v < 0 || to.v >= v.size) fail(E_RANGE, "list range ${from.v}..${to.v} out of bounds")
+            return VList(v.subList(from.v, to.v))
         }
         return null
+    }
+
+    override fun setIndex(c: Context, index: Value, value: Value): Boolean {
+        if (index is VInt) {
+            if (index.v < 0 || index.v >= v.size) fail(E_RANGE, "list index ${index.v} out of bounds")
+            v[index.v] = value
+            return true
+        }
+        return false
+    }
+
+    override fun setRange(c: Context, from: Value, to: Value, value: Value): Boolean {
+        if (from is VInt && to is VInt) {
+            if (from.v < 0 || to.v >= v.size) fail(E_RANGE, "list range ${from.v}..${to.v} out of bounds")
+            if (from.v > to.v) fail(E_RANGE, "list range start after end")
+            if (value !is VList) fail(E_TYPE, "list range insert must be a list")
+            val old = v
+            v = mutableListOf<Value>().apply {
+                addAll(old.subList(0, from.v))
+                addAll((value as VList).v)
+                addAll(old.subList(to.v+1, old.size))
+            }
+            return true
+        }
+        return false
     }
 
 }

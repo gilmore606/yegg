@@ -19,16 +19,20 @@ enum class Opcode(val argCount: Int = 0) {
     O_JUMP(1),  // address to jump
     O_RETURN,
 
+    // func ops
+    O_CALL(),
+
     // variable ops
-    O_FETCHVAR(1), // variable ID to fetch
-    O_STOREVAR(1), // variable ID to store
+    O_GETVAR(1), // variable ID to fetch
+    O_SETVAR(1), // variable ID to store
+    O_SETVARI(1), // variable ID to store
     O_INCVAR(1), // variable ID to inc
     O_DECVAR(1), // variable ID to dec
 
     // property ops
-    O_FETCHPROP,
-    O_STOREPROP,
-    O_FETCHTRAIT,
+    O_GETPROP,
+    O_SETPROP,
+    O_GETTRAIT,
 
     // boolean ops
     O_NEGATE,

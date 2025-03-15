@@ -6,8 +6,10 @@ import com.dlfsystems.vm.Opcode.*
 // An expression which reduces to a Value.
 
 abstract class N_EXPR: N_STATEMENT() {
-    // Code this expr as the left side of N_ASSIGN.
+    // Code this expr as the left side of = assign.
     open fun codeAssign(coder: Coder) { fail("illegal left side of assignment") }
+    // Code this expr as the left side of [i]= assign.
+    open fun codeIndexAssign(coder: Coder) { fail("illegal left side of index assignment") }
 }
 
 // Parenthetical expressions are parsed to N_PARENS to prevent X.(identifier) from binding as a literal reference.
@@ -79,6 +81,11 @@ class N_INDEX(val left: N_EXPR, val index: N_EXPR): N_EXPR() {
         left.code(coder)
         index.code(coder)
         coder.code(this, O_INDEX)
+    }
+
+    override fun codeAssign(coder: Coder) {
+        index.code(coder)
+        left.codeIndexAssign(coder)
     }
 }
 

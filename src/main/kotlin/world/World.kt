@@ -1,6 +1,8 @@
 package com.dlfsystems.world
 
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.value.Value
+import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.SysTrait
 import com.dlfsystems.world.trait.Trait
 import java.util.UUID
@@ -14,6 +16,8 @@ class World {
 
     fun getTrait(named: String) = traits[traitIDs[named]]
     fun getTrait(id: UUID) = traits[id]
+
+    fun getSysValue(c: Context, name: String): Value = getTrait("sys")!!.getProp(c, name)!!
 
     fun createTrait(name: String): Trait {
         if (traits.values.none { it.name == name }) {

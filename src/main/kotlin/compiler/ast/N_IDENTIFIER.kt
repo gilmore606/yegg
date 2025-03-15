@@ -22,7 +22,7 @@ class N_IDENTIFIER(val name: String): N_EXPR() {
     override fun code(coder: Coder) {
         when (type) {
             Type.VARIABLE -> {
-                coder.code(this, O_FETCHVAR)
+                coder.code(this, O_GETVAR)
                 coder.value(this, variableID!!)
             }
             else -> {
@@ -33,13 +33,17 @@ class N_IDENTIFIER(val name: String): N_EXPR() {
     }
 
     override fun codeAssign(coder: Coder) {
-        when (type) {
-            Type.VARIABLE -> {
-                coder.code(this, O_STOREVAR)
-                coder.value(this, variableID!!)
-            }
-            else -> fail("non-variable identifier on left of assignment!")
-        }
+        if (type == Type.VARIABLE) {
+            coder.code(this, O_SETVAR)
+            coder.value(this, variableID!!)
+        } else fail("non-variable identifier on left of assignment!")
+    }
+
+    override fun codeIndexAssign(coder: Coder) {
+        if (type == Type.VARIABLE) {
+            coder.code(this, O_SETVARI)
+            coder.value(this, variableID!!)
+        } else fail("non-variable identifier on left of assignment!")
     }
 }
 
@@ -52,13 +56,13 @@ class N_PROPREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
     override fun code(coder: Coder) {
         left.code(coder)
         right.code(coder)
-        coder.code(this, O_FETCHPROP)
+        coder.code(this, O_GETPROP)
     }
 
     override fun codeAssign(coder: Coder) {
         left.code(coder)
         right.code(coder)
-        coder.code(this, O_STOREPROP)
+        coder.code(this, O_SETPROP)
     }
 }
 
@@ -81,6 +85,6 @@ class N_TRAITREF(val expr: N_EXPR): N_EXPR() {
 
     override fun code(coder: Coder) {
         expr.code(coder)
-        coder.code(this, O_FETCHTRAIT)
+        coder.code(this, O_GETTRAIT)
     }
 }

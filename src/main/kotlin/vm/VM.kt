@@ -10,9 +10,6 @@ import com.dlfsystems.vm.VMException.Type.*
 
 class VM(val code: List<VMWord> = listOf()) {
 
-    val TICK_LIMIT = 100000
-    val STACK_LIMIT = 1000
-
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
     // The local stack.
@@ -49,11 +46,12 @@ class VM(val code: List<VMWord> = listOf()) {
 
     private fun executeCode(c: Context): Value {
         pc = 0
-        var ticks = 0
+        val stackLimit = (c.world.getSysValue(c, "stackLimit") as VInt).v
+        var ticksLeft = c.ticksLeft
         while (pc < code.size) {
 
-            if (ticks++ > TICK_LIMIT) fail(E_LIMIT, "tick limit exceeded")
-            if (stack.size > STACK_LIMIT) fail(E_LIMIT, "stack depth exceeded")
+            if (--ticksLeft < 0) fail(E_LIMIT, "tick limit exceeded")
+            if (stack.size > stackLimit) fail(E_LIMIT, "stack depth exceeded")
 
             val word = next()
             when (word.opcode) {
@@ -107,17 +105,35 @@ class VM(val code: List<VMWord> = listOf()) {
                     return if (stack.isEmpty()) VVoid() else pop()
                 }
 
+                // Func ops
+
+                O_CALL -> {
+                    c.ticksLeft = ticksLeft
+                    // get func location, name, args
+                    // put our frame on the callstack
+                    // call the func for return val
+                    // pop our frame off the callstack
+                    // push return val
+                    ticksLeft = c.ticksLeft
+                }
+
                 // Variable ops
 
-                O_FETCHVAR -> {
+                O_GETVAR -> {
                     val varID = next().intFromV
                     variables[varID]?.also { push(it) }
                         ?: fail(E_VARNF, "variable not found")
                 }
-                O_STOREVAR -> {
+                O_SETVAR -> {
                     val varID = next().intFromV
                     val a1 = pop()
                     variables[varID] = a1
+                }
+                O_SETVARI -> {
+                    val varID = next().intFromV
+                    val (a2, a1) = popTwo()
+                    if (!variables[varID]!!.setIndex(c, a2, a1))
+                        fail(E_TYPE, "cannot index into ${variables[varID]!!.type} with ${a2.type}")
                 }
                 O_INCVAR, O_DECVAR -> {
                     val varID = next().intFromV
@@ -130,19 +146,19 @@ class VM(val code: List<VMWord> = listOf()) {
 
                 // Property ops
 
-                O_FETCHPROP -> {
+                O_GETPROP -> {
                     val (a2, a1) = popTwo()
                     if (a2 is VString) {
                         a1.getProp(c, a2.v)?.also { push(it) }
                             ?: fail(E_PROPNF, "property not found")
                     } else fail(E_PROPNF, "property name must be string")
                 }
-                O_STOREPROP -> {
+                O_SETPROP -> {
                     val (a3, a2, a1) = popTwo()
                     if (!a1.setProp(c, (a2 as VString).v, a3))
                         fail(E_PROPNF, "property not found")
                 }
-                O_FETCHTRAIT -> {
+                O_GETTRAIT -> {
                     val a1 = pop()
                     if (a1 is VString) {
                         c?.getTrait(a1.v)?.also { push(VTrait(it.id)) }

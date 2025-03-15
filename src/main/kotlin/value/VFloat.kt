@@ -7,6 +7,7 @@ data class VFloat(val v: Float): Value() {
     override val type = Type.FLOAT
 
     override fun toString() = v.toString()
+    override fun asString() = v.toString()
     override fun asMapKey() = "$v FLOAT"
 
     override fun isZero() = v == 0F
@@ -20,7 +21,7 @@ data class VFloat(val v: Float): Value() {
     override fun plus(a2: Value) = when (a2) {
         is VInt -> VFloat(v + a2.v.toFloat())
         is VFloat -> VFloat(v + a2.v)
-        is VString -> VString(v.toString() + a2.v)
+        is VString -> VString(asString() + a2.v)
         else -> null
     }
     override fun multiply(a2: Value) = when (a2) {

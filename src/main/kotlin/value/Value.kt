@@ -13,6 +13,8 @@ sealed class Value {
 
     // String equivalent for use as a map key.  Null if this value can't be a map key.
     open fun asMapKey(): String? = null
+    // String equivalent when added to a string.
+    open fun asString(): String = "VALUE"
 
     // Is this value considered true/false/zero in code?
     open fun isTrue(): Boolean = false
@@ -38,6 +40,7 @@ sealed class Value {
 
     // Getting or setting an index/range on this type.  Null raises E_TYPE.
     open fun getIndex(c: Context, index: Value): Value? = null
-    open fun getRange(c: Context, index1: Value, index2: Value): Value? = null
-
+    open fun getRange(c: Context, from: Value, to: Value): Value? = null
+    open fun setIndex(c: Context, index: Value, value: Value): Boolean = false
+    open fun setRange(c: Context, from: Value, to: Value, value: Value): Boolean = false
 }

@@ -7,6 +7,7 @@ data class VInt(val v: Int): Value() {
     override val type = Type.INT
 
     override fun toString() = v.toString()
+    override fun asString() = v.toString()
     override fun asMapKey() = "$v INT"
 
     override fun isZero() = v == 0
@@ -20,7 +21,7 @@ data class VInt(val v: Int): Value() {
     override fun plus(a2: Value) = when (a2) {
         is VInt -> VInt(v + a2.v)
         is VFloat -> VFloat(v.toFloat() + a2.v)
-        is VString -> VString(v.toString() + a2.v)
+        is VString -> VString(asString() + a2.v)
         else -> null
     }
     override fun multiply(a2: Value) = when (a2) {

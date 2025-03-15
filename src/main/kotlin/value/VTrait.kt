@@ -10,6 +10,7 @@ data class VTrait(val v: UUID?): Value() {
     override val type = Type.TRAIT
 
     override fun toString() = "\$$v"
+    override fun asString() = "\$TRAIT" // TODO: get from context
     override fun asMapKey() = "$v TRAIT"
 
     override fun isTrue() = v != null

@@ -7,7 +7,7 @@ data class VBool(val v: Boolean): Value() {
     override val type = Type.BOOL
 
     override fun toString() = v.toString()
-
+    override fun asString() = if (v) "true" else "false"
     override fun isTrue() = v
 
     override fun cmpEq(a2: Value) = (a2 is VBool) && (v == a2.v)
@@ -21,7 +21,7 @@ data class VBool(val v: Boolean): Value() {
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
             "asInt" -> return VInt(if (v) 1 else 0)
-            "asString" -> return VString(toString())
+            "asString" -> return VString(asString())
         }
         return null
     }
