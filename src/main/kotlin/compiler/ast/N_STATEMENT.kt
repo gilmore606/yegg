@@ -29,6 +29,16 @@ class N_RETURN(val expr: N_EXPR?): N_STATEMENT() {
     }
 }
 
+class N_FAIL(val expr: N_EXPR): N_STATEMENT() {
+    override fun toText() = "fail $expr"
+    override fun kids() = listOf(expr)
+
+    override fun code(coder: Coder) {
+        expr.code(coder)
+        coder.code(this, O_FAIL)
+    }
+}
+
 class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STATEMENT, val body: N_STATEMENT): N_STATEMENT() {
     override fun toText(depth: Int) = tab(depth) + "for ($assign; $check; $increment) " + body.toText(depth + 1)
     override fun toText() = toText(0)

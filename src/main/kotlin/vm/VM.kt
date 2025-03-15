@@ -104,6 +104,10 @@ class VM(val code: List<VMWord> = listOf()) {
                 O_RETURN -> {
                     return if (stack.isEmpty()) VVoid() else pop()
                 }
+                O_FAIL -> {
+                    val a = pop()
+                    fail(E_USER, a.asString())
+                }
 
                 // Func ops
 

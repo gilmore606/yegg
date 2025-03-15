@@ -18,6 +18,7 @@ enum class Opcode(val argCount: Int = 0) {
     O_IF(1), // address to jump if false
     O_JUMP(1),  // address to jump
     O_RETURN,
+    O_FAIL,
 
     // func ops
     O_CALL(),

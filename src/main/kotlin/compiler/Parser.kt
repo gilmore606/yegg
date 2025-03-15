@@ -64,6 +64,7 @@ class Parser(inputTokens: List<Token>) {
         pForLoop()?.also { return it }
         pWhileLoop()?.also { return it }
         pReturn()?.also { return it }
+        pFail()?.also { return it }
         pIncrement()?.also { return it }
         pAssign()?.also { return it }
         pExprStatement()?.also { return it }
@@ -135,6 +136,14 @@ class Parser(inputTokens: List<Token>) {
     private fun pReturn(): N_STATEMENT? {
         consume(T_RETURN) ?: return null
         return node(N_RETURN(pExpression()))
+    }
+
+    // Parse: fail <expr>
+    private fun pFail(): N_STATEMENT? {
+        consume(T_FAIL) ?: return null
+        pExpression()?.also { return node(N_FAIL(it)) }
+            ?: fail("missing message expression for fail")
+        return null
     }
 
     // Parse: <ident>++|-- / ++|--<ident>
