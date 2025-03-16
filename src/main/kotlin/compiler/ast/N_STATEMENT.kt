@@ -27,7 +27,7 @@ class N_RETURN(val expr: N_EXPR?): N_STATEMENT() {
 
     override fun code(coder: Coder) {
         expr?.code(coder)
-        coder.code(this, O_RETURN)
+        coder.code(this, if (expr == null) O_RETURNNULL else O_RETURN)
     }
 }
 

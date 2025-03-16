@@ -49,9 +49,9 @@ object Compiler {
                     val context = Context(Yegg.world)
                     val returnValue = VM(result.code).execute(context)
 
-                    return "TOKENS:\n${result.tokens}\n\nNODES:\n${result.ast}\n\nCODE:\n${result.dump}\n\nRESULT:\n${returnValue}\n"
+                    return "TOKENS:\n${result.tokens}\n\nNODES:\n${result.ast}\n\nCODE:\n${result.dump}\n\nRESULT:\n$returnValue\n"
                 } catch (e: Exception) {
-                    return "TOKENS:\n${result.tokens}\n\nNODES:\n${result.ast}\n\nCODE:\n${result.dump}\n\nERROR:\n${e}\n"
+                    return "TOKENS:\n${result.tokens}\n\nNODES:\n${result.ast}\n\nCODE:\n${result.dump}\n\nERROR:\n$e\n"
                 }
             }
         }

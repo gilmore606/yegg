@@ -28,8 +28,9 @@ enum class Opcode(val argCount: Int = 0) {
     // Jump to arg1 address.
     O_JUMP(1),
 
-    // Return from func with pop0.
+    // Return from func with pop0 (or no value).
     O_RETURN,
+    O_RETURNNULL,
 
     // Throw E_USER with pop0 as message.
     O_FAIL,
