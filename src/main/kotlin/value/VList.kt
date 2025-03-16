@@ -10,6 +10,8 @@ data class VList(var v: MutableList<Value>): Value() {
     override fun toString() = "[${v.joinToString(", ")}]"
     override fun asString() = v.joinToString(", ")
 
+    override fun iterableSize() = v.size
+
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
             "length" -> return VInt(v.size)

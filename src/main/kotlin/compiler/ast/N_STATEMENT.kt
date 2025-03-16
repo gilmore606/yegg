@@ -1,6 +1,7 @@
 package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
+import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
 import java.util.UUID
 
@@ -60,24 +61,52 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
 }
 
 class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
-    private val internalIndexName = UUID.randomUUID().toString()
-    private val internalIndex = N_IDENTIFIER(internalIndexName)
+    private val internalIndex = N_IDENTIFIER(UUID.randomUUID().toString())
+    private val internalSource = N_IDENTIFIER(UUID.randomUUID().toString())
+
     override fun toText(depth: Int) = tab(depth) + "for ($index in $source) " + body.toText(depth + 1)
     override fun toText() = toText(0)
-    override fun kids() = listOf(index, internalIndex, source, body)
+    override fun kids() = listOf(index, internalIndex, source, internalSource, body)
 
     override fun code(coder: Coder) {
+        coder.code(this, O_VAL)
+        coder.value(this, 0)
+        coder.code(this, O_SETVAR)
+        coder.value(this, internalIndex.variableID!!)
         source.code(coder)
-        // TODO
+        coder.code(this, O_SETVAR)
+        coder.value(this, internalSource.variableID!!)
+        coder.setBackJump(this, "forStart$id")
+        coder.code(this, O_ITERPICK)
+        coder.value(this, internalSource.variableID!!)
+        coder.value(this, internalIndex.variableID!!)
+        coder.code(this, O_SETVAR)
+        coder.value(this, index.variableID!!)
+        body.code(coder)
+        coder.code(this, O_INCVAR)
+        coder.value(this, internalIndex.variableID!!)
+        coder.code(this, O_GETVAR)
+        coder.value(this, internalSource.variableID!!)
+        coder.code(this, O_ITERSIZE)
+        coder.code(this, O_GETVAR)
+        coder.value(this, internalIndex.variableID!!)
+        coder.code(this, O_CMP_LE)
+        coder.code(this, O_IF)
+        coder.jumpBack(this, "forStart$id")
     }
 }
 
 class N_FORRANGE(val index: N_IDENTIFIER, val from: N_EXPR, val to: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
+    private val internalTo = N_IDENTIFIER(UUID.randomUUID().toString())
+
     override fun toText(depth: Int) = tab(depth) + "for ($index in $from..$to) " + body.toText(depth + 1)
     override fun toText() = toText(0)
-    override fun kids() = listOf(index, from, to, body)
+    override fun kids() = listOf(index, from, to, internalTo, body)
 
     override fun code(coder: Coder) {
+        to.code(coder)
+        coder.code(this, O_SETVAR)
+        coder.value(this, internalTo.variableID!!)
         from.code(coder)
         coder.code(this, O_SETVAR)
         coder.value(this, index.variableID!!)
@@ -85,7 +114,8 @@ class N_FORRANGE(val index: N_IDENTIFIER, val from: N_EXPR, val to: N_EXPR, val 
         body.code(coder)
         coder.code(this, O_INCVAR)
         coder.value(this, index.variableID!!)
-        to.code(coder)
+        coder.code(this, O_GETVAR)
+        coder.value(this, internalTo.variableID!!)
         coder.code(this, O_GETVAR)
         coder.value(this, index.variableID!!)
         coder.code(this, O_CMP_LT)

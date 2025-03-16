@@ -11,6 +11,8 @@ data class VString(var v: String): Value() {
     override fun asString() = v
     override fun asMapKey() = v
 
+    override fun iterableSize() = v.length
+
     override fun cmpEq(a2: Value) = (a2 is VString) && (v == a2.v)
     override fun cmpGt(a2: Value) = (a2 is VString) && (v > a2.v)
     override fun cmpGe(a2: Value) = (a2 is VString) && (v >= a2.v)

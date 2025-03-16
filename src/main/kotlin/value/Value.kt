@@ -21,6 +21,9 @@ sealed class Value {
     fun isFalse(): Boolean = !isTrue()
     open fun isZero(): Boolean = false
 
+    // How many elements do I have for iteration?
+    open fun iterableSize(): Int? = null
+
     // Comparisons between this type and any other value.
     open fun cmpEq(a2: Value): Boolean = false
     open fun cmpGt(a2: Value): Boolean = false

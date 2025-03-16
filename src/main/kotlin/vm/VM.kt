@@ -17,7 +17,7 @@ class VM(val code: List<VMWord> = listOf()) {
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
-    private fun fail(c: VMException.Type, m: String) { throw VMException(c, m, code[pc].lineNum, code[pc].charNum) }
+    private fun fail(c: VMException.Type, m: String) { throw VMException(c, "$m [pc: ${pc-1} ${code[pc-1]}]", code[pc].lineNum, code[pc].charNum) }
     private inline fun push(v: Value) = stack.push(v)
     private inline fun pop() = stack.pop()
     private inline fun popTwo() = listOf(stack.pop(), stack.pop())
@@ -146,6 +146,21 @@ class VM(val code: List<VMWord> = listOf()) {
                             variables[varID] = VInt(it.v + if (word.opcode == O_INCVAR) 1 else -1)
                         else fail(E_TYPE, "cannot increment ${it.type}")
                     } ?: fail(E_VARNF, "variable not found")
+                }
+
+                // Iterator ops
+
+                O_ITERSIZE -> {
+                    val a1 = pop()
+                    a1.iterableSize()?.also {
+                        push(VInt(it))
+                    } ?: fail(E_TYPE, "cannot iterate ${a1.type}")
+                }
+                O_ITERPICK -> {
+                    val sourceID = next().intFromV
+                    val indexID = next().intFromV
+                    variables[sourceID]!!.getIndex(c, variables[indexID] as VInt)?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot iterate")
                 }
 
                 // Property ops
