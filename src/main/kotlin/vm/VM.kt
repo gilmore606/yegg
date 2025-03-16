@@ -179,8 +179,8 @@ class VM(val code: List<VMWord> = listOf()) {
                     } else fail(E_PROPNF, "property name must be string")
                 }
                 O_SETPROP -> {
-                    val (a3, a2, a1) = popTwo()
-                    if (!a1.setProp(c, (a2 as VString).v, a3))
+                    val (a3, a2, a1) = popThree()
+                    if (!a2.setProp(c, (a3 as VString).v, a1))
                         fail(E_PROPNF, "property not found")
                 }
                 O_GETTRAIT -> {

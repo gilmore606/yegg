@@ -12,6 +12,7 @@ open class Trait(val name: String) {
     val id: UUID = UUID.randomUUID()
 
     val funcs: MutableMap<String, Func> = mutableMapOf()
+    open val props: MutableMap<String, Value> = mutableMapOf()
 
     fun programFunc(name: String, code: List<VMWord>) {
         funcs[name]?.also {
@@ -23,8 +24,10 @@ open class Trait(val name: String) {
 
     open fun callFunc(c: Context, name: String): Value? = funcs[name]?.execute(c)
 
-    // TODO: get and set default property for trait
-    open fun getProp(c: Context, name: String): Value? = null
-    open fun setProp(c: Context, name: String, value: Value): Boolean = false
+    open fun getProp(c: Context, name: String): Value? = props.getOrDefault(name, null)
+    open fun setProp(c: Context, name: String, value: Value): Boolean {
+        props[name] = value
+        return true
+    }
 
 }

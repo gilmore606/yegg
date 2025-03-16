@@ -9,11 +9,14 @@ import com.dlfsystems.vm.Context
 
 class SysTrait : Trait("sys") {
 
+    override val props = mutableMapOf<String, Value>(
+        "tickLimit" to VInt(100000),
+        "stackLimit" to VInt(100)
+    )
+
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
             "time" -> return VInt((System.currentTimeMillis() / 1000L).toInt())
-            "tickLimit" -> return VInt(100000) // TODO: replace with actual props
-            "stackLimit" -> return VInt(1000)
         }
         return super.getProp(c, name)
     }
