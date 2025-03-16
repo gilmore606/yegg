@@ -15,6 +15,7 @@ class Parser(inputTokens: List<Token>) {
     private inline fun charNum() = if (tokens.isEmpty()) 0 else tokens[0].charNum
     private inline fun EOF() = Token(T_EOF, "", lineNum(), charNum())
     private inline fun fail(m: String) { throw CompileException(m, lineNum(), charNum()) }
+    private inline fun expectCloseParen() { consume(T_PAREN_CLOSE) ?: fail("unclosed parentheses") }
 
     // Pull the next token from the input stream.
     private inline fun consume() = if (tokens.isEmpty()) EOF() else tokens.removeAt(0)
@@ -102,16 +103,51 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
-    // Parse: for <init>;<check>;<increment> <statement>
+    // Parse for loop in its various forms
     private fun pForLoop(): N_STATEMENT? {
         consume(T_FOR) ?: return null
         val withParen = consume(T_PAREN_OPEN)
+        if (nextAre(T_IDENTIFIER, T_IN)) {
+            return pForLoopOnValueOrRange(withParen)
+        } else {
+            return pForLoopThreeArg(withParen)
+        }
+    }
+
+    // Parse for loop over a value or range
+    private fun pForLoopOnValueOrRange(withParen: Token?): N_STATEMENT? {
+        consume(T_IDENTIFIER)!!.also { indexIdent ->
+            consume(T_IN)
+            val index = node(N_IDENTIFIER(indexIdent.string))
+            pExpression()?.also { target1 ->
+                consume(T_DOTDOT)?.also {
+                    // "for (x in start..end)..."
+                    pExpression()?.also { target2 ->
+                        withParen?.also { expectCloseParen() }
+                        pStatement()?.also { body ->
+                            return node(N_FORRANGE(index, target1, target2, body))
+                        } ?: fail("missing for-loop body")
+                    } ?: fail("missing end of range")
+                } ?: run {
+                    // "for (x in value)..."
+                    withParen?.also { expectCloseParen() }
+                    pStatement()?.also { body ->
+                        return node(N_FORVALUE(index, target1, body))
+                    } ?: fail("missing for-loop body")
+                }
+            } ?: fail("missing expression after: for (var in...")
+        }
+        return null
+    }
+
+    // Parse: for (<init>;<check>;<increment>) <statement>
+    private fun pForLoopThreeArg(withParen: Token?): N_STATEMENT? {
         pStatement()?.also { assign ->
             consume(T_SEMICOLON) ?: fail("expected semicolon after for-loop index assignment")
             pExpression()?.also { check ->
                 consume(T_SEMICOLON) ?: fail("expected semicolon after for-loop check")
                 pStatement()?.also { increment ->
-                    withParen?.also { consume(T_PAREN_CLOSE) ?: fail("unclosed parens around for-loop spec") }
+                    withParen?.also { expectCloseParen() }
                     pStatement()?.also { body ->
                         return node(N_FORLOOP(assign, check, increment, body))
                     } ?: fail("missing for-loop body")
@@ -347,7 +383,7 @@ class Parser(inputTokens: List<Token>) {
                     consume(T_COMMA) ?: run { moreArgs = false }
                 } ?: run { moreArgs = false }
             }
-            consume(T_PAREN_CLOSE) ?: fail("unclosed parens after function args")
+            expectCloseParen()
             return node(N_FUNCREF(left, args))
         }
         return left
@@ -460,7 +496,7 @@ class Parser(inputTokens: List<Token>) {
     private fun pParens(): N_EXPR? {
         consume(T_PAREN_OPEN)?.also {
             pExpression()?.also { expr ->
-                consume(T_PAREN_CLOSE) ?: fail("unclosed parens")
+                expectCloseParen()
                 return node(N_PARENS(expr))
             } ?: fail("non-expressions in parens")
         }

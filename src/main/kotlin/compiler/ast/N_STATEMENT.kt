@@ -2,6 +2,7 @@ package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
 import com.dlfsystems.vm.Opcode.*
+import java.util.UUID
 
 // A statement which doesn't necessarily return a value.
 
@@ -55,6 +56,41 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
         coder.code(this, O_JUMP)
         coder.jumpBack(this, "forStart$id")
         coder.setForwardJump(this, "forEnd$id")
+    }
+}
+
+class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
+    private val internalIndexName = UUID.randomUUID().toString()
+    private val internalIndex = N_IDENTIFIER(internalIndexName)
+    override fun toText(depth: Int) = tab(depth) + "for ($index in $source) " + body.toText(depth + 1)
+    override fun toText() = toText(0)
+    override fun kids() = listOf(index, internalIndex, source, body)
+
+    override fun code(coder: Coder) {
+        source.code(coder)
+        // TODO
+    }
+}
+
+class N_FORRANGE(val index: N_IDENTIFIER, val from: N_EXPR, val to: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
+    override fun toText(depth: Int) = tab(depth) + "for ($index in $from..$to) " + body.toText(depth + 1)
+    override fun toText() = toText(0)
+    override fun kids() = listOf(index, from, to, body)
+
+    override fun code(coder: Coder) {
+        from.code(coder)
+        coder.code(this, O_SETVAR)
+        coder.value(this, index.variableID!!)
+        coder.setBackJump(this, "forStart$id")
+        body.code(coder)
+        coder.code(this, O_INCVAR)
+        coder.value(this, index.variableID!!)
+        to.code(coder)
+        coder.code(this, O_GETVAR)
+        coder.value(this, index.variableID!!)
+        coder.code(this, O_CMP_LT)
+        coder.code(this, O_IF)
+        coder.jumpBack(this, "forStart$id")
     }
 }
 

@@ -57,6 +57,7 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_FALSE("false", true),
     T_FOR("for", true),
     T_IF("if", true),
+    T_IN("in", true),
     T_NULL("null", true),
     T_OR("or", true),
     T_RETURN("return", true),
