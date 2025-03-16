@@ -45,8 +45,11 @@ class N_STRING_SUB(val parts: List<N_EXPR>): N_EXPR() {
                 parts[0].code(coder)
                 var i = 1
                 while (i < parts.size) {
-                    parts[i].code(coder)
-                    coder.code(this, O_ADD)
+                    // optimization: skip adding a null string
+                    if (!(parts[i] is N_LITERAL_STRING && (parts[i] as N_LITERAL_STRING).value == "")) {
+                        parts[i].code(coder)
+                        coder.code(this, O_ADD)
+                    }
                     i++
                 }
             }

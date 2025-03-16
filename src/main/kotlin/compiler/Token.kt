@@ -76,7 +76,8 @@ data class Token(
     val charNum: Int,
 ) {
     override fun toString() = when (type) {
-        TokenType.T_STRING -> "\"$string\""
+        TokenType.T_STRING -> "STRING(\"$string\")"
+        TokenType.T_STRING_SUB_START -> "T_STRING_SUB_START(\"$string\")"
         TokenType.T_INTEGER, TokenType.T_FLOAT -> "NUM($string)"
         TokenType.T_IDENTIFIER -> "IDENT($string)"
         else -> type.toString()

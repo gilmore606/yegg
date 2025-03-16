@@ -51,7 +51,7 @@ class Lexer(val source: String) {
     // Consume a character and, depending on what kind of token we might already be in, possibly generate a completed token.
     private fun consume(c: Char) {
         if (inStringVarsub) {
-            if (c == '{') { inStringVarsub = false ; inStringCodesub = true }
+            if (c == '{') { inStringVarsub = false ; inStringCodesub = true; tokenType = null; tokenString = "" }
             else if (isIdentifierChar(c)) accumulate(c)
             else {
                 inStringVarsub = false
