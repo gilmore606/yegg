@@ -24,9 +24,9 @@ data class VString(var v: String): Value() {
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
-            "length" -> return VInt(v.length)
-            "asInt" -> return VInt(v.toInt())
-            "asFloat" -> return VFloat(v.toFloat())
+            "length" -> return propLength()
+            "asInt" -> return propAsInt()
+            "asFloat" -> return propAsFloat()
         }
         return null
     }
@@ -74,4 +74,28 @@ data class VString(var v: String): Value() {
         return false
     }
 
+    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+        when (name) {
+            "split" -> return funcSplit(args)
+        }
+        return null
+    }
+
+
+    // Custom props
+
+    private fun propLength() = VInt(v.length)
+    private fun propAsInt() = VInt(v.toInt())
+    private fun propAsFloat() = VFloat(v.toFloat())
+
+    // Custom funcs
+
+    private fun funcSplit(args: List<Value>): Value {
+        if (args.size > 1) fail(E_RANGE, "incorrect number of arguments")
+        return VList(
+            v.split(
+                if (args.isEmpty()) " " else args[0].asString()
+            ).map { VString(it) }.toMutableList()
+        )
+    }
 }

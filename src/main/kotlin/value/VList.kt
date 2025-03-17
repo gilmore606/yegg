@@ -80,6 +80,10 @@ data class VList(var v: MutableList<Value>): Value() {
 
     private fun funcJoin(args: List<Value>): Value {
         if (args.size > 1) fail(E_RANGE, "incorrect number of arguments")
-        return VString(v.joinToString(args[0].asString()) { it.asString() })
+        return VString(
+            v.joinToString(
+                if (args.isEmpty()) " " else args[0].asString()
+            ) { it.asString() }
+        )
     }
 }
