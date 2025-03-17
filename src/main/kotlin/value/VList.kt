@@ -14,7 +14,9 @@ data class VList(var v: MutableList<Value>): Value() {
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
-            "length" -> return VInt(v.size)
+            "length" -> return propSize()
+            "isEmpty" -> return propIsEmpty()
+            "isNotEmpty" -> return propIsNotEmpty()
         }
         return null
     }
@@ -60,4 +62,24 @@ data class VList(var v: MutableList<Value>): Value() {
         return false
     }
 
+    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+        when (name) {
+            "join" -> return funcJoin(args)
+        }
+        return null
+    }
+
+
+    // Custom props
+
+    private fun propSize(): Value = VInt(v.size)
+    private fun propIsEmpty(): Value = VBool(v.isEmpty())
+    private fun propIsNotEmpty(): Value = VBool(v.isNotEmpty())
+
+    // Custom funcs
+
+    private fun funcJoin(args: List<Value>): Value {
+        if (args.size > 1) fail(E_RANGE, "incorrect number of arguments")
+        return VString(v.joinToString(args[0].asString()) { it.asString() })
+    }
 }

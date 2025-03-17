@@ -125,12 +125,17 @@ class VM(val code: List<VMWord> = listOf()) {
                 // Func ops
 
                 O_CALL -> {
-                    c.ticksLeft = ticksLeft
-                    // get func location, name, args
-                    // put our frame on the callstack
-                    // call the func for return val
-                    // pop our frame off the callstack
-                    // push return val
+                    val argCount = next().intFromV
+                    val (a2, a1) = popTwo()
+                    val args = mutableListOf<Value>()
+                    repeat(argCount) { args.add(pop()) }
+                    if (a2 is VString) {
+                        c.ticksLeft = ticksLeft
+                        // TODO: put our frame on the callstack (opt: skip this for builtin type funcs?)
+                        a1.callFunc(c, a2.v, args)?.also { push(it) }
+                            ?: fail(E_FUNCNF, "func not found")
+                    } else fail(E_FUNCNF, "func name must be string")
+                    // TODO: pop our frame off the callstack
                     ticksLeft = c.ticksLeft
                 }
 
