@@ -23,15 +23,15 @@ class Parser(inputTokens: List<Token>) {
     private inline fun consume(vararg types: TokenType) = if (nextIs(types.toList())) consume() else null
 
     // Peek at the next token in the input stream.
-    private inline fun next(skip: Int = 0) = if (skip >= tokens.size) EOF() else tokens[skip]
+    private inline fun nextToken(skip: Int = 0) = if (skip >= tokens.size) EOF() else tokens[skip]
 
     // Is the next token one of the given types?
-    private inline fun nextIs(vararg types: TokenType) = (next().type in types)
-    private inline fun nextIs(types: List<TokenType>) = (next().type in types)
+    private inline fun nextIs(vararg types: TokenType) = (nextToken().type in types)
+    private inline fun nextIs(types: List<TokenType>) = (nextToken().type in types)
     // Are the next tokens each of the given ordered types?
     private inline fun nextAre(vararg types: TokenType): Boolean {
         for (i in 0 until types.size) {
-            if (next(i).type != types[i]) return false
+            if (nextToken(i).type != types[i]) return false
         }
         return true
     }
@@ -193,7 +193,7 @@ class Parser(inputTokens: List<Token>) {
                 return make(ident.string, operator.type == T_DECREMENT)
             } ?: fail("increment missing identifier")
         }
-        if (nextIs(T_IDENTIFIER) && next(1).type in listOf(T_INCREMENT, T_DECREMENT)) {
+        if (nextIs(T_IDENTIFIER) && nextToken(1).type in listOf(T_INCREMENT, T_DECREMENT)) {
             return make(consume().string, consume().type == T_DECREMENT)
         }
         return null
@@ -355,7 +355,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse (as expression): if <expr> <expr> else <expr>
     private fun pIfElse(): N_EXPR? {
-        val next = this::pIndex
+        val next = this::pReference
         consume(T_IF)?.also {
             pExpression()?.also { condition ->
                 pExpression()?.also { eThen ->
@@ -370,33 +370,30 @@ class Parser(inputTokens: List<Token>) {
         return next()
     }
 
-    // Parse an index ref: <expr>[<expr>]
-    private fun pIndex(): N_EXPR? {
-        val next = this::pDotref
-        var left = next() ?: return null
-        while (nextIs(T_BRACKET_OPEN)) {
+    // Parse an index ref: <expr>[<expr>] or a dotref: <expr>.<expr>
+    // We parse these together so they can be linearly chained.
+    private fun pReference(): N_EXPR? {
+
+        fun pIndex(left: N_EXPR): N_EXPR? {
             consume(T_BRACKET_OPEN)
+            var newLeft = left
             pExpression()?.also { index ->
                 consume(T_DOTDOT)?.also {
                     pExpression()?.also { index2 ->
-                        left = node(N_RANGE(left, index, index2))
+                        newLeft = node(N_RANGE(left, index, index2))
                     } ?: fail("expression expected after range token")
                 } ?: run {
-                    left = node(N_INDEX(left, index))
+                    newLeft = node(N_INDEX(left, index))
                 }
             } ?: fail("expression expected for index reference")
             consume(T_BRACKET_CLOSE) ?: fail("missing close bracket for index reference")
+            return newLeft
         }
-        return left
-    }
 
-    // Parse a prop or func ref: <expr>.<expr>
-    private fun pDotref(): N_EXPR? {
-        val next = this::pTrait
-        var left = next() ?: return null
-        while (nextIs(T_DOT)) {
+        fun pDotref(left: N_EXPR): N_EXPR? {
             consume(T_DOT)
-            next()?.also { right ->
+            var newLeft = left
+            pStringSub()?.also { right ->
                 consume(T_PAREN_OPEN)?.also {
                     val args = mutableListOf<N_EXPR>()
                     var moreArgs = true
@@ -407,11 +404,23 @@ class Parser(inputTokens: List<Token>) {
                         } ?: run { moreArgs = false }
                     }
                     expectCloseParen()
-                    left = node(N_FUNCREF(left, right, args))
+                    newLeft = node(N_FUNCREF(left, right, args))
                 } ?: run {
-                    left = node(N_PROPREF(left, right))
+                    newLeft = node(N_PROPREF(left, right))
                 }
             } ?: fail("expression expected after dot reference")
+            return newLeft
+        }
+
+        val next = this::pTrait
+        var left = next() ?: return null
+        while (nextIs(T_BRACKET_OPEN, T_DOT)) {
+            val operator = consume()
+            when (operator.type) {
+                T_BRACKET_OPEN -> { left = pIndex(left) ?: left }
+                T_DOT -> { left = pDotref(left) ?: left }
+                else -> { }
+            }
         }
         return left
     }

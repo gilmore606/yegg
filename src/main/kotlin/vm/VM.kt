@@ -89,12 +89,12 @@ class VM(val code: List<VMWord> = listOf()) {
                         ?: fail(E_TYPE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
                 }
                 O_SETI -> {
-                    val (a2, a1) = popTwo()
-                    if (!a1.setIndex(c, a2, a1)) fail(E_RANGE, "cannot index into ${a1.type} with ${a2.type}")
+                    val (a3, a2, a1) = popThree()
+                    if (!a2.setIndex(c, a3, a1)) fail(E_RANGE, "cannot index into ${a2.type} with ${a3.type}")
                 }
                 O_SETRANGE -> {
                     val (a4, a3, a2, a1) = popThree()
-                    if (!a1.setRange(c, a2, a3, a4)) fail(E_RANGE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
+                    if (!a2.setRange(c, a3, a4, a1)) fail(E_RANGE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
                 }
 
                 // Control flow ops
