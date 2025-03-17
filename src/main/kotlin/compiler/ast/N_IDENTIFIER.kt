@@ -1,7 +1,6 @@
 package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
-import com.dlfsystems.vm.Opcode
 import com.dlfsystems.vm.Opcode.*
 
 // A bare string in source code, which in context may resolve to a trait, property, or function.
@@ -41,6 +40,44 @@ class N_IDENTIFIER(val name: String): N_EXPR() {
     }
 }
 
+// An index into a value: <expr>[<expr>]
+class N_INDEX(val left: N_EXPR, val index: N_EXPR): N_EXPR() {
+    override fun toText() = "INDEX<$left[$index]>"
+    override fun kids() = listOf(left, index)
+
+    override fun code(coder: Coder) {
+        left.code(coder)
+        index.code(coder)
+        coder.code(this, O_GETI)
+    }
+
+    override fun codeAssign(coder: Coder) {
+        left.code(coder)
+        index.code(coder)
+        coder.code(this, O_SETI)
+    }
+}
+
+// A range index into a value: <expr>[<expr>..<expr>]
+class N_RANGE(val left: N_EXPR, val index1: N_EXPR, val index2: N_EXPR): N_EXPR() {
+    override fun toText() = "RANGE<$left[$index1..$index2]>"
+    override fun kids() = listOf(left, index1, index2)
+
+    override fun code(coder: Coder) {
+        left.code(coder)
+        index1.code(coder)
+        index2.code(coder)
+        coder.code(this, O_GETRANGE)
+    }
+
+    override fun codeAssign(coder: Coder) {
+        left.code(coder)
+        index1.code(coder)
+        index2.code(coder)
+        coder.code(this, O_SETRANGE)
+    }
+}
+
 class N_PROPREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
     override fun toText() = "($left.$right)"
     override fun kids() = listOf(left, right)
@@ -57,12 +94,6 @@ class N_PROPREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
         left.code(coder)
         right.code(coder)
         coder.code(this, O_SETPROP)
-    }
-
-    override fun codeIndexAssign(coder: Coder) {
-        left.code(coder)
-        right.code(coder)
-        coder.code(this, O_SETPROPI)
     }
 
 }

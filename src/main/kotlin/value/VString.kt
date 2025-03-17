@@ -47,6 +47,19 @@ data class VString(var v: String): Value() {
         return null
     }
 
+    override fun setIndex(c: Context, index: Value, value: Value): Boolean {
+        if (index is VInt) {
+            if (index.v < 0 || index.v > v.length) fail(E_RANGE, "list index ${index.v} out of bounds")
+            val old = v
+            v = ""
+            if (index.v > 0) v += old.substring(0..<index.v)
+            v += value.asString()
+            if (index.v < old.length - 1) v += old.substring(index.v..<old.length)
+            return true
+        }
+        return false
+    }
+
     override fun setRange(c: Context, from: Value, to: Value, value: Value): Boolean {
         if (from is VInt && to is VInt) {
             if (from.v < 0 || to.v >= v.length) fail(E_RANGE, "string range ${from.v}..${to.v} out of bounds")
@@ -55,7 +68,7 @@ data class VString(var v: String): Value() {
             v = ""
             if (from.v > 0) v += old.substring(0..<from.v)
             v += value.asString()
-            if (to.v < old.length - 1) v += old.substring(to.v..<old.length)
+            if (to.v < old.length - 1) v += old.substring(to.v+1..<old.length)
             return true
         }
         return false

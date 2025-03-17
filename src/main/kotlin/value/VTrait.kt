@@ -32,9 +32,4 @@ data class VTrait(val v: UUID?): Value() {
         return trait?.setProp(c, name, value) ?: false
     }
 
-    override fun setPropIndex(c: Context, name: String, index: Value, value: Value): Boolean {
-        val trait = getTrait(c)
-        return trait?.setPropIndex(c, name, index, value) ?: false
-    }
-
 }
