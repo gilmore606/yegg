@@ -93,7 +93,7 @@ class VM(val code: List<VMWord> = listOf()) {
                     if (!a2.setIndex(c, a3, a1)) fail(E_RANGE, "cannot index into ${a2.type} with ${a3.type}")
                 }
                 O_SETRANGE -> {
-                    val (a4, a3, a2, a1) = popThree()
+                    val (a4, a3, a2, a1) = popFour()
                     if (!a2.setRange(c, a3, a4, a1)) fail(E_RANGE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
                 }
 

@@ -68,7 +68,7 @@ data class VString(var v: String): Value() {
             v = ""
             if (from.v > 0) v += old.substring(0..<from.v)
             v += value.asString()
-            if (to.v < old.length - 1) v += old.substring(to.v..<old.length)
+            if (to.v < old.length - 1) v += old.substring(to.v+1..<old.length)
             return true
         }
         return false
