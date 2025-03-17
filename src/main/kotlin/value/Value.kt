@@ -40,8 +40,6 @@ sealed class Value {
     // Get or set a prop on this type.  Null raises E_PROPNF.
     open fun getProp(c: Context, name: String): Value? = null
     open fun setProp(c: Context, name: String, value: Value): Boolean = false
-    // Set an index on a prop on this type.
-    open fun setPropIndex(c: Context, name: String, index: Value, value: Value): Boolean = false
 
     // Get or set an index/range on this type.  Null raises E_TYPE.
     open fun getIndex(c: Context, index: Value): Value? = null

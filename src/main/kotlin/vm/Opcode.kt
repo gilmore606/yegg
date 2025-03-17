@@ -17,10 +17,10 @@ enum class Opcode(val argCount: Int = 0) {
     O_MAPVAL(1),
 
     // Push index result of pop0[pop1].
-    O_INDEX,
+    O_GETI,
 
     // Push range result of pop0[pop1..pop2].
-    O_RANGE,
+    O_GETRANGE,
 
     // Jump to arg1 address if pop0 is false.
     O_IF(1),
@@ -44,12 +44,15 @@ enum class Opcode(val argCount: Int = 0) {
     // Set variable with ID arg1 to value pop0.
     O_SETVAR(1), // variable ID to store
 
-    // Set variable with ID arg1 index pop1 to value pop0.
-    O_SETVARI(1), // variable ID to store
-
     // Increment/decrement variable with ID arg1.
     O_INCVAR(1), // variable ID to inc
     O_DECVAR(1), // variable ID to dec
+
+    // Set index pop1 of value pop0.
+    O_SETI,
+
+    // Set range pop2..pop1 of value pop0.
+    O_SETRANGE,
 
     // Push iterableSize of pop0 as VInt.
     O_ITERSIZE,
@@ -59,10 +62,10 @@ enum class Opcode(val argCount: Int = 0) {
 
     // Push value of property pop1 on value pop0.
     O_GETPROP,
+
     // Set value of property pop1 on value pop0 to value pop2.
     O_SETPROP,
-    // Set value of property pop1 with index pop2 to value pop0.
-    O_SETPROPI,
+
     // Push trait named by string pop0.
     O_GETTRAIT,
 

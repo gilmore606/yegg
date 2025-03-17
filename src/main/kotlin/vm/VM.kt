@@ -57,8 +57,6 @@ class VM(val code: List<VMWord> = listOf()) {
             val word = next()
             when (word.opcode) {
 
-                // Stack ops
-
                 O_DISCARD -> {
                     pop()
                 }
@@ -80,15 +78,23 @@ class VM(val code: List<VMWord> = listOf()) {
                     repeat(count) { entries.put(pop(), pop()) }
                     push(VMap.make(entries))
                 }
-                O_INDEX -> {
+                O_GETI -> {
                     val (a2, a1) = popTwo()
                     a1.getIndex(c, a2)?.also { push(it) }
                         ?: fail(E_TYPE, "cannot index into ${a1.type} with ${a2.type}")
                 }
-                O_RANGE -> {
+                O_GETRANGE -> {
                     val (a3, a2, a1) = popThree()
                     a1.getRange(c, a2, a3)?.also { push(it) }
                         ?: fail(E_TYPE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
+                }
+                O_SETI -> {
+                    val (a2, a1) = popTwo()
+                    if (!a1.setIndex(c, a2, a1)) fail(E_RANGE, "cannot index into ${a1.type} with ${a2.type}")
+                }
+                O_SETRANGE -> {
+                    val (a4, a3, a2, a1) = popThree()
+                    if (!a1.setRange(c, a2, a3, a4)) fail(E_RANGE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
                 }
 
                 // Control flow ops
@@ -140,12 +146,6 @@ class VM(val code: List<VMWord> = listOf()) {
                     val a1 = pop()
                     variables[varID] = a1
                 }
-                O_SETVARI -> {
-                    val varID = next().intFromV
-                    val (a2, a1) = popTwo()
-                    if (!variables[varID]!!.setIndex(c, a2, a1))
-                        fail(E_TYPE, "cannot index into ${variables[varID]!!.type} with ${a2.type}")
-                }
                 O_INCVAR, O_DECVAR -> {
                     val varID = next().intFromV
                     variables[varID]?.also {
@@ -183,12 +183,6 @@ class VM(val code: List<VMWord> = listOf()) {
                     val (a3, a2, a1) = popThree()
                     if (!a2.setProp(c, (a3 as VString).v, a1))
                         fail(E_PROPNF, "property not found")
-                }
-                O_SETPROPI -> {
-                    val (a4, a3, a2, a1) = popFour()
-                    if (a4 is VString) {
-                        if (!a3.setPropIndex(c, a4.v, a2, a1)) fail(E_PROPNF, "property not found")
-                    } else fail(E_PROPNF, "property name must be string")
                 }
                 O_GETTRAIT -> {
                     val a1 = pop()
