@@ -29,5 +29,8 @@ open class Trait(val name: String) {
         props[name] = value
         return true
     }
+    open fun setPropIndex(c: Context, name: String, index: Value, value: Value): Boolean {
+        return props[name]!!.setIndex(c, index, value)
+    }
 
 }

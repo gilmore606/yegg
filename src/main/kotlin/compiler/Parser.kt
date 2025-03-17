@@ -355,7 +355,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse (as expression): if <expr> <expr> else <expr>
     private fun pIfElse(): N_EXPR? {
-        val next = this::pFuncall
+        val next = this::pIndex
         consume(T_IF)?.also {
             pExpression()?.also { condition ->
                 pExpression()?.also { eThen ->
@@ -370,41 +370,9 @@ class Parser(inputTokens: List<Token>) {
         return next()
     }
 
-    // Parse a function call: <expr>(<expr>, ...)
-    private fun pFuncall(): N_EXPR? {
-        val next = this::pDotref
-        val left = next() ?: return null
-        consume(T_PAREN_OPEN)?.also {
-            val args = mutableListOf<N_EXPR>()
-            var moreArgs = true
-            while (moreArgs) {
-                pExpression()?.also { arg ->
-                    args.add(arg)
-                    consume(T_COMMA) ?: run { moreArgs = false }
-                } ?: run { moreArgs = false }
-            }
-            expectCloseParen()
-            return node(N_FUNCREF(left, args))
-        }
-        return left
-    }
-
-    // Parse a prop or func ref: <expr>.<expr>
-    private fun pDotref(): N_EXPR? {
-        val next = this::pIndex
-        var left = next() ?: return null
-        while (nextIs(T_DOT)) {
-            consume(T_DOT)
-            next()?.also { right ->
-                left = node(N_PROPREF(left, right))
-            } ?: fail("expression expected after dot reference")
-        }
-        return left
-    }
-
     // Parse an index ref: <expr>[<expr>]
     private fun pIndex(): N_EXPR? {
-        val next = this::pTrait
+        val next = this::pDotref
         var left = next() ?: return null
         while (nextIs(T_BRACKET_OPEN)) {
             consume(T_BRACKET_OPEN)
@@ -418,6 +386,32 @@ class Parser(inputTokens: List<Token>) {
                 }
             } ?: fail("expression expected for index reference")
             consume(T_BRACKET_CLOSE) ?: fail("missing close bracket for index reference")
+        }
+        return left
+    }
+
+    // Parse a prop or func ref: <expr>.<expr>
+    private fun pDotref(): N_EXPR? {
+        val next = this::pTrait
+        var left = next() ?: return null
+        while (nextIs(T_DOT)) {
+            consume(T_DOT)
+            next()?.also { right ->
+                consume(T_PAREN_OPEN)?.also {
+                    val args = mutableListOf<N_EXPR>()
+                    var moreArgs = true
+                    while (moreArgs) {
+                        pExpression()?.also { arg ->
+                            args.add(arg)
+                            consume(T_COMMA) ?: run { moreArgs = false }
+                        } ?: run { moreArgs = false }
+                    }
+                    expectCloseParen()
+                    left = node(N_FUNCREF(left, right, args))
+                } ?: run {
+                    left = node(N_PROPREF(left, right))
+                }
+            } ?: fail("expression expected after dot reference")
         }
         return left
     }

@@ -1,6 +1,7 @@
 package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
+import com.dlfsystems.vm.Opcode
 import com.dlfsystems.vm.Opcode.*
 
 // A bare string in source code, which in context may resolve to a trait, property, or function.
@@ -38,17 +39,10 @@ class N_IDENTIFIER(val name: String): N_EXPR() {
             coder.value(this, variableID!!)
         } else fail("non-variable identifier on left of assignment!")
     }
-
-    override fun codeIndexAssign(coder: Coder) {
-        if (type == Type.VARIABLE) {
-            coder.code(this, O_SETVARI)
-            coder.value(this, variableID!!)
-        } else fail("non-variable identifier on left of assignment!")
-    }
 }
 
 class N_PROPREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
-    override fun toText() = "$left.$right"
+    override fun toText() = "($left.$right)"
     override fun kids() = listOf(left, right)
 
     override fun identify() { (right as? N_IDENTIFIER)?.markAsProp() }
@@ -64,16 +58,27 @@ class N_PROPREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
         right.code(coder)
         coder.code(this, O_SETPROP)
     }
+
+    override fun codeIndexAssign(coder: Coder) {
+        left.code(coder)
+        right.code(coder)
+        coder.code(this, O_SETPROPI)
+    }
+
 }
 
-class N_FUNCREF(val left: N_EXPR, val args: List<N_EXPR>): N_EXPR() {
+class N_FUNCREF(val left: N_EXPR, val right: N_EXPR, val args: List<N_EXPR>): N_EXPR() {
     override fun toText() = "$left($args)"
     override fun kids() = mutableListOf(left).apply { addAll(args) }
 
     override fun identify() { (left as? N_IDENTIFIER)?.markAsFunc() }
 
     override fun code(coder: Coder) {
-        // TODO
+        args.forEach { it.code(coder) }
+        left.code(coder)
+        right.code(coder)
+        coder.code(this, O_CALL)
+        coder.value(this, args.size)
     }
 }
 

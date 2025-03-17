@@ -36,7 +36,7 @@ enum class Opcode(val argCount: Int = 0) {
     O_FAIL,
 
     // TODO
-    O_CALL(),
+    O_CALL(1),
 
     // Push variable with ID arg1.
     O_GETVAR(1), // variable ID to fetch
@@ -61,6 +61,8 @@ enum class Opcode(val argCount: Int = 0) {
     O_GETPROP,
     // Set value of property pop1 on value pop0 to value pop2.
     O_SETPROP,
+    // Set value of property pop1 with index pop2 to value pop0.
+    O_SETPROPI,
     // Push trait named by string pop0.
     O_GETTRAIT,
 

@@ -22,6 +22,7 @@ class VM(val code: List<VMWord> = listOf()) {
     private inline fun pop() = stack.pop()
     private inline fun popTwo() = listOf(stack.pop(), stack.pop())
     private inline fun popThree() = listOf(stack.pop(), stack.pop(), stack.pop())
+    private inline fun popFour() = listOf(stack.pop(), stack.pop(), stack.pop(), stack.pop())
     private inline fun next() = code[pc++]
 
     // Given a Context, execute each word of the input code starting from pc=0.
@@ -182,6 +183,12 @@ class VM(val code: List<VMWord> = listOf()) {
                     val (a3, a2, a1) = popThree()
                     if (!a2.setProp(c, (a3 as VString).v, a1))
                         fail(E_PROPNF, "property not found")
+                }
+                O_SETPROPI -> {
+                    val (a4, a3, a2, a1) = popFour()
+                    if (a4 is VString) {
+                        if (!a3.setPropIndex(c, a4.v, a2, a1)) fail(E_PROPNF, "property not found")
+                    } else fail(E_PROPNF, "property name must be string")
                 }
                 O_GETTRAIT -> {
                     val a1 = pop()

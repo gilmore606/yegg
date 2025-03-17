@@ -37,11 +37,13 @@ sealed class Value {
     open fun multiply(a2: Value): Value? = null
     open fun divide(a2: Value): Value? = null
 
-    // Getting or setting a prop on this type.  Null raises E_PROPNF.
+    // Get or set a prop on this type.  Null raises E_PROPNF.
     open fun getProp(c: Context, name: String): Value? = null
     open fun setProp(c: Context, name: String, value: Value): Boolean = false
+    // Set an index on a prop on this type.
+    open fun setPropIndex(c: Context, name: String, index: Value, value: Value): Boolean = false
 
-    // Getting or setting an index/range on this type.  Null raises E_TYPE.
+    // Get or set an index/range on this type.  Null raises E_TYPE.
     open fun getIndex(c: Context, index: Value): Value? = null
     open fun getRange(c: Context, from: Value, to: Value): Value? = null
     open fun setIndex(c: Context, index: Value, value: Value): Boolean = false
