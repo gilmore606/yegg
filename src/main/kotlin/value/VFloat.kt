@@ -1,6 +1,7 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
+import kotlin.math.ceil
 import kotlin.math.floor
 
 data class VFloat(val v: Float): Value() {
@@ -41,6 +42,7 @@ data class VFloat(val v: Float): Value() {
             "asInt" -> return propAsInt()
             "asString" -> return propAsString()
             "floor" -> return propFloor()
+            "ceil" -> return propCeil()
         }
         return null
     }
@@ -51,6 +53,7 @@ data class VFloat(val v: Float): Value() {
     private fun propAsInt() = VInt(v.toInt())
     private fun propAsString() = VString(asString())
     private fun propFloor() = VFloat(floor(v))
+    private fun propCeil() = VFloat(ceil(v))
 
     // Custom funcs
 
