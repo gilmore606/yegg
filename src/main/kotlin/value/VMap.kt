@@ -37,6 +37,14 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
         return false
     }
 
+    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+        when (name) {
+            "containsKey" -> return funcContainsKey(args)
+            "containsValue" -> return funcContainsValue(args)
+        }
+        return null
+    }
+
     // We make new VMaps statically so we can use a constructed string as the map key,
     // instead of the Value object itself.  We save the original key so it can be
     // returned by this.keys.
@@ -63,4 +71,13 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
 
     // Custom funcs
 
+    private fun funcContainsKey(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        return VBool(realKeys.containsValue(args[0]))
+    }
+
+    private fun funcContainsValue(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        return VBool(v.containsValue(args[0]))
+    }
 }
