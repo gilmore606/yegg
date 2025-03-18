@@ -44,6 +44,9 @@ enum class Opcode(val argCount: Int = 0) {
     // Set variable with ID arg1 to value pop0.
     O_SETVAR(1), // variable ID to store
 
+    // SETVAR then GETVAR.
+    O_SETGETVAR(1),
+
     // Increment/decrement variable with ID arg1.
     O_INCVAR(1), // variable ID to inc
     O_DECVAR(1), // variable ID to dec

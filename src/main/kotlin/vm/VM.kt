@@ -146,6 +146,9 @@ class VM(val code: List<VMWord> = listOf()) {
                     val a1 = pop()
                     variables[varID] = a1
                 }
+                O_SETGETVAR -> {
+                    variables[next().intFromV] = stack.peek()
+                }
                 O_INCVAR, O_DECVAR -> {
                     val varID = next().intFromV
                     variables[varID]?.also {

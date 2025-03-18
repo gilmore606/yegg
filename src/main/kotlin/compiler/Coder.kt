@@ -22,6 +22,9 @@ class Coder(val ast: Node) {
     // Nodes will then call Coder.code() and Coder.value() to output their compiled code.
     fun generate() {
         ast.code(this)
+    }
+
+    fun postOptimize() {
         Optimizer.postOptimize(mem)
         mem = Optimizer.mem
     }
