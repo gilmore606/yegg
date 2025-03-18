@@ -19,7 +19,7 @@ data class VObj(val v: UUID?): Value() {
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
-            "asString" -> return VString(toString())
+            "asString" -> return propAsString()
         }
         return null
     }
@@ -27,5 +27,12 @@ data class VObj(val v: UUID?): Value() {
     override fun setProp(c: Context, name: String, value: Value): Boolean {
         return false
     }
+
+
+    // Custom props
+
+    private fun propAsString() = VString(toString())
+
+    // Custom funcs
 
 }

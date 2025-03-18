@@ -14,14 +14,4 @@ class Obj {
 
     val traits: MutableList<UUID> = mutableListOf()
 
-    fun callFunc(c: Context, funcName: String): Value? {
-        c.vThis = vThis
-        traits.forEach { id ->
-            c.getTrait(id)?.also { trait ->
-                trait.callFunc(c, funcName)?.also { return it }
-            }
-        }
-        return null
-    }
-
 }

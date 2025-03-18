@@ -13,9 +13,16 @@ data class VVoid(val v: Unit = Unit): Value() {
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
-            "asString" -> return VString(toString())
+            "asString" -> return propAsString()
         }
         return null
     }
+
+
+    // Custom props
+
+    private fun propAsString() = VString(asString())
+
+    // Custom funcs
 
 }

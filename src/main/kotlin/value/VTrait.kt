@@ -20,9 +20,7 @@ data class VTrait(val v: UUID?): Value() {
     override fun getProp(c: Context, name: String): Value? {
         val trait = getTrait(c)
         when (name) {
-            "asString" -> v?.also { v ->
-                return VString("$" + c.world?.getTrait(v)?.name)
-            } ?: return VString(toString())
+            "asString" -> return propAsString(c)
         }
         return trait?.getProp(c, name)
     }
@@ -31,5 +29,14 @@ data class VTrait(val v: UUID?): Value() {
         val trait = getTrait(c)
         return trait?.setProp(c, name, value) ?: false
     }
+
+
+    // Custom props
+
+    private fun propAsString(c: Context) = v?.let { v ->
+        VString("$" + c.world.getTrait(v)?.name)
+    } ?: VString(asString())
+
+    // Custom funcs
 
 }

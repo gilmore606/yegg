@@ -14,9 +14,9 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
-            "length" -> return VInt(v.size)
-            "keys" -> return VList(realKeys.values.toMutableList())
-            "values" -> return VList(v.values.toMutableList())
+            "length" -> return propLength()
+            "keys" -> return propKeys()
+            "values" -> return propValues()
         }
         return null
     }
@@ -53,4 +53,14 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
             return VMap(map).apply { realKeys = reals }
         }
     }
+
+
+    // Custom props
+
+    private fun propLength() = VInt(v.size)
+    private fun propKeys() = VList(realKeys.values.toMutableList())
+    private fun propValues() = VList(v.values.toMutableList())
+
+    // Custom funcs
+
 }
