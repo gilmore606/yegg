@@ -82,32 +82,56 @@ class Coder(val ast: Node) {
 
 
     object Optimizer {
-        var pc = 0
-        var mem = ArrayList<VMWord>()
         var source = ArrayList<VMWord>()
+        var mem = ArrayList<VMWord>()
+        val jumpMap = HashMap<Int, Int>()
+        var pc = 0
 
         fun postOptimize(withSource: ArrayList<VMWord>) {
             source = withSource
+            // Find all jump destinations in source
+            source.forEach { word ->
+                word.address?.also { address ->
+                    jumpMap[address] = -1
+                }
+            }
+
             mem.clear()
             pc = 0
             while (pc < source.size) {
+                // If we've reached a jump dest, record its new address
+                if (jumpMap.containsKey(pc)) jumpMap[pc] = mem.size
 
-                // Delete echoed O_NEGATEs
+
+                // NEGATE NEGATE => ()
                 consume(O_NEGATE, O_NEGATE)?.also { }
 
-                // Combine SETVAR n, GETVAR n to SETGETVAR n
-                ?: consume(O_SETVAR, null, O_GETVAR, null) { nulls ->
-                    (nulls[0].value is VInt && nulls[1].value is VInt) &&
-                    ((nulls[0].value as VInt).v == (nulls[1].value as VInt).v)
-                }?.also { nulls ->
+                // SETVAR GETVAR => SETGETVAR
+                ?: consume(O_SETVAR, null, O_GETVAR, null) { args ->
+                    args[0].isInt() && args[1].isInt(args[0].intFromV)
+                }?.also { args ->
                     code(O_SETGETVAR)
-                    value(nulls[0].value!!)
+                    value(args[0].value!!)
                 }
+
+                // O_VAL 0 O_CMP_xx => O_CMP_xxZ
+                ?: consume(O_VAL, null, O_CMP_EQ) { args -> args[0].isInt(0) }?.also { code(O_CMP_EQZ) }
+                ?: consume(O_VAL, null, O_CMP_GT) { args -> args[0].isInt(0) }?.also { code(O_CMP_GTZ) }
+                ?: consume(O_VAL, null, O_CMP_GE) { args -> args[0].isInt(0) }?.also { code(O_CMP_GEZ) }
+                ?: consume(O_VAL, null, O_CMP_LT) { args -> args[0].isInt(0) }?.also { code(O_CMP_LTZ) }
+                ?: consume(O_VAL, null, O_CMP_LE) { args -> args[0].isInt(0) }?.also { code(O_CMP_LEZ) }
 
 
                 // If nothing matched, copy and continue
                 ?: run {
                     mem.add(source[pc++])
+                }
+            }
+
+            // Replace all jump dests
+            jumpMap.keys.forEach { old ->
+                mem.forEach { word ->
+                    if (word.address == old) word.address = jumpMap[old]
                 }
             }
         }
@@ -119,6 +143,7 @@ class Coder(val ast: Node) {
             var nulls = mutableListOf<VMWord>()
             opcodes.forEachIndexed { i, t ->
                 if (t == null) nulls.add(source[pc + i])
+                else if ((pc + i) in jumpMap.keys) hit = false  // Miss if we overlap a jump dest
                 else if (source[pc + i].opcode != t) hit = false
             }
             if (hit && (check?.invoke(nulls) != false)) {
