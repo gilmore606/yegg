@@ -12,6 +12,15 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
     override fun toString() = "[${v.entries.joinToString()}]"
     override fun asString() = v.entries.joinToString(", ")
 
+    override fun plus(a2: Value) = when (a2) {
+        is VMap -> make(mutableMapOf<Value, Value>().apply {
+                realKeys.keys.forEach { set(realKeys[it]!!, v[it]!!) }
+                a2.realKeys.keys.forEach { set(a2.realKeys[it]!!, a2.v[it]!!)}
+            }
+        )
+        else -> null
+    }
+
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
             "length" -> return propLength()
