@@ -79,7 +79,7 @@ data class VList(var v: MutableList<Value>): Value() {
     // Custom funcs
 
     private fun funcJoin(args: List<Value>): Value {
-        if (args.size > 1) fail(E_RANGE, "incorrect number of arguments")
+        requireArgCount(args, 0, 1)
         return VString(
             v.joinToString(
                 if (args.isEmpty()) " " else args[0].asString()

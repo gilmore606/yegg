@@ -27,6 +27,8 @@ data class VString(var v: String): Value() {
             "length" -> return propLength()
             "asInt" -> return propAsInt()
             "asFloat" -> return propAsFloat()
+            "isEmpty" -> return propIsEmpty()
+            "isNotEmpty" -> return propIsNotEmpty()
         }
         return null
     }
@@ -77,6 +79,10 @@ data class VString(var v: String): Value() {
     override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
         when (name) {
             "split" -> return funcSplit(args)
+            "contains" -> return funcContains(args)
+            "startsWith" -> return funcStartsWith(args)
+            "endsWith" -> return funcEndsWith(args)
+            "indexOf" -> return funcIndexOf(args)
         }
         return null
     }
@@ -87,15 +93,38 @@ data class VString(var v: String): Value() {
     private fun propLength() = VInt(v.length)
     private fun propAsInt() = VInt(v.toInt())
     private fun propAsFloat() = VFloat(v.toFloat())
+    private fun propIsEmpty() = VBool(v.isEmpty())
+    private fun propIsNotEmpty() = VBool(v.isNotEmpty())
 
     // Custom funcs
 
     private fun funcSplit(args: List<Value>): Value {
-        if (args.size > 1) fail(E_RANGE, "incorrect number of arguments")
+        requireArgCount(args, 0, 1)
         return VList(
             v.split(
                 if (args.isEmpty()) " " else args[0].asString()
             ).map { VString(it) }.toMutableList()
         )
+    }
+
+    private fun funcContains(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        return VBool(v.contains(args[0].asString()))
+    }
+
+    private fun funcStartsWith(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        return VBool(v.startsWith(args[0].asString()))
+    }
+
+    private fun funcEndsWith(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        return VBool(v.endsWith(args[0].asString()))
+    }
+
+    private fun funcIndexOf(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        val s = args[0].asString()
+        if (v.contains(s)) return VInt(v.indexOf(s)) else return VInt(-1)
     }
 }
