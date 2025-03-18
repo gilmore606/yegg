@@ -96,14 +96,19 @@ class Coder(val ast: Node) {
                 consume(O_NEGATE, O_NEGATE)?.also { }
 
                 // Combine SETVAR n, GETVAR n to SETGETVAR n
-                consume(O_SETVAR, null, O_GETVAR, null) { nulls ->
-                    nulls[0].intFromV == nulls[1].intFromV
+                ?: consume(O_SETVAR, null, O_GETVAR, null) { nulls ->
+                    (nulls[0].value is VInt && nulls[1].value is VInt) &&
+                    ((nulls[0].value as VInt).v == (nulls[1].value as VInt).v)
                 }?.also { nulls ->
                     code(O_SETGETVAR)
                     value(nulls[0].value!!)
                 }
 
-                pc++
+
+                // If nothing matched, copy and continue
+                ?: run {
+                    mem.add(source[pc++])
+                }
             }
         }
 
@@ -118,7 +123,7 @@ class Coder(val ast: Node) {
             }
             if (hit && (check?.invoke(nulls) != false)) {
                 pc += opcodes.size
-                return source.subList(pc - opcodes.size, pc)
+                return nulls
             }
             return null
         }
