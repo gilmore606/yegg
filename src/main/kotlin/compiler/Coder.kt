@@ -80,16 +80,38 @@ class Coder(val ast: Node) {
         mem.add(VMWord(from.lineNum, from.charNum, address = dest))
     }
 
+    fun dumpText(): String {
+        var s = ""
+        var pc = 0
+        while (pc < mem.size) {
+            val cell = mem[pc]
+            s += "<$pc> "
+            s += cell.toString()
+            cell.opcode?.also { opcode ->
+                repeat (opcode.argCount) {
+                    pc++
+                    val arg = mem[pc]
+                    s += " $arg"
+                }
+            }
+            s += "\n"
+            pc++
+        }
+        return s
+    }
+
 
     object Optimizer {
         var source = ArrayList<VMWord>()
         var mem = ArrayList<VMWord>()
         val jumpMap = HashMap<Int, Int>()
         var pc = 0
+        var lastMatchSize = 0
 
         fun postOptimize(withSource: ArrayList<VMWord>) {
-            source = withSource
+
             // Find all jump destinations in source
+            source = withSource
             source.forEach { word ->
                 word.address?.also { address ->
                     jumpMap[address] = -1
@@ -107,25 +129,25 @@ class Coder(val ast: Node) {
                 consume(O_NEGATE, O_NEGATE)?.also { }
 
                 // SETVAR GETVAR => SETGETVAR
-                ?: consume(O_SETVAR, null, O_GETVAR, null) { args ->
-                    args[0].isInt() && args[1].isInt(args[0].intFromV)
-                }?.also { args ->
-                    code(O_SETGETVAR)
-                    value(args[0].value!!)
-                }
+                    ?: consume(O_SETVAR, null, O_GETVAR, null) { args ->
+                        args[0].isInt() && args[1].isInt(args[0].intFromV)
+                    }?.also { args ->
+                        code(O_SETGETVAR)
+                        value(args[0].value!!)
+                    }
 
-                // O_VAL 0 O_CMP_xx => O_CMP_xxZ
-                ?: consume(O_VAL, null, O_CMP_EQ) { args -> args[0].isInt(0) }?.also { code(O_CMP_EQZ) }
-                ?: consume(O_VAL, null, O_CMP_GT) { args -> args[0].isInt(0) }?.also { code(O_CMP_GTZ) }
-                ?: consume(O_VAL, null, O_CMP_GE) { args -> args[0].isInt(0) }?.also { code(O_CMP_GEZ) }
-                ?: consume(O_VAL, null, O_CMP_LT) { args -> args[0].isInt(0) }?.also { code(O_CMP_LTZ) }
-                ?: consume(O_VAL, null, O_CMP_LE) { args -> args[0].isInt(0) }?.also { code(O_CMP_LEZ) }
+                    // O_VAL 0 O_CMP_xx => O_CMP_xxZ
+                    ?: consume(O_VAL, null, O_CMP_EQ) { args -> args[0].isInt(0) }?.also { code(O_CMP_EQZ) }
+                    ?: consume(O_VAL, null, O_CMP_GT) { args -> args[0].isInt(0) }?.also { code(O_CMP_GTZ) }
+                    ?: consume(O_VAL, null, O_CMP_GE) { args -> args[0].isInt(0) }?.also { code(O_CMP_GEZ) }
+                    ?: consume(O_VAL, null, O_CMP_LT) { args -> args[0].isInt(0) }?.also { code(O_CMP_LTZ) }
+                    ?: consume(O_VAL, null, O_CMP_LE) { args -> args[0].isInt(0) }?.also { code(O_CMP_LEZ) }
 
 
-                // If nothing matched, copy and continue
-                ?: run {
-                    mem.add(source[pc++])
-                }
+                    // If nothing matched, copy and continue
+                    ?: run {
+                        mem.add(source[pc++])
+                    }
             }
 
             // Replace all jump dests
@@ -148,38 +170,19 @@ class Coder(val ast: Node) {
             }
             if (hit && (check?.invoke(nulls) != false)) {
                 pc += opcodes.size
+                lastMatchSize = opcodes.size
                 return nulls
             }
             return null
         }
 
-        // TODO: preserve line+char!
         private fun code(op: Opcode) {
-            mem.add(VMWord(0, 0, op))
+            val oldword = source[pc - lastMatchSize]
+            mem.add(VMWord(oldword.lineNum, oldword.charNum, op))
         }
         private fun value(v: Value) {
-            mem.add(VMWord(0, 0, value = v))
+            val oldword = source[pc - lastMatchSize]
+            mem.add(VMWord(oldword.lineNum, oldword.charNum, value = v))
         }
-    }
-
-
-    fun dumpText(): String {
-        var s = ""
-        var pc = 0
-        while (pc < mem.size) {
-            val cell = mem[pc]
-            s += "<$pc> "
-            s += cell.toString()
-            cell.opcode?.also { opcode ->
-                repeat (opcode.argCount) {
-                    pc++
-                    val arg = mem[pc]
-                    s += " $arg"
-                }
-            }
-            s += "\n"
-            pc++
-        }
-        return s
     }
 }
