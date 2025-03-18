@@ -125,6 +125,6 @@ data class VString(var v: String): Value() {
     private fun funcIndexOf(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         val s = args[0].asString()
-        if (v.contains(s)) return VInt(v.indexOf(s)) else return VInt(-1)
+        return if (v.contains(s)) VInt(v.indexOf(s)) else VInt(-1)
     }
 }

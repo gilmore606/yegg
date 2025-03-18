@@ -67,6 +67,8 @@ data class VList(var v: MutableList<Value>): Value() {
             "join" -> return funcJoin(args)
             "push" -> return funcPush(args)
             "pop" -> return funcPop(args)
+            "contains" -> return funcContains(args)
+            "indexOf" -> return funcIndexOf(args)
         }
         return null
     }
@@ -99,5 +101,15 @@ data class VList(var v: MutableList<Value>): Value() {
         requireArgCount(args, 0, 0)
         if (v.isEmpty()) fail(E_RANGE, "cannot pop empty list")
         return v.removeAt(0)
+    }
+
+    private fun funcContains(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        return VBool(v.contains(args[0]))
+    }
+
+    private fun funcIndexOf(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        return if (v.contains(args[0])) VInt(v.indexOf(args[0])) else VInt(-1)
     }
 }
