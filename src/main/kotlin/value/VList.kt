@@ -65,6 +65,8 @@ data class VList(var v: MutableList<Value>): Value() {
     override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
         when (name) {
             "join" -> return funcJoin(args)
+            "push" -> return funcPush(args)
+            "pop" -> return funcPop(args)
         }
         return null
     }
@@ -85,5 +87,17 @@ data class VList(var v: MutableList<Value>): Value() {
                 if (args.isEmpty()) " " else args[0].asString()
             ) { it.asString() }
         )
+    }
+
+    private fun funcPush(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        v.add(0, args[0])
+        return VVoid()
+    }
+
+    private fun funcPop(args: List<Value>): Value {
+        requireArgCount(args, 0, 0)
+        if (v.isEmpty()) fail(E_RANGE, "cannot pop empty list")
+        return v.removeAt(0)
     }
 }
