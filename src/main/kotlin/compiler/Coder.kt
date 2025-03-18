@@ -129,25 +129,25 @@ class Coder(val ast: Node) {
                 consume(O_NEGATE, O_NEGATE)?.also { }
 
                 // SETVAR GETVAR => SETGETVAR
-                    ?: consume(O_SETVAR, null, O_GETVAR, null) { args ->
-                        args[0].isInt() && args[1].isInt(args[0].intFromV)
-                    }?.also { args ->
-                        code(O_SETGETVAR)
-                        value(args[0].value!!)
-                    }
+                ?: consume(O_SETVAR, null, O_GETVAR, null) { args ->
+                    args[0].isInt() && args[1].isInt(args[0].intFromV)
+                }?.also { args ->
+                    code(O_SETGETVAR)
+                    value(args[0].value!!)
+                }
 
-                    // O_VAL 0 O_CMP_xx => O_CMP_xxZ
-                    ?: consume(O_VAL, null, O_CMP_EQ) { args -> args[0].isInt(0) }?.also { code(O_CMP_EQZ) }
-                    ?: consume(O_VAL, null, O_CMP_GT) { args -> args[0].isInt(0) }?.also { code(O_CMP_GTZ) }
-                    ?: consume(O_VAL, null, O_CMP_GE) { args -> args[0].isInt(0) }?.also { code(O_CMP_GEZ) }
-                    ?: consume(O_VAL, null, O_CMP_LT) { args -> args[0].isInt(0) }?.also { code(O_CMP_LTZ) }
-                    ?: consume(O_VAL, null, O_CMP_LE) { args -> args[0].isInt(0) }?.also { code(O_CMP_LEZ) }
+                // O_VAL 0 O_CMP_xx => O_CMP_xxZ
+                ?: consume(O_VAL, null, O_CMP_EQ) { args -> args[0].isInt(0) }?.also { code(O_CMP_EQZ) }
+                ?: consume(O_VAL, null, O_CMP_GT) { args -> args[0].isInt(0) }?.also { code(O_CMP_GTZ) }
+                ?: consume(O_VAL, null, O_CMP_GE) { args -> args[0].isInt(0) }?.also { code(O_CMP_GEZ) }
+                ?: consume(O_VAL, null, O_CMP_LT) { args -> args[0].isInt(0) }?.also { code(O_CMP_LTZ) }
+                ?: consume(O_VAL, null, O_CMP_LE) { args -> args[0].isInt(0) }?.also { code(O_CMP_LEZ) }
 
 
-                    // If nothing matched, copy and continue
-                    ?: run {
-                        mem.add(source[pc++])
-                    }
+                // If nothing matched, copy and continue
+                ?: run {
+                    mem.add(source[pc++])
+                }
             }
 
             // Replace all jump dests
