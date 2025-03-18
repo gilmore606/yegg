@@ -9,7 +9,8 @@ import java.util.UUID
 
 class Coder(val ast: Node) {
 
-    val mem = ArrayList<VMWord>()
+    var mem = ArrayList<VMWord>()
+
     // Addresses to be filled in with a named jump point once coded.
     val forwardJumps = HashMap<String, MutableSet<Int>>()
     // Addresses stored to be used as future jump destinations.
@@ -21,15 +22,12 @@ class Coder(val ast: Node) {
     // Nodes will then call Coder.code() and Coder.value() to output their compiled code.
     fun generate() {
         ast.code(this)
+        Optimizer.postOptimize(mem)
+        mem = Optimizer.mem
     }
 
     // Write an opcode into memory.
     fun code(from: Node, op: Opcode) {
-        // optimization: remove doubled O_NEGATE
-        if (op == O_NEGATE && last()?.opcode == O_NEGATE) {
-            mem.removeLast()
-            return
-        }
         mem.add(VMWord(from.lineNum, from.charNum, opcode = op))
     }
 
@@ -77,6 +75,58 @@ class Coder(val ast: Node) {
     fun jumpBack(from: Node, name: String) {
         val dest = backJumps[name]
         mem.add(VMWord(from.lineNum, from.charNum, address = dest))
+    }
+
+
+    object Optimizer {
+        var pc = 0
+        var mem = ArrayList<VMWord>()
+        var source = ArrayList<VMWord>()
+
+        fun postOptimize(withSource: ArrayList<VMWord>) {
+            source = withSource
+            mem.clear()
+            pc = 0
+            while (pc < source.size) {
+
+                // Delete echoed O_NEGATEs
+                consume(O_NEGATE, O_NEGATE)?.also { }
+
+                // Combine SETVAR n, GETVAR n to SETGETVAR n
+                consume(O_SETVAR, null, O_GETVAR, null) { nulls ->
+                    nulls[0].intFromV == nulls[1].intFromV
+                }?.also { nulls ->
+                    code(O_SETGETVAR)
+                    value(nulls[0].value!!)
+                }
+
+                pc++
+            }
+        }
+
+        // Match and consume a series of opcodes (or null for any non-opcode word).
+        private fun consume(vararg opcodes: Opcode?, check: ((List<VMWord>)->Boolean)? = null): List<VMWord>? {
+            if (opcodes.size > (source.size - pc)) return null
+            var hit = true
+            var nulls = mutableListOf<VMWord>()
+            opcodes.forEachIndexed { i, t ->
+                if (t == null) nulls.add(source[pc + i])
+                else if (source[pc + i].opcode != t) hit = false
+            }
+            if (hit && (check?.invoke(nulls) != false)) {
+                pc += opcodes.size
+                return source.subList(pc - opcodes.size, pc)
+            }
+            return null
+        }
+
+        // TODO: preserve line+char!
+        private fun code(op: Opcode) {
+            mem.add(VMWord(0, 0, op))
+        }
+        private fun value(v: Value) {
+            mem.add(VMWord(0, 0, value = v))
+        }
     }
 
 
