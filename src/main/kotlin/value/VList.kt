@@ -12,6 +12,11 @@ data class VList(var v: MutableList<Value>): Value() {
 
     override fun iterableSize() = v.size
 
+    override fun plus(a2: Value) = when (a2) {
+        is VList -> VList(v.toMutableList().apply { addAll(a2.v) })
+        else -> null
+    }
+
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
             "length" -> return propSize()
