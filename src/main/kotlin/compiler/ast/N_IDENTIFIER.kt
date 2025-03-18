@@ -100,7 +100,7 @@ class N_PROPREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
 
 class N_FUNCREF(val left: N_EXPR, val right: N_EXPR, val args: List<N_EXPR>): N_EXPR() {
     override fun toText() = "$left.$right($args)"
-    override fun kids() = mutableListOf(left).apply { addAll(args) }
+    override fun kids() = mutableListOf(left, right).apply { addAll(args) }
 
     override fun identify() { (right as? N_IDENTIFIER)?.markAsFunc() }
 
