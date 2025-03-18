@@ -20,10 +20,18 @@ data class VBool(val v: Boolean): Value() {
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
-            "asInt" -> return VInt(if (v) 1 else 0)
-            "asString" -> return VString(asString())
+            "asInt" -> return propAsInt()
+            "asString" -> return propAsString()
         }
         return null
     }
+
+
+    // Custom props
+
+    private fun propAsInt() = VInt(if (v) 1 else 0)
+    private fun propAsString() = VString(asString())
+
+    // Custom funcs
 
 }

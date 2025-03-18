@@ -21,11 +21,4 @@ class SysTrait : Trait("sys") {
         return super.getProp(c, name)
     }
 
-    override fun callFunc(c: Context, name: String): Value? {
-        when (name) {
-
-        }
-        return super.callFunc(c, name)
-    }
-
 }

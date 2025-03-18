@@ -22,15 +22,10 @@ open class Trait(val name: String) {
         }
     }
 
-    open fun callFunc(c: Context, name: String): Value? = funcs[name]?.execute(c)
-
     open fun getProp(c: Context, name: String): Value? = props.getOrDefault(name, null)
     open fun setProp(c: Context, name: String, value: Value): Boolean {
         props[name] = value
         return true
-    }
-    open fun setPropIndex(c: Context, name: String, index: Value, value: Value): Boolean {
-        return props[name]!!.setIndex(c, index, value)
     }
 
 }

@@ -42,7 +42,7 @@ object Compiler {
     fun eval(code: String): String {
         val result = compile(code, withDebug = true)
         when (result) {
-            is Result.Failure -> return "Compilation error: ${result.e} TOKENS:\n${Lexer(code).lex()}"
+            is Result.Failure -> return "Compilation error: ${result.e.stackTraceToString()} TOKENS:\n${Lexer(code).lex()}"
             is Result.Success -> {
                 try {
 
