@@ -9,7 +9,12 @@ sealed class Value {
     enum class Type { VOID, BOOL, INT, FLOAT, STRING, LIST, MAP, OBJ, TRAIT }
     abstract val type: Type
 
+    // utility func for throwing a runtime exception
     fun fail(type: VMException.Type, m: String) { throw VMException(type, m, 0, 0) } // TODO: get line+char here somehow
+    // utility func for throwing E_RANGE on incorrect arg count
+    fun requireArgCount(args: List<Value>, min: Int, max: Int) {
+        if (args.size < min || args.size > max) fail(VMException.Type.E_RANGE, "incorrect number of args")
+    }
 
     // String equivalent for use as a map key.  Null if this value can't be a map key.
     open fun asMapKey(): String? = null
@@ -46,4 +51,7 @@ sealed class Value {
     open fun getRange(c: Context, from: Value, to: Value): Value? = null
     open fun setIndex(c: Context, index: Value, value: Value): Boolean = false
     open fun setRange(c: Context, from: Value, to: Value, value: Value): Boolean = false
+
+    // Call a func on this type and return its value.  Null raises E_FUNCNF.
+    open fun callFunc(c: Context, name: String, args: List<Value>): Value? = null
 }

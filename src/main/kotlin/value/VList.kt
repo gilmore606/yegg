@@ -14,7 +14,9 @@ data class VList(var v: MutableList<Value>): Value() {
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
-            "length" -> return VInt(v.size)
+            "length" -> return propSize()
+            "isEmpty" -> return propIsEmpty()
+            "isNotEmpty" -> return propIsNotEmpty()
         }
         return null
     }
@@ -60,4 +62,54 @@ data class VList(var v: MutableList<Value>): Value() {
         return false
     }
 
+    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+        when (name) {
+            "join" -> return funcJoin(args)
+            "push" -> return funcPush(args)
+            "pop" -> return funcPop(args)
+            "contains" -> return funcContains(args)
+            "indexOf" -> return funcIndexOf(args)
+        }
+        return null
+    }
+
+
+    // Custom props
+
+    private fun propSize(): Value = VInt(v.size)
+    private fun propIsEmpty(): Value = VBool(v.isEmpty())
+    private fun propIsNotEmpty(): Value = VBool(v.isNotEmpty())
+
+    // Custom funcs
+
+    private fun funcJoin(args: List<Value>): Value {
+        requireArgCount(args, 0, 1)
+        return VString(
+            v.joinToString(
+                if (args.isEmpty()) " " else args[0].asString()
+            ) { it.asString() }
+        )
+    }
+
+    private fun funcPush(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        v.add(0, args[0])
+        return VVoid()
+    }
+
+    private fun funcPop(args: List<Value>): Value {
+        requireArgCount(args, 0, 0)
+        if (v.isEmpty()) fail(E_RANGE, "cannot pop empty list")
+        return v.removeAt(0)
+    }
+
+    private fun funcContains(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        return VBool(v.contains(args[0]))
+    }
+
+    private fun funcIndexOf(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        return if (v.contains(args[0])) VInt(v.indexOf(args[0])) else VInt(-1)
+    }
 }

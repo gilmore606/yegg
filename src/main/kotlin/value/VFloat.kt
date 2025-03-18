@@ -1,6 +1,7 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
+import kotlin.math.floor
 
 data class VFloat(val v: Float): Value() {
 
@@ -37,10 +38,20 @@ data class VFloat(val v: Float): Value() {
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
-            "asInt" -> return VInt(v.toInt())
-            "asString" -> return VString(toString())
+            "asInt" -> return propAsInt()
+            "asString" -> return propAsString()
+            "floor" -> return propFloor()
         }
         return null
     }
+
+
+    // Custom props
+
+    private fun propAsInt() = VInt(v.toInt())
+    private fun propAsString() = VString(asString())
+    private fun propFloor() = VFloat(floor(v))
+
+    // Custom funcs
 
 }

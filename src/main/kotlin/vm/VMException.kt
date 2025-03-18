@@ -16,6 +16,9 @@ class VMException(c: Type, m: String, lineNum: Int, charNum: Int): Exception("$c
         // Trait not found
         E_TRAITNF,
 
+        // Func not found
+        E_FUNCNF,
+
         // List or map accessed out of range
         E_RANGE,
 

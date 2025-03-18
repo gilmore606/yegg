@@ -14,9 +14,9 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
-            "length" -> return VInt(v.size)
-            "keys" -> return VList(realKeys.values.toMutableList())
-            "values" -> return VList(v.values.toMutableList())
+            "length" -> return propLength()
+            "keys" -> return propKeys()
+            "values" -> return propValues()
         }
         return null
     }
@@ -37,6 +37,14 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
         return false
     }
 
+    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+        when (name) {
+            "containsKey" -> return funcContainsKey(args)
+            "containsValue" -> return funcContainsValue(args)
+        }
+        return null
+    }
+
     // We make new VMaps statically so we can use a constructed string as the map key,
     // instead of the Value object itself.  We save the original key so it can be
     // returned by this.keys.
@@ -52,5 +60,24 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
             }
             return VMap(map).apply { realKeys = reals }
         }
+    }
+
+
+    // Custom props
+
+    private fun propLength() = VInt(v.size)
+    private fun propKeys() = VList(realKeys.values.toMutableList())
+    private fun propValues() = VList(v.values.toMutableList())
+
+    // Custom funcs
+
+    private fun funcContainsKey(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        return VBool(realKeys.containsValue(args[0]))
+    }
+
+    private fun funcContainsValue(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        return VBool(v.containsValue(args[0]))
     }
 }
