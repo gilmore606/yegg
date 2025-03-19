@@ -225,6 +225,11 @@ class VM(val code: List<VMWord> = listOf()) {
                         else -> { }
                     }
                 }
+                O_CMP_IN -> {
+                    val (a2, a1) = popTwo()
+                    a1.cmpIn(a2)?.also { push(VBool(it)) }
+                        ?: fail(E_TYPE, "cannot check ${a1.type} in ${a2.type}")
+                }
 
                 // Math ops
 

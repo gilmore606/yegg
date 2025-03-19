@@ -80,6 +80,7 @@ enum class Opcode(val argCount: Int = 0) {
     O_CMP_GE,
     O_CMP_LT,
     O_CMP_LE,
+    O_CMP_IN,
 
     // Push the math result of pop0 and pop1.
     O_ADD,

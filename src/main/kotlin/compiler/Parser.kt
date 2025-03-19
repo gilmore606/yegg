@@ -253,7 +253,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse: <expr> ? <expr> : <expr>
     private fun pConditional(): N_EXPR? {
-        val next = this::pEquals
+        val next = this::pIn
         val left = next() ?: return null
         consume(T_QUESTION)?.also {
             next()?.also { mid ->
@@ -263,6 +263,18 @@ class Parser(inputTokens: List<Token>) {
                     } ?: fail("incomplete conditional")
                 } ?: fail("missing colon in conditional")
             } ?: fail("incomplete condition")
+        }
+        return left
+    }
+
+    // Parse: <expr> in <expr>
+    private fun pIn(): N_EXPR? {
+        val next = this::pEquals
+        var left = next() ?: return null
+        consume(T_IN)?.also {
+            next()?.also { right ->
+                left = node(N_CMP_IN(left, right))
+            }
         }
         return left
     }

@@ -36,6 +36,10 @@ sealed class Value {
     fun cmpLt(a2: Value): Boolean = !cmpGe(a2)
     fun cmpLe(a2: Value): Boolean = !cmpGt(a2)
 
+    // Boolean 'this in a2'.  Null raises E_TYPE.
+    open fun cmpIn(a2: Value): Boolean? = a2.cmpContains(this)
+    open fun cmpContains(a2: Value): Boolean? = null
+
     // Math between this type and any other value.  Null raises E_TYPE.
     open fun negate(): Value? = null
     open fun plus(a2: Value): Value? = null
