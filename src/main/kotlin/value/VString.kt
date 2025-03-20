@@ -9,7 +9,6 @@ data class VString(var v: String): Value() {
 
     override fun toString() = "\"$v\""
     override fun asString() = v
-    override fun asMapKey() = v
 
     override fun iterableSize() = v.length
 

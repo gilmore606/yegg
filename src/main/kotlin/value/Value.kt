@@ -16,8 +16,6 @@ sealed class Value {
         if (args.size < min || args.size > max) fail(VMException.Type.E_RANGE, "incorrect number of args")
     }
 
-    // String equivalent for use as a map key.  Null if this value can't be a map key.
-    open fun asMapKey(): String? = null
     // String equivalent when added to a string.
     open fun asString(): String = "VALUE"
 

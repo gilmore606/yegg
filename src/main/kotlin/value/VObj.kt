@@ -9,7 +9,6 @@ data class VObj(val v: UUID?): Value() {
 
     override fun toString() = "#$v"
     override fun asString() = "OBJ" // TODO: use name from passed context?
-    override fun asMapKey() = "$v OBJ"
 
     override fun isTrue() = v != null
 
