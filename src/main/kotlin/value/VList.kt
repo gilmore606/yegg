@@ -12,6 +12,8 @@ data class VList(var v: MutableList<Value>): Value() {
 
     override fun iterableSize() = v.size
 
+    override fun contains(a2: Value) = v.contains(a2)
+
     override fun plus(a2: Value) = when (a2) {
         is VList -> VList(v.toMutableList().apply { addAll(a2.v) })
         else -> null

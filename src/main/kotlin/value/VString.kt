@@ -13,6 +13,8 @@ data class VString(var v: String): Value() {
 
     override fun iterableSize() = v.length
 
+    override fun contains(a2: Value) = v.contains(a2.asString())
+
     override fun cmpEq(a2: Value) = (a2 is VString) && (v == a2.v)
     override fun cmpGt(a2: Value) = (a2 is VString) && (v > a2.v)
     override fun cmpGe(a2: Value) = (a2 is VString) && (v >= a2.v)

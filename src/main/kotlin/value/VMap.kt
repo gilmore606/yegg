@@ -12,6 +12,8 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
     override fun toString() = "[${v.entries.joinToString()}]"
     override fun asString() = v.entries.joinToString(", ")
 
+    override fun contains(a2: Value) = realKeys.values.contains(a2)
+
     override fun plus(a2: Value) = when (a2) {
         is VMap -> make(mutableMapOf<Value, Value>().apply {
                 realKeys.keys.forEach { set(realKeys[it]!!, v[it]!!) }
