@@ -8,7 +8,6 @@ data class VInt(val v: Int): Value() {
 
     override fun toString() = v.toString()
     override fun asString() = v.toString()
-    override fun asMapKey() = "$v INT"
 
     override fun isZero() = v == 0
 

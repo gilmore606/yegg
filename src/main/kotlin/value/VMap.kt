@@ -1,25 +1,18 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
-import com.dlfsystems.vm.VMException
 import com.dlfsystems.vm.VMException.Type.*
 
-data class VMap(val v: MutableMap<String, Value>): Value() {
-
-    var realKeys = mutableMapOf<String, Value>()
+data class VMap(val v: MutableMap<Value, Value>): Value() {
 
     override val type = Type.MAP
     override fun toString() = "[${v.entries.joinToString()}]"
     override fun asString() = v.entries.joinToString(", ")
 
-    override fun contains(a2: Value) = realKeys.values.contains(a2)
+    override fun contains(a2: Value) = v.containsKey(a2)
 
     override fun plus(a2: Value) = when (a2) {
-        is VMap -> make(mutableMapOf<Value, Value>().apply {
-                realKeys.keys.forEach { set(realKeys[it]!!, v[it]!!) }
-                a2.realKeys.keys.forEach { set(a2.realKeys[it]!!, a2.v[it]!!)}
-            }
-        )
+        is VMap -> VMap((v + a2.v).toMutableMap())
         else -> null
     }
 
@@ -32,20 +25,16 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
         return null
     }
 
-    override fun getIndex(c: Context, index: Value): Value? {
-        index.asMapKey()?.also {
-            if (v.containsKey(it)) return v[it]
-            else fail(E_RANGE, "no map entry $index")
-        }
+    override fun getIndex(c: Context, i: Value): Value? {
+        if (v.containsKey(i)) return v[i]
+        else fail(E_RANGE, "no map entry $i")
         return null
     }
 
-    override fun setIndex(c: Context, index: Value, value: Value): Boolean {
-        index.asMapKey()?.also {
-            realKeys[it] = index
-            v[it] = value
-        }
-        return false
+    override fun setIndex(c: Context, i: Value, value: Value): Boolean {
+        if (i.type !in keyTypes) fail(E_TYPE, "${i.type} cannot be map key")
+        v[i] = value
+        return true
     }
 
     override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
@@ -56,39 +45,26 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
         return null
     }
 
-    // We make new VMaps statically so we can use a constructed string as the map key,
-    // instead of the Value object itself.  We save the original key so it can be
-    // returned by this.keys.
-    companion object {
-        fun make(v: Map<Value, Value>): VMap {
-            val reals = mutableMapOf<String, Value>()
-            val map = mutableMapOf<String, Value>()
-            v.keys.forEach { key ->
-                key.asMapKey()?.also {
-                    reals.put(it, key)
-                    map.put(it, v[key]!!)
-                } ?: throw VMException(E_TYPE, "${key.type} cannot be map key", 0, 0) // TODO: get real line+char
-            }
-            return VMap(map).apply { realKeys = reals }
-        }
-    }
-
-
     // Custom props
 
     private fun propLength() = VInt(v.size)
-    private fun propKeys() = VList(realKeys.values.toMutableList())
+    private fun propKeys() = VList(v.keys.toMutableList())
     private fun propValues() = VList(v.values.toMutableList())
 
     // Custom funcs
 
     private fun funcContainsKey(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
-        return VBool(realKeys.containsValue(args[0]))
+        return VBool(v.containsKey(args[0]))
     }
 
     private fun funcContainsValue(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         return VBool(v.containsValue(args[0]))
+    }
+
+
+    companion object {
+        val keyTypes = listOf(Type.STRING, Type.INT, Type.OBJ, Type.TRAIT)
     }
 }

@@ -10,7 +10,6 @@ data class VFloat(val v: Float): Value() {
 
     override fun toString() = v.toString()
     override fun asString() = v.toString()
-    override fun asMapKey() = "$v FLOAT"
 
     override fun isZero() = v == 0F
 
