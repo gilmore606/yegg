@@ -12,7 +12,7 @@ data class VMap(val v: MutableMap<String, Value>): Value() {
     override fun toString() = "[${v.entries.joinToString()}]"
     override fun asString() = v.entries.joinToString(", ")
 
-    override fun cmpContains(a2: Value) = realKeys.values.contains(a2)
+    override fun contains(a2: Value) = realKeys.values.contains(a2)
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {

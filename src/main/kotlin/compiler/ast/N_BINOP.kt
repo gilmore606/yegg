@@ -25,6 +25,7 @@ class N_POWER(left: N_EXPR, right: N_EXPR): N_BINOP("^", left, right, listOf(O_P
 class N_MODULUS(left: N_EXPR, right: N_EXPR): N_BINOP("%", left, right, listOf(O_MODULUS))
 class N_AND(left: N_EXPR, right: N_EXPR): N_BINOP("&&", left, right, listOf(O_AND))
 class N_OR(left: N_EXPR, right: N_EXPR): N_BINOP("||", left, right, listOf(O_OR))
+class N_IN(left: N_EXPR, right: N_EXPR): N_BINOP("in", left, right, listOf(O_IN))
 
 class N_CMP_EQ(left: N_EXPR, right: N_EXPR): N_BINOP("==", left, right, listOf(O_CMP_EQ))
 class N_CMP_NEQ(left: N_EXPR, right: N_EXPR): N_BINOP("!=", left, right, listOf(O_CMP_EQ, O_NEGATE))
@@ -32,4 +33,3 @@ class N_CMP_GT(left: N_EXPR, right: N_EXPR): N_BINOP(">", left, right, listOf(O_
 class N_CMP_LT(left: N_EXPR, right: N_EXPR): N_BINOP("<", left, right, listOf(O_CMP_LT))
 class N_CMP_GE(left: N_EXPR, right: N_EXPR): N_BINOP(">=", left, right, listOf(O_CMP_GE))
 class N_CMP_LE(left: N_EXPR, right: N_EXPR): N_BINOP("<=", left, right, listOf(O_CMP_LE))
-class N_CMP_IN(left: N_EXPR, right: N_EXPR): N_BINOP("in", left, right, listOf(O_CMP_IN))

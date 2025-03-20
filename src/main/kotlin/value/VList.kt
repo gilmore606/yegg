@@ -12,7 +12,7 @@ data class VList(var v: MutableList<Value>): Value() {
 
     override fun iterableSize() = v.size
 
-    override fun cmpContains(a2: Value) = v.contains(a2)
+    override fun contains(a2: Value) = v.contains(a2)
 
     override fun getProp(c: Context, name: String): Value? {
         when (name) {

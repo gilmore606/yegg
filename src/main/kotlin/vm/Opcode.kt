@@ -75,12 +75,12 @@ enum class Opcode(val argCount: Int = 0) {
     // Push the boolean result of pop0 and pop1.
     O_AND,
     O_OR,
+    O_IN,
     O_CMP_EQ,
     O_CMP_GT,
     O_CMP_GE,
     O_CMP_LT,
     O_CMP_LE,
-    O_CMP_IN,
 
     // Push the math result of pop0 and pop1.
     O_ADD,

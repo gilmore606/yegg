@@ -273,7 +273,7 @@ class Parser(inputTokens: List<Token>) {
         var left = next() ?: return null
         consume(T_IN)?.also {
             next()?.also { right ->
-                left = node(N_CMP_IN(left, right))
+                left = node(N_IN(left, right))
             }
         }
         return left

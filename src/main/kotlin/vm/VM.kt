@@ -214,6 +214,11 @@ class VM(val code: List<VMWord> = listOf()) {
                     if (a1 is VBool && a2 is VBool) push(VBool(a1.v || a2.v))
                     else fail(E_TYPE, "cannot OR ${a1.type} and ${a2.type}")
                 }
+                O_IN -> {
+                    val (a2, a1) = popTwo()
+                    a1.isIn(a2)?.also { push(VBool(it)) }
+                        ?: fail(E_TYPE, "cannot check ${a1.type} in ${a2.type}")
+                }
                 O_CMP_EQ, O_CMP_GT, O_CMP_GE, O_CMP_LT, O_CMP_LE -> {
                     val (a2, a1) = popTwo()
                     when (word.opcode) {
@@ -224,11 +229,6 @@ class VM(val code: List<VMWord> = listOf()) {
                         O_CMP_LE -> push(VBool(a1.cmpLe(a2)))
                         else -> { }
                     }
-                }
-                O_CMP_IN -> {
-                    val (a2, a1) = popTwo()
-                    a1.cmpIn(a2)?.also { push(VBool(it)) }
-                        ?: fail(E_TYPE, "cannot check ${a1.type} in ${a2.type}")
                 }
 
                 // Math ops
