@@ -1,7 +1,6 @@
 package com.dlfsystems.vm
 
 import com.dlfsystems.value.Value
-import java.util.*
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
@@ -13,16 +12,17 @@ class VM(val code: List<VMWord> = listOf()) {
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
     // The local stack.
-    private val stack = Stack<Value>()
+    private val stack = ArrayDeque<Value>()
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
     private fun fail(c: VMException.Type, m: String) { throw VMException(c, "$m [pc: ${pc-1} ${code[pc-1]}]", code[pc].lineNum, code[pc].charNum) }
-    private inline fun push(v: Value) = stack.push(v)
-    private inline fun pop() = stack.pop()
-    private inline fun popTwo() = listOf(stack.pop(), stack.pop())
-    private inline fun popThree() = listOf(stack.pop(), stack.pop(), stack.pop())
-    private inline fun popFour() = listOf(stack.pop(), stack.pop(), stack.pop(), stack.pop())
+    private inline fun push(v: Value) = stack.addFirst(v)
+    private inline fun peek() = stack.first()
+    private inline fun pop() = stack.removeFirst()
+    private inline fun popTwo() = listOf(stack.removeFirst(), stack.removeFirst())
+    private inline fun popThree() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
+    private inline fun popFour() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
     private inline fun next() = code[pc++]
 
     // Given a Context, execute each word of the input code starting from pc=0.
@@ -152,7 +152,7 @@ class VM(val code: List<VMWord> = listOf()) {
                     variables[varID] = a1
                 }
                 O_SETGETVAR -> {
-                    variables[next().intFromV] = stack.peek()
+                    variables[next().intFromV] = peek()
                 }
                 O_INCVAR, O_DECVAR -> {
                     val varID = next().intFromV
@@ -294,5 +294,5 @@ class VMWord(
 class VMCallstack {
     class Call()
 
-    private val stack = Stack<Call>()
+    private val stack = ArrayDeque<Call>()
 }
