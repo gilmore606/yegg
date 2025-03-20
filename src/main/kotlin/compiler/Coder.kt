@@ -9,7 +9,8 @@ import java.util.UUID
 
 class Coder(val ast: Node) {
 
-    val mem = ArrayList<VMWord>()
+    var mem = ArrayList<VMWord>()
+
     // Addresses to be filled in with a named jump point once coded.
     val forwardJumps = HashMap<String, MutableSet<Int>>()
     // Addresses stored to be used as future jump destinations.
@@ -23,13 +24,13 @@ class Coder(val ast: Node) {
         ast.code(this)
     }
 
+    fun postOptimize() {
+        Optimizer.postOptimize(mem)
+        mem = Optimizer.mem
+    }
+
     // Write an opcode into memory.
     fun code(from: Node, op: Opcode) {
-        // optimization: remove doubled O_NEGATE
-        if (op == O_NEGATE && last()?.opcode == O_NEGATE) {
-            mem.removeLast()
-            return
-        }
         mem.add(VMWord(from.lineNum, from.charNum, opcode = op))
     }
 
@@ -79,7 +80,6 @@ class Coder(val ast: Node) {
         mem.add(VMWord(from.lineNum, from.charNum, address = dest))
     }
 
-
     fun dumpText(): String {
         var s = ""
         var pc = 0
@@ -98,5 +98,91 @@ class Coder(val ast: Node) {
             pc++
         }
         return s
+    }
+
+
+    object Optimizer {
+        var source = ArrayList<VMWord>()
+        var mem = ArrayList<VMWord>()
+        val jumpMap = HashMap<Int, Int>()
+        var pc = 0
+        var lastMatchSize = 0
+
+        fun postOptimize(withSource: ArrayList<VMWord>) {
+
+            // Find all jump destinations in source
+            source = withSource
+            source.forEach { word ->
+                word.address?.also { address ->
+                    jumpMap[address] = -1
+                }
+            }
+
+            mem.clear()
+            pc = 0
+            while (pc < source.size) {
+                // If we've reached a jump dest, record its new address
+                if (jumpMap.containsKey(pc)) jumpMap[pc] = mem.size
+
+
+                // NEGATE NEGATE => ()
+                consume(O_NEGATE, O_NEGATE)?.also { }
+
+                // SETVAR GETVAR => SETGETVAR
+                ?: consume(O_SETVAR, null, O_GETVAR, null) { args ->
+                    args[0].isInt() && args[1].isInt(args[0].intFromV)
+                }?.also { args ->
+                    code(O_SETGETVAR)
+                    value(args[0].value!!)
+                }
+
+                // O_VAL 0 O_CMP_xx => O_CMP_xxZ
+                ?: consume(O_VAL, null, O_CMP_EQ) { args -> args[0].isInt(0) }?.also { code(O_CMP_EQZ) }
+                ?: consume(O_VAL, null, O_CMP_GT) { args -> args[0].isInt(0) }?.also { code(O_CMP_GTZ) }
+                ?: consume(O_VAL, null, O_CMP_GE) { args -> args[0].isInt(0) }?.also { code(O_CMP_GEZ) }
+                ?: consume(O_VAL, null, O_CMP_LT) { args -> args[0].isInt(0) }?.also { code(O_CMP_LTZ) }
+                ?: consume(O_VAL, null, O_CMP_LE) { args -> args[0].isInt(0) }?.also { code(O_CMP_LEZ) }
+
+
+                // If nothing matched, copy and continue
+                ?: run {
+                    mem.add(source[pc++])
+                }
+            }
+
+            // Replace all jump dests
+            jumpMap.keys.forEach { old ->
+                mem.forEach { word ->
+                    if (word.address == old) word.address = jumpMap[old]
+                }
+            }
+        }
+
+        // Match and consume a series of opcodes (or null for any non-opcode word).
+        private fun consume(vararg opcodes: Opcode?, check: ((List<VMWord>)->Boolean)? = null): List<VMWord>? {
+            if (opcodes.size > (source.size - pc)) return null
+            var hit = true
+            var nulls = mutableListOf<VMWord>()
+            opcodes.forEachIndexed { i, t ->
+                if (t == null) nulls.add(source[pc + i])
+                else if ((pc + i) in jumpMap.keys) hit = false  // Miss if we overlap a jump dest
+                else if (source[pc + i].opcode != t) hit = false
+            }
+            if (hit && (check?.invoke(nulls) != false)) {
+                pc += opcodes.size
+                lastMatchSize = opcodes.size
+                return nulls
+            }
+            return null
+        }
+
+        private fun code(op: Opcode) {
+            val oldword = source[pc - lastMatchSize]
+            mem.add(VMWord(oldword.lineNum, oldword.charNum, op))
+        }
+        private fun value(v: Value) {
+            val oldword = source[pc - lastMatchSize]
+            mem.add(VMWord(oldword.lineNum, oldword.charNum, value = v))
+        }
     }
 }

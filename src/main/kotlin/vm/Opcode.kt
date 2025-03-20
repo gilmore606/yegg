@@ -35,7 +35,7 @@ enum class Opcode(val argCount: Int = 0) {
     // Throw E_USER with pop0 as message.
     O_FAIL,
 
-    // TODO
+    // Call function with arg1 stack args.
     O_CALL(1),
 
     // Push variable with ID arg1.
@@ -88,5 +88,18 @@ enum class Opcode(val argCount: Int = 0) {
     O_DIV,
     O_POWER,
     O_MODULUS,
+
+
+    // Optimizer instructions
+
+    // SETVAR then GETVAR.
+    O_SETGETVAR(1),
+
+    // Compare pop0 to zero.
+    O_CMP_EQZ,
+    O_CMP_GTZ,
+    O_CMP_GEZ,
+    O_CMP_LTZ,
+    O_CMP_LEZ,
 
 }

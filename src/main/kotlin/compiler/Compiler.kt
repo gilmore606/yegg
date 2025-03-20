@@ -27,7 +27,10 @@ object Compiler {
             // Stage 3: Find variables and optimize tree nodes.
             val ast = Shaker(parser.parse()).shake()
             // Stage 4: Generate VM opcodes.
-            val coder = Coder(ast).apply { generate() }
+            val coder = Coder(ast).apply {
+                generate()
+                postOptimize()
+            }
 
             return if (withDebug)
                 Result.Success(coder.mem, tokens, ast, coder.dumpText())

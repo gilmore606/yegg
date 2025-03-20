@@ -151,6 +151,9 @@ class VM(val code: List<VMWord> = listOf()) {
                     val a1 = pop()
                     variables[varID] = a1
                 }
+                O_SETGETVAR -> {
+                    variables[next().intFromV] = stack.peek()
+                }
                 O_INCVAR, O_DECVAR -> {
                     val varID = next().intFromV
                     variables[varID]?.also {
@@ -230,6 +233,11 @@ class VM(val code: List<VMWord> = listOf()) {
                         else -> { }
                     }
                 }
+                O_CMP_EQZ -> { push(VBool(pop().cmpEq(VInt(0)))) }
+                O_CMP_GTZ -> { push(VBool(pop().cmpGt(VInt(0)))) }
+                O_CMP_GEZ -> { push(VBool(pop().cmpGe(VInt(0)))) }
+                O_CMP_LTZ -> { push(VBool(pop().cmpLt(VInt(0)))) }
+                O_CMP_LEZ -> { push(VBool(pop().cmpLe(VInt(0)))) }
 
                 // Math ops
 
@@ -270,6 +278,12 @@ class VMWord(
     fun fillAddress(newAddress: Int) { address = newAddress }
 
     override fun toString() = opcode?.toString() ?: value?.toString() ?: address?.let { "<$it>" } ?: "!!NULL!!"
+
+    fun isInt(equals: Int? = null): Boolean {
+        if (value !is VInt) return false
+        if (equals == null) return true
+        return (value.v == equals)
+    }
 
     // If this is known to be an int opcode arg, just get the int value.
     val intFromV: Int
