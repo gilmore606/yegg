@@ -1,33 +1,33 @@
-package com.dlfsystems
+package com.dlfsystems.app
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
-import io.ktor.serialization.kotlinx.json.*
+import com.dlfsystems.Yegg
+import com.dlfsystems.compiler.Compiler
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
-import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
-import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-fun Application.configureSockets() {
+fun Application.configureRouting() {
+
     install(WebSockets) {
         pingPeriod = 15.seconds
         timeout = 15.seconds
         maxFrameSize = Long.MAX_VALUE
         masking = false
     }
+
     routing {
+
         webSocket("/ws") { // websocketSession
             val conn = Yegg.Connection()
             for (frame in incoming) {
                 if (frame is Frame.Text) {
                     val text = frame.readText()
-                    outgoing.send(Frame.Text(
+                    outgoing.send(
+                        Frame.Text(
                         conn.receiveText(text)
                     ))
                     if (conn.quitRequested) {
@@ -36,5 +36,25 @@ fun Application.configureSockets() {
                 }
             }
         }
+
+        post("/eval") {
+            val code = call.receiveText()
+            call.respondText(
+                Compiler.eval(code, verbose = true)
+            )
+        }
+
+        post("/program/{traitName}/{funcName}")  {
+            val code = call.receiveText()
+            var result = ""
+            call.parameters["traitName"]?.also { traitName ->
+                call.parameters["funcName"]?.also { funcName ->
+                    result = Yegg.programFunc(traitName, funcName, code)
+                }
+            }
+            call.respondText(result)
+        }
+
     }
 }
+

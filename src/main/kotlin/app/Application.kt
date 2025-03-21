@@ -1,5 +1,6 @@
-package com.dlfsystems
+package com.dlfsystems.app
 
+import com.dlfsystems.Yegg
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -10,10 +11,9 @@ fun main() {
 }
 
 fun Application.module() {
-    configureSecurity()
-    configureSerialization()
-    configureSockets()
-    configureRouting()
 
     Yegg.start()
+
+    configureRouting()
+
 }
