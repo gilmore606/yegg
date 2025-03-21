@@ -16,7 +16,13 @@ class VM(val code: List<VMWord> = listOf()) {
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
-    private fun fail(c: VMException.Type, m: String) { throw VMException(c, "$m [pc: ${pc-1} ${code[pc-1]}]", code[pc].lineNum, code[pc].charNum) }
+    // TODO: find some better way to throw up
+    private fun fail(c: VMException.Type, m: String) {
+        val lineNum = code.getOrNull(pc)?.let { it.lineNum } ?: 0
+        val charNum = code.getOrNull(pc)?.let { it.charNum } ?: 0
+        throw VMException(c, m, lineNum, charNum)
+    }
+
     private inline fun push(v: Value) = stack.addFirst(v)
     private inline fun peek() = stack.first()
     private inline fun pop() = stack.removeFirst()

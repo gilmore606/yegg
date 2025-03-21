@@ -4,6 +4,7 @@ import com.dlfsystems.Yegg
 import com.dlfsystems.compiler.ast.Node
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VM
+import com.dlfsystems.vm.VMException
 import com.dlfsystems.vm.VMWord
 
 object Compiler {
@@ -47,7 +48,7 @@ object Compiler {
             try {
                 VM(outcode).execute(Context(Yegg.world)).also { vmResult = it.asString() }
             } catch (e: Exception) {
-                vmResult = e.toString() + "\n" + e.stackTrace.joinToString("\n  ")
+                vmResult = if (e is VMException) e.toString() else e.toString() + "\n" + e.stackTrace.joinToString("\n  ")
             }
         }
         return "TOKENS:\n${compilerResult.tokens}\n\nNODES:\n${compilerResult.ast}\n\nCODE:\n${compilerResult.opcodeDump}\n\nRESULT:\n$vmResult\n"
