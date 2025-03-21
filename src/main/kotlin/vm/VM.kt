@@ -28,7 +28,7 @@ class VM(val code: List<VMWord> = listOf()) {
     // Given a Context, execute each word of the input code starting from pc=0.
     // Mutate the stack and variables as we go.
     // Return back a Value (VVoid if no explicit return).
-    fun execute(context: Context? = null): Value? {
+    fun execute(context: Context? = null): Value {
         // Intercept success or failure, so we get to clean up either way.
         var returnValue: Value? = null
         var exception: Exception? = null
@@ -42,10 +42,10 @@ class VM(val code: List<VMWord> = listOf()) {
         variables.clear()
         // Then we succeed or fail.
         exception?.also { throw it }
-        return returnValue
+        return returnValue!!
     }
 
-    private fun executeCode(c: Context): Value? {
+    private fun executeCode(c: Context): Value {
         pc = 0
         val stackLimit = (c.world.getSysValue(c, "stackLimit") as VInt).v
         var ticksLeft = c.ticksLeft
@@ -115,7 +115,7 @@ class VM(val code: List<VMWord> = listOf()) {
                 }
                 O_RETURNNULL -> {
                     if (stack.isNotEmpty()) fail(E_SYS, "stack polluted on return!")
-                    return null
+                    return VVoid()
                 }
                 O_FAIL -> {
                     val a = pop()
@@ -261,7 +261,7 @@ class VM(val code: List<VMWord> = listOf()) {
                 else -> fail(E_SYS, "unknown opcode $word")
             }
         }
-        return null
+        return if (stack.isEmpty()) VVoid() else pop()
     }
 
 }
