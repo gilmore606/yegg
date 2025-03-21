@@ -23,15 +23,13 @@ fun Application.configureSockets() {
     }
     routing {
         webSocket("/ws") { // websocketSession
+            val conn = Yegg.Connection()
             for (frame in incoming) {
                 if (frame is Frame.Text) {
                     val text = frame.readText()
-                    if (text.equals("bye", ignoreCase = true)) {
-                        close(CloseReason(CloseReason.Codes.NORMAL, "Client said BYE"))
-                    } else {
-                        val reply = Yegg.receiveText(text)
-                        outgoing.send(Frame.Text(reply))
-                    }
+                    outgoing.send(Frame.Text(
+                        conn.receiveText(text)
+                    ))
                 }
             }
         }
