@@ -416,7 +416,7 @@ class Parser(inputTokens: List<Token>) {
                         } ?: run { moreArgs = false }
                     }
                     expectCloseParen()
-                    newLeft = node(N_FUNCREF(left, right, args))
+                    newLeft = node(N_VERBREF(left, right, args))
                 } ?: run {
                     newLeft = node(N_PROPREF(left, right))
                 }

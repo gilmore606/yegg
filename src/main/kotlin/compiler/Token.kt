@@ -68,7 +68,7 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_EOF("EOF");
 }
 
-// A token lexed from a func source string, with its source string and line/char position for tracebacks.
+// A token lexed from a verb source string, with its source string and line/char position for tracebacks.
 data class Token(
     val type: TokenType,
     val string: String,

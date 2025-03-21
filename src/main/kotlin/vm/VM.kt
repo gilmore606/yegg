@@ -5,7 +5,7 @@ import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
 
-// A stack machine for executing a func.
+// A stack machine for executing a verb.
 
 class VM(val code: List<VMWord> = listOf()) {
 
@@ -128,7 +128,7 @@ class VM(val code: List<VMWord> = listOf()) {
                     fail(E_USER, a.asString())
                 }
 
-                // Func ops
+                // Verb ops
 
                 O_CALL -> {
                     val argCount = next().intFromV
@@ -137,10 +137,10 @@ class VM(val code: List<VMWord> = listOf()) {
                     repeat(argCount) { args.add(pop()) }
                     if (a2 is VString) {
                         c.ticksLeft = ticksLeft
-                        // TODO: put our frame on the callstack (opt: skip this for builtin type funcs?)
-                        a1.callFunc(c, a2.v, args)?.also { push(it) }
-                            ?: fail(E_FUNCNF, "func not found")
-                    } else fail(E_FUNCNF, "func name must be string")
+                        // TODO: put our frame on the callstack (opt: skip this for builtin type verbs?)
+                        a1.callVerb(c, a2.v, args)?.also { push(it) }
+                            ?: fail(E_VERBNF, "verb not found")
+                    } else fail(E_VERBNF, "verb name must be string")
                     // TODO: pop our frame off the callstack
                     ticksLeft = c.ticksLeft
                 }

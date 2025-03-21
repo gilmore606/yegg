@@ -5,20 +5,20 @@ import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMWord
 import java.util.*
 
-// A collection of funcs and props, which can apply to an Obj.
+// A collection of verbs and props, which can apply to an Obj.
 
 open class Trait(val name: String) {
 
     val id: UUID = UUID.randomUUID()
 
-    val funcs: MutableMap<String, Func> = mutableMapOf()
+    val verbs: MutableMap<String, Verb> = mutableMapOf()
     open val props: MutableMap<String, Value> = mutableMapOf()
 
-    fun programFunc(name: String, code: List<VMWord>) {
-        funcs[name]?.also {
+    fun programVerb(name: String, code: List<VMWord>) {
+        verbs[name]?.also {
             it.program(code)
         } ?: {
-            funcs[name] = Func(name).apply { program(code) }
+            verbs[name] = Verb(name).apply { program(code) }
         }
     }
 
@@ -28,9 +28,9 @@ open class Trait(val name: String) {
         return true
     }
 
-    open fun callFunc(c: Context, name: String, args: List<Value>): Value? {
-        funcs[name]?.also {
-            // TODO execute func w args
+    open fun callVerb(c: Context, name: String, args: List<Value>): Value? {
+        verbs[name]?.also {
+            // TODO execute verb w args
         }
         return null
     }

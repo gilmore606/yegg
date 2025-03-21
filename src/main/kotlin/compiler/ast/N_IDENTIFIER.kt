@@ -3,16 +3,16 @@ package com.dlfsystems.compiler.ast
 import com.dlfsystems.compiler.Coder
 import com.dlfsystems.vm.Opcode.*
 
-// A bare string in source code, which in context may resolve to a trait, property, or function.
+// A bare string in source code, which in context may resolve to a trait, property, or verb.
 // Without other context, assumed to refer to a variable.
 
 class N_IDENTIFIER(val name: String): N_EXPR() {
-    enum class Type { VARIABLE, TRAIT_NAME, PROP_NAME, FUNC_NAME }
+    enum class Type { VARIABLE, TRAIT_NAME, PROP_NAME, VERB_NAME }
     var type: Type = Type.VARIABLE
 
     fun markAsTrait() { type = Type.TRAIT_NAME }
     fun markAsProp() { type = Type.PROP_NAME }
-    fun markAsFunc() { type = Type.FUNC_NAME }
+    fun markAsVerb() { type = Type.VERB_NAME }
 
     fun isVariable() = type == Type.VARIABLE
     var variableID: Int? = null
@@ -98,11 +98,11 @@ class N_PROPREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
 
 }
 
-class N_FUNCREF(val left: N_EXPR, val right: N_EXPR, val args: List<N_EXPR>): N_EXPR() {
+class N_VERBREF(val left: N_EXPR, val right: N_EXPR, val args: List<N_EXPR>): N_EXPR() {
     override fun toText() = "$left.$right($args)"
     override fun kids() = mutableListOf(left, right).apply { addAll(args) }
 
-    override fun identify() { (right as? N_IDENTIFIER)?.markAsFunc() }
+    override fun identify() { (right as? N_IDENTIFIER)?.markAsVerb() }
 
     override fun code(coder: Coder) {
         args.forEach { it.code(coder) }

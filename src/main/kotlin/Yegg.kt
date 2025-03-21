@@ -15,7 +15,7 @@ object Yegg {
         }
     }
 
-    fun programFunc(traitName: String, funcName: String, code: String): String = world.programFunc(traitName, funcName, code)
+    fun programVerb(traitName: String, name: String, code: String): String = world.programVerb(traitName, name, code)
 
     // Receive text from websocket.  Just a basic REPL for now.
     // TODO: users, auth, *waves hands*

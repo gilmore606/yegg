@@ -23,14 +23,14 @@ class SysTrait : Trait("sys") {
         return super.getProp(c, name)
     }
 
-    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
         when (name) {
-            "addTrait" -> return funcAddTrait(c, args)
+            "addTrait" -> return verbAddTrait(c, args)
         }
         return null
     }
 
-    private fun funcAddTrait(c: Context, args: List<Value>): Value {
+    private fun verbAddTrait(c: Context, args: List<Value>): Value {
         if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for addTrait")
         c.world.addTrait(args[0].asString())
         return VVoid()

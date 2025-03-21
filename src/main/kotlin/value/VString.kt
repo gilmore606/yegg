@@ -77,13 +77,13 @@ data class VString(var v: String): Value() {
         return false
     }
 
-    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
         when (name) {
-            "split" -> return funcSplit(args)
-            "contains" -> return funcContains(args)
-            "startsWith" -> return funcStartsWith(args)
-            "endsWith" -> return funcEndsWith(args)
-            "indexOf" -> return funcIndexOf(args)
+            "split" -> return verbSplit(args)
+            "contains" -> return verbContains(args)
+            "startsWith" -> return verbStartsWith(args)
+            "endsWith" -> return verbEndsWith(args)
+            "indexOf" -> return verbIndexOf(args)
         }
         return null
     }
@@ -97,9 +97,9 @@ data class VString(var v: String): Value() {
     private fun propIsEmpty() = VBool(v.isEmpty())
     private fun propIsNotEmpty() = VBool(v.isNotEmpty())
 
-    // Custom funcs
+    // Custom verbs
 
-    private fun funcSplit(args: List<Value>): Value {
+    private fun verbSplit(args: List<Value>): Value {
         requireArgCount(args, 0, 1)
         return VList(
             v.split(
@@ -108,22 +108,22 @@ data class VString(var v: String): Value() {
         )
     }
 
-    private fun funcContains(args: List<Value>): Value {
+    private fun verbContains(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         return VBool(v.contains(args[0].asString()))
     }
 
-    private fun funcStartsWith(args: List<Value>): Value {
+    private fun verbStartsWith(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         return VBool(v.startsWith(args[0].asString()))
     }
 
-    private fun funcEndsWith(args: List<Value>): Value {
+    private fun verbEndsWith(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         return VBool(v.endsWith(args[0].asString()))
     }
 
-    private fun funcIndexOf(args: List<Value>): Value {
+    private fun verbIndexOf(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         val s = args[0].asString()
         return if (v.contains(s)) VInt(v.indexOf(s)) else VInt(-1)
