@@ -19,7 +19,7 @@ class World {
 
     fun getSysValue(c: Context, name: String): Value = getTrait("sys")!!.getProp(c, name)!!
 
-    fun createTrait(name: String): Trait {
+    fun addTrait(name: String): Trait {
         if (traits.values.none { it.name == name }) {
             return (if (name == "sys") SysTrait() else Trait(name)).also {
                 traits[it.id] = it

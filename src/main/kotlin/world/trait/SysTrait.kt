@@ -1,6 +1,8 @@
 package com.dlfsystems.world.trait
 
 import com.dlfsystems.value.VInt
+import com.dlfsystems.value.VString
+import com.dlfsystems.value.VVoid
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 
@@ -19,6 +21,19 @@ class SysTrait : Trait("sys") {
             "time" -> return VInt((System.currentTimeMillis() / 1000L).toInt())
         }
         return super.getProp(c, name)
+    }
+
+    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+        when (name) {
+            "addTrait" -> return funcAddTrait(c, args)
+        }
+        return null
+    }
+
+    private fun funcAddTrait(c: Context, args: List<Value>): Value {
+        if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for addTrait")
+        c.world.addTrait(args[0].asString())
+        return VVoid()
     }
 
 }
