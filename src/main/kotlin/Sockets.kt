@@ -30,6 +30,9 @@ fun Application.configureSockets() {
                     outgoing.send(Frame.Text(
                         conn.receiveText(text)
                     ))
+                    if (conn.quitRequested) {
+                        close(CloseReason(CloseReason.Codes.NORMAL, "Client requested close"))
+                    }
                 }
             }
         }
