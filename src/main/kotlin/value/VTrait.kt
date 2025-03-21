@@ -38,4 +38,8 @@ data class VTrait(val v: UUID?): Value() {
 
     // Custom funcs
 
+    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+        val trait = getTrait(c)
+        return trait?.callFunc(c, name, args)
+    }
 }

@@ -28,4 +28,11 @@ open class Trait(val name: String) {
         return true
     }
 
+    open fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+        funcs[name]?.also {
+            // TODO execute func w args
+        }
+        return null
+    }
+
 }

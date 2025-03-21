@@ -1,6 +1,5 @@
 package com.dlfsystems
 
-import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.world.World
 
 object Yegg {
@@ -10,8 +9,8 @@ object Yegg {
     fun start() {
         // TODO: load from file
         world = World().apply {
-            createTrait("sys")
-            createTrait("user")
+            addTrait("sys")
+            addTrait("user")
         }
     }
 
