@@ -16,12 +16,12 @@ class VM(val code: List<VMWord> = listOf()) {
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
-    // TODO: find some better way to throw up
-    private fun fail(c: VMException.Type, m: String) {
-        val lineNum = code.getOrNull(pc)?.let { it.lineNum } ?: 0
-        val charNum = code.getOrNull(pc)?.let { it.charNum } ?: 0
-        throw VMException(c, m, lineNum, charNum)
-    }
+    // Preserve error position.
+    private val lineNum: Int
+        get() = code.getOrNull(pc)?.let { it.lineNum } ?: 0
+    private val charNum: Int
+        get() = code.getOrNull(pc)?.let { it.charNum } ?: 0
+    private fun fail(type: VMException.Type, m: String) { throw VMException(type, m, lineNum, charNum) }
 
     private inline fun push(v: Value) = stack.addFirst(v)
     private inline fun peek() = stack.first()
@@ -34,14 +34,14 @@ class VM(val code: List<VMWord> = listOf()) {
     // Given a Context, execute each word of the input code starting from pc=0.
     // Mutate the stack and variables as we go.
     // Return back a Value (VVoid if no explicit return).
-    fun execute(context: Context? = null): Value {
+    fun execute(c: Context? = null): Value {
         // Intercept success or failure, so we get to clean up either way.
         var returnValue: Value? = null
         var exception: Exception? = null
         try {
-            returnValue = executeCode(context ?: Context())
+            returnValue = executeCode(c ?: Context())
         } catch (e: Exception) {
-            exception = e
+            exception = e as? VMException ?: VMException(E_SYS, e.toString(), lineNum, charNum)
         }
         // Win or lose, we clean up after.
         stack.clear()

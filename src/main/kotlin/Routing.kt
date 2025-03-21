@@ -21,7 +21,7 @@ fun Application.configureRouting() {
         post("/eval") {
             val code = call.receiveText()
             call.respondText(
-                Compiler.eval(code)
+                Compiler.eval(code, verbose = true)
             )
         }
         post("/program/{traitName}/{funcName}")  {

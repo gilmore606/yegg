@@ -41,7 +41,7 @@ object Compiler {
 
 
 
-    fun eval(code: String): String {
+    fun eval(code: String, verbose: Boolean = false): String {
         val compilerResult = compile(code)
         var vmResult = ""
         compilerResult.code?.also { outcode ->
@@ -51,7 +51,9 @@ object Compiler {
                 vmResult = if (e is VMException) e.toString() else e.toString() + "\n" + e.stackTrace.joinToString("\n  ")
             }
         }
-        return "TOKENS:\n${compilerResult.tokens}\n\nNODES:\n${compilerResult.ast}\n\nCODE:\n${compilerResult.opcodeDump}\n\nRESULT:\n$vmResult\n"
+        return if (verbose)
+            "TOKENS:\n${compilerResult.tokens}\n\nNODES:\n${compilerResult.ast}\n\nCODE:\n${compilerResult.opcodeDump}\n\nRESULT:\n$vmResult\n"
+        else "$vmResult\n"
     }
 
 }

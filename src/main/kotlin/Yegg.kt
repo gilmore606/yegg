@@ -20,6 +20,6 @@ object Yegg {
     // Receive text from websocket.  Just a basic REPL for now.
     // TODO: users, auth, *waves hands*
     fun receiveText(text: String): String {
-        return Compiler.eval("$text")
+        return Compiler.eval(text)
     }
 }
