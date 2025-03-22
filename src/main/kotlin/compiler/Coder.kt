@@ -80,26 +80,6 @@ class Coder(val ast: Node) {
         mem.add(VMWord(from.lineNum, from.charNum, address = dest))
     }
 
-    fun dumpText(): String {
-        var s = ""
-        var pc = 0
-        while (pc < mem.size) {
-            val cell = mem[pc]
-            s += "<$pc> "
-            s += cell.toString()
-            cell.opcode?.also { opcode ->
-                repeat (opcode.argCount) {
-                    pc++
-                    val arg = mem[pc]
-                    s += " $arg"
-                }
-            }
-            s += "\n"
-            pc++
-        }
-        return s
-    }
-
 
     object Optimizer {
         var source = ArrayList<VMWord>()

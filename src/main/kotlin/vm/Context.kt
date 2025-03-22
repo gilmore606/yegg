@@ -12,7 +12,7 @@ class Context(
 ) {
 
     var vThis: VObj = VObj(null)
-    var vPlayer: VObj = VObj(null)
+    var vUser: VObj = VObj(null)
 
     var ticksLeft: Int = (world.getSysValue(this, "tickLimit") as VInt).v
     val callStack = VMCallstack()

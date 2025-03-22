@@ -37,6 +37,7 @@ object Yegg {
             val words = text.split(" ")
             return when (words[0].substring(1, words[0].length)) {
                 "program" -> parseProgram(words)
+                "list" -> parseList(words)
                 "quit" -> parseQuit(words)
                 else -> "I don't understand that."
             }
@@ -48,6 +49,13 @@ object Yegg {
             if (terms.size != 2) return "@program what?"
             programming = Pair(terms[0], terms[1])
             return "Enter verbcode.  Terminate with '.' on a line by itself."
+        }
+
+        fun parseList(words: List<String>): String {
+            if (words.size < 2) return "@list what?"
+            val terms = words[1].split(".")
+            if (terms.size != 2) return "@list what?"
+            return world.listVerb(terms[0], terms[1])
         }
 
         fun parseQuit(words: List<String>): String {

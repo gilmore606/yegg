@@ -1,16 +1,15 @@
 package com.dlfsystems.compiler
 
 import com.dlfsystems.Yegg
+import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.ast.Node
-import com.dlfsystems.vm.Context
-import com.dlfsystems.vm.VM
-import com.dlfsystems.vm.VMException
-import com.dlfsystems.vm.VMWord
+import com.dlfsystems.vm.*
 
 object Compiler {
 
     class Result {
         var code: List<VMWord>? = null
+        var variableIDs: Map<String, Int>? = null
         var tokens: List<Token>? = null
         var ast: Node? = null
         var opcodeDump: String? = null
@@ -25,13 +24,15 @@ object Compiler {
             // Stage 2: Parse tokens into AST nodes.
             val parser = Parser(result.tokens!!)
             // Stage 3: Find variables and optimize tree nodes.
-            result.ast = Shaker(parser.parse()).shake()
+            val shaker = Shaker(parser.parse())
+            result.ast = shaker.shake()
+            result.variableIDs = shaker.variableIDs
             // Stage 4: Generate VM opcodes.
             val coder = Coder(result.ast!!).apply {
                 generate()
                 postOptimize()
             }
-            result.opcodeDump = coder.dumpText()
+            result.opcodeDump = coder.mem.dumpText()
             result.code = coder.mem
         } catch (e: Exception) {
             result.e = e
@@ -42,9 +43,11 @@ object Compiler {
 
 
     fun eval(code: String, verbose: Boolean = false): String {
+        Log.i("eval: $code")
         val compilerResult = compile(code)
         var vmResult = ""
         compilerResult.code?.also { outcode ->
+            Log.i("opcodes: \n${outcode.dumpText()}")
             try {
                 VM(outcode).execute(Context(Yegg.world)).also { vmResult = it.asString() }
             } catch (e: Exception) {
