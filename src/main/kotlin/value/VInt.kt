@@ -48,6 +48,6 @@ data class VInt(val v: Int): Value() {
     private fun propAsFloat() = VFloat(v.toFloat())
     private fun propAsString() = VString(asString())
 
-    // Custom funcs
+    // Custom verbs
 
 }

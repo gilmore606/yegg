@@ -43,13 +43,12 @@ fun Application.configureRouting() {
                 Compiler.eval(code, verbose = true)
             )
         }
-
-        post("/program/{traitName}/{funcName}")  {
+        post("/program/{traitName}/{verbName}")  {
             val code = call.receiveText()
             var result = ""
             call.parameters["traitName"]?.also { traitName ->
-                call.parameters["funcName"]?.also { funcName ->
-                    result = Yegg.programFunc(traitName, funcName, code)
+                call.parameters["verbName"]?.also { verbName ->
+                    result = Yegg.programVerb(traitName, verbName, code)
                 }
             }
             call.respondText(result)

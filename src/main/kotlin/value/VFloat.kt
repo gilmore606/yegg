@@ -54,6 +54,6 @@ data class VFloat(val v: Float): Value() {
     private fun propFloor() = VFloat(floor(v))
     private fun propCeil() = VFloat(ceil(v))
 
-    // Custom funcs
+    // Custom verbs
 
 }

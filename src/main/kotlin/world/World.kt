@@ -31,12 +31,12 @@ class World {
 
     fun createObj() = Obj().also { objs[it.id] = it }
 
-    fun programFunc(traitName: String, funcName: String, code: String): String {
+    fun programVerb(traitName: String, name: String, code: String): String {
         getTrait(traitName)?.also { trait ->
             val result = Compiler.compile(code)
             result.code?.also { outcode ->
-                trait.programFunc(funcName, outcode)
-                return "programmed \$${traitName}.${funcName} (${outcode.size} words)"
+                trait.programVerb(name, outcode)
+                return "programmed \$${traitName}.${name} (${outcode.size} words)"
             } ?: return "compile error: ${result.e}"
         } ?: return "ERR: unknown trait"
     }

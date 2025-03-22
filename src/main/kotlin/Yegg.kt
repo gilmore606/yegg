@@ -16,7 +16,7 @@ object Yegg {
         fun receiveText(text: String): String {
             programming?.also { verb ->
                 if (text == ".") {
-                    val result = programFunc(verb.first, verb.second, buffer.joinToString("\n"))
+                    val result = programVerb(verb.first, verb.second, buffer.joinToString("\n"))
                     buffer.clear()
                     programming = null
                     return result
@@ -66,6 +66,6 @@ object Yegg {
         }
     }
 
-    fun programFunc(traitName: String, funcName: String, code: String): String = world.programFunc(traitName, funcName, code)
+    fun programVerb(traitName: String, name: String, code: String): String = world.programVerb(traitName, name, code)
 
 }

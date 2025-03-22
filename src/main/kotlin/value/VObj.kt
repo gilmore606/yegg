@@ -32,6 +32,6 @@ data class VObj(val v: UUID?): Value() {
 
     private fun propAsString() = VString(toString())
 
-    // Custom funcs
+    // Custom verbs
 
 }

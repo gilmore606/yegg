@@ -4,7 +4,7 @@ import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VM
 import com.dlfsystems.vm.VMWord
 
-class Func(
+class Verb(
     val name: String,
 ) {
     var vm = VM()
@@ -15,8 +15,4 @@ class Func(
 
     fun execute(context: Context) = vm.execute(context)
 
-    // The function's argument signature.
-    class Sig() {
-
-    }
 }

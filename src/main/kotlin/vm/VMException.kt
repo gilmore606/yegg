@@ -16,8 +16,8 @@ class VMException(val type: Type, val m: String, val lineNum: Int, val charNum: 
         // Trait not found
         E_TRAITNF,
 
-        // Func not found
-        E_FUNCNF,
+        // Verb not found
+        E_VERBNF,
 
         // List or map accessed out of range
         E_RANGE,

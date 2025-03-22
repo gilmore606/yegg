@@ -13,7 +13,7 @@ class Shaker(val root: Node) {
 
     fun shake(): Node {
 
-        // Identify all non-variable identifiers (prop and func refs).
+        // Identify all non-variable identifiers (prop and verb refs).
         root.traverse { it.identify() }
 
         // Collect all unique variable names.

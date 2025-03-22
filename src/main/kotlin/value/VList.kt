@@ -69,13 +69,13 @@ data class VList(var v: MutableList<Value>): Value() {
         return false
     }
 
-    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
         when (name) {
-            "join" -> return funcJoin(args)
-            "push" -> return funcPush(args)
-            "pop" -> return funcPop(args)
-            "contains" -> return funcContains(args)
-            "indexOf" -> return funcIndexOf(args)
+            "join" -> return verbJoin(args)
+            "push" -> return verbPush(args)
+            "pop" -> return verbPop(args)
+            "contains" -> return verbContains(args)
+            "indexOf" -> return verbIndexOf(args)
         }
         return null
     }
@@ -87,9 +87,9 @@ data class VList(var v: MutableList<Value>): Value() {
     private fun propIsEmpty(): Value = VBool(v.isEmpty())
     private fun propIsNotEmpty(): Value = VBool(v.isNotEmpty())
 
-    // Custom funcs
+    // Custom verbs
 
-    private fun funcJoin(args: List<Value>): Value {
+    private fun verbJoin(args: List<Value>): Value {
         requireArgCount(args, 0, 1)
         return VString(
             v.joinToString(
@@ -98,24 +98,24 @@ data class VList(var v: MutableList<Value>): Value() {
         )
     }
 
-    private fun funcPush(args: List<Value>): Value {
+    private fun verbPush(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         v.add(0, args[0])
         return VVoid()
     }
 
-    private fun funcPop(args: List<Value>): Value {
+    private fun verbPop(args: List<Value>): Value {
         requireArgCount(args, 0, 0)
         if (v.isEmpty()) fail(E_RANGE, "cannot pop empty list")
         return v.removeAt(0)
     }
 
-    private fun funcContains(args: List<Value>): Value {
+    private fun verbContains(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         return VBool(v.contains(args[0]))
     }
 
-    private fun funcIndexOf(args: List<Value>): Value {
+    private fun verbIndexOf(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         return if (v.contains(args[0])) VInt(v.indexOf(args[0])) else VInt(-1)
     }

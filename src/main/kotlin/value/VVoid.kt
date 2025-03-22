@@ -23,6 +23,6 @@ data class VVoid(val v: Unit = Unit): Value() {
 
     private fun propAsString() = VString(asString())
 
-    // Custom funcs
+    // Custom verbs
 
 }

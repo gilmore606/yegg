@@ -54,6 +54,6 @@ sealed class Value {
     open fun setIndex(c: Context, index: Value, value: Value): Boolean = false
     open fun setRange(c: Context, from: Value, to: Value, value: Value): Boolean = false
 
-    // Call a func on this type and return its value.  Null raises E_FUNCNF.
-    open fun callFunc(c: Context, name: String, args: List<Value>): Value? = null
+    // Call a verb on this type and return its value.  Null raises E_VERBNF.
+    open fun callVerb(c: Context, name: String, args: List<Value>): Value? = null
 }

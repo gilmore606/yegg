@@ -36,10 +36,10 @@ data class VTrait(val v: UUID?): Value() {
         VString("$" + c.world.getTrait(v)?.name)
     } ?: VString(asString())
 
-    // Custom funcs
+    // Custom verbs
 
-    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
         val trait = getTrait(c)
-        return trait?.callFunc(c, name, args)
+        return trait?.callVerb(c, name, args)
     }
 }

@@ -37,10 +37,10 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
         return true
     }
 
-    override fun callFunc(c: Context, name: String, args: List<Value>): Value? {
+    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
         when (name) {
-            "containsKey" -> return funcContainsKey(args)
-            "containsValue" -> return funcContainsValue(args)
+            "hasKey" -> return verbHasKey(args)
+            "hasValue" -> return verbHasValue(args)
         }
         return null
     }
@@ -51,14 +51,14 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
     private fun propKeys() = VList(v.keys.toMutableList())
     private fun propValues() = VList(v.values.toMutableList())
 
-    // Custom funcs
+    // Custom verbs
 
-    private fun funcContainsKey(args: List<Value>): Value {
+    private fun verbHasKey(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         return VBool(v.containsKey(args[0]))
     }
 
-    private fun funcContainsValue(args: List<Value>): Value {
+    private fun verbHasValue(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         return VBool(v.containsValue(args[0]))
     }
