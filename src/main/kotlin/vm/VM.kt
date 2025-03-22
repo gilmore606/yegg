@@ -284,7 +284,7 @@ class VM(
 // An atom of VM opcode memory.
 // Can hold an Opcode, a Value, or an int representing a memory address (for jumps).
 // TODO: rework this as a sealed class like Value
-class VMWord(
+data class VMWord(
     val lineNum: Int, val charNum: Int,
     val opcode: Opcode? = null, val value: Value? = null, var address: Int? = null
 ) {

@@ -1,18 +1,21 @@
 package com.dlfsystems.app
 
-// TODO: write actual logfile, server log level, etc
+import com.dlfsystems.Yegg
+
 object Log {
 
-    fun i(m: String) {
-        println(m)
-    }
+    enum class Level { DEBUG, INFO, WARN, ERR }
 
-    fun w(m: String) {
-        println("WARN: $m")
-    }
+    fun d(m: String) { log(Level.DEBUG, m) }
+    fun i(m: String) { log(Level.INFO, m) }
+    fun w(m: String) { log(Level.WARN, m) }
+    fun e(m: String) { log(Level.ERR, m) }
 
-    fun e(m: String) {
-        println("ERR: $m")
+    // TODO: write actual logfile
+    private fun log(level: Level, m: String) {
+        if (level >= Yegg.logLevel) {
+            println("$level: $m")
+        }
     }
 
 }

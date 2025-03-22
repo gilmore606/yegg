@@ -15,11 +15,11 @@ open class Trait(val name: String) {
     val verbs: MutableMap<String, Verb> = mutableMapOf()
     open val props: MutableMap<String, Value> = mutableMapOf()
 
-    fun programVerb(name: String, code: List<VMWord>, variableIDs: Map<String, Int>) {
-        verbs[name]?.also {
+    fun programVerb(verbName: String, code: List<VMWord>, variableIDs: Map<String, Int>) {
+        verbs[verbName]?.also {
             it.program(code, variableIDs)
         } ?: run {
-            verbs[name] = Verb(name).apply { program(code, variableIDs) }
+            verbs[verbName] = Verb(verbName).apply { program(code, variableIDs) }
         }
     }
 
@@ -30,9 +30,9 @@ open class Trait(val name: String) {
     }
 
     open fun callVerb(c: Context, verbName: String, args: List<Value>): Value? {
-        verbs[verbName]?.also { verb ->
-            Log.i("Call \$$name.$verbName($args)")
-            return verb.call(c, args)
+        verbs[verbName]?.also {
+            Log.i("static verb call: \$$name.$verbName($args)")
+            return it.call(c, args)
         }
         return null
     }

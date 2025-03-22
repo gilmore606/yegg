@@ -46,11 +46,11 @@ object Compiler {
     }
 
     fun eval(code: String, verbose: Boolean = false): String {
-        Log.i("eval: $code")
+        Log.d("eval: $code")
         var cOut: Compiler.Result? = null
         try {
             cOut = compile(code)
-            Log.i("opcodes: \n${cOut.code.dumpText()}")
+            Log.d("  opcodes: \n${cOut.code.dumpText()}")
             val vmOut = VM(cOut.code).execute(Context(Yegg.world)).asString()
             return if (verbose) {
                 "TOKENS:\n${cOut.tokens}\n\nNODES:\n${cOut.ast}\n\nCODE:\n${cOut.code.dumpText()}\nRESULT:\n$vmOut\n"

@@ -1,5 +1,6 @@
 package com.dlfsystems
 
+import com.dlfsystems.app.Log
 import com.dlfsystems.world.World
 import com.dlfsystems.compiler.Compiler
 
@@ -64,6 +65,8 @@ object Yegg {
         }
     }
 
+
+    var logLevel: Log.Level = Log.Level.DEBUG
     lateinit var world: World
 
     fun start() {
