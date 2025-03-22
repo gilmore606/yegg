@@ -32,14 +32,12 @@ class World {
     fun createObj() = Obj().also { objs[it.id] = it }
 
     fun programFunc(traitName: String, funcName: String, code: String): String {
-        if (!traitIDs.contains(traitName)) { return "ERR: unknown trait" }
-        val result = Compiler.compile(code)
-        when (result) {
-            is Compiler.Result.Failure -> return result.toString()
-            is Compiler.Result.Success -> {
-                getTrait(traitName)!!.programFunc(funcName, result.code)
-                return "programmed \$${traitName}.${funcName} (${result.code.size} words)"
-            }
-        }
+        getTrait(traitName)?.also { trait ->
+            val result = Compiler.compile(code)
+            result.code?.also { outcode ->
+                trait.programFunc(funcName, outcode)
+                return "programmed \$${traitName}.${funcName} (${outcode.size} words)"
+            } ?: return "compile error: ${result.e}"
+        } ?: return "ERR: unknown trait"
     }
 }

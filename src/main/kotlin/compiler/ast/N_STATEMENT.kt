@@ -148,7 +148,12 @@ class N_EXPRSTATEMENT(val expr: N_EXPR): N_STATEMENT() {
     override fun code(coder: Coder) {
         expr.code(coder)
         // Since this expression is in a statement context, discard its result to avoid stack pollution.
-        coder.code(this, O_DISCARD)
+        // TODO: Determine if there are actual circumstances this would matter.  I can't think of any --
+        // TODO: expressions can't have statements inside them, so stack integrity seems to only matter
+        // TODO: within an expression no matter how deep.  If we leave a value on the stack for every
+        // TODO: naked statement it only matters for heap use during execution.  I don't really care.
+        // TODO: Not doing this lets us pick the last exprstatement value off the stack for eval.
+        // coder.code(this, O_DISCARD)
     }
 }
 

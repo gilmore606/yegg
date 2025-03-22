@@ -16,7 +16,13 @@ class VM(val code: List<VMWord> = listOf()) {
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
-    private fun fail(c: VMException.Type, m: String) { throw VMException(c, "$m [pc: ${pc-1} ${code[pc-1]}]", code[pc].lineNum, code[pc].charNum) }
+    // Preserve error position.
+    private val lineNum: Int
+        get() = code.getOrNull(pc)?.let { it.lineNum } ?: 0
+    private val charNum: Int
+        get() = code.getOrNull(pc)?.let { it.charNum } ?: 0
+    private fun fail(type: VMException.Type, m: String) { throw VMException(type, m, lineNum, charNum) }
+
     private inline fun push(v: Value) = stack.addFirst(v)
     private inline fun peek() = stack.first()
     private inline fun pop() = stack.removeFirst()
@@ -28,24 +34,24 @@ class VM(val code: List<VMWord> = listOf()) {
     // Given a Context, execute each word of the input code starting from pc=0.
     // Mutate the stack and variables as we go.
     // Return back a Value (VVoid if no explicit return).
-    fun execute(context: Context? = null): Value? {
+    fun execute(c: Context? = null): Value {
         // Intercept success or failure, so we get to clean up either way.
         var returnValue: Value? = null
         var exception: Exception? = null
         try {
-            returnValue = executeCode(context ?: Context())
+            returnValue = executeCode(c ?: Context())
         } catch (e: Exception) {
-            exception = e
+            exception = e as? VMException ?: VMException(E_SYS, e.toString(), lineNum, charNum)
         }
         // Win or lose, we clean up after.
         stack.clear()
         variables.clear()
         // Then we succeed or fail.
         exception?.also { throw it }
-        return returnValue
+        return returnValue!!
     }
 
-    private fun executeCode(c: Context): Value? {
+    private fun executeCode(c: Context): Value {
         pc = 0
         val stackLimit = (c.world.getSysValue(c, "stackLimit") as VInt).v
         var ticksLeft = c.ticksLeft
@@ -115,7 +121,7 @@ class VM(val code: List<VMWord> = listOf()) {
                 }
                 O_RETURNNULL -> {
                     if (stack.isNotEmpty()) fail(E_SYS, "stack polluted on return!")
-                    return null
+                    return VVoid()
                 }
                 O_FAIL -> {
                     val a = pop()
@@ -261,7 +267,7 @@ class VM(val code: List<VMWord> = listOf()) {
                 else -> fail(E_SYS, "unknown opcode $word")
             }
         }
-        return null
+        return if (stack.isEmpty()) VVoid() else pop()
     }
 
 }

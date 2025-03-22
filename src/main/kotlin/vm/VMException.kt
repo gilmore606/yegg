@@ -1,6 +1,6 @@
 package com.dlfsystems.vm
 
-class VMException(c: Type, m: String, lineNum: Int, charNum: Int): Exception("$c $m at line $lineNum c$charNum") {
+class VMException(val type: Type, val m: String, val lineNum: Int, val charNum: Int): Exception() {
 
     enum class Type {
 
@@ -34,5 +34,7 @@ class VMException(c: Type, m: String, lineNum: Int, charNum: Int): Exception("$c
         // User-thrown exception
         E_USER,
     }
+
+    override fun toString() = "$type: $m (at $lineNum c$charNum)"
 
 }
