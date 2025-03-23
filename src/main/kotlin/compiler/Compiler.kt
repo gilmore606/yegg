@@ -3,6 +3,9 @@ package com.dlfsystems.compiler
 import com.dlfsystems.Yegg
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.ast.Node
+import com.dlfsystems.value.VObj
+import com.dlfsystems.value.VString
+import com.dlfsystems.value.VTrait
 import com.dlfsystems.vm.*
 
 object Compiler {
@@ -45,7 +48,10 @@ object Compiler {
         try {
             cOut = compile(code)
             Log.d("  opcodes: \n${cOut.code.dumpText()}")
-            val vmOut = VM(cOut.code).execute(Context(Yegg.world)).asString()
+            val c = Context(Yegg.world).apply {
+                push(VObj(null),  VTrait(null), "(eval)", listOf(VString(code)))
+            }
+            val vmOut = VM(cOut.code).execute(c).asString()
             return if (verbose) dumpText(cOut.tokens, cOut.ast, cOut.code, vmOut) else vmOut
         } catch (e: CompileException) {
             return if (verbose) dumpText(e.tokens, e.ast, e.code, "") else e.toString()

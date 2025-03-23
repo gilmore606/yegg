@@ -3,8 +3,11 @@ package com.dlfsystems
 import com.dlfsystems.app.Log
 import com.dlfsystems.world.World
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.value.VObj
 
 object Yegg {
+
+    val vNullObj = VObj(null)
 
     // TODO: users, auth, *waves hands*
     class Connection() {

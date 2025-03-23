@@ -137,7 +137,7 @@ class Coder(val ast: Node) {
         private fun consume(vararg opcodes: Opcode?, check: ((List<VMWord>)->Boolean)? = null): List<VMWord>? {
             if (opcodes.size > (source.size - pc)) return null
             var hit = true
-            var nulls = mutableListOf<VMWord>()
+            val nulls = mutableListOf<VMWord>()
             opcodes.forEachIndexed { i, t ->
                 if (t == null) nulls.add(source[pc + i])
                 else if ((pc + i) in jumpMap.keys) hit = false  // Miss if we overlap a jump dest

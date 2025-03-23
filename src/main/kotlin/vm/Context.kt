@@ -11,7 +11,8 @@ class Context(
     val world: World = World()
 ) {
     class Call(
-        val vThis: Value,
+        val vThis: VObj,
+        val vTrait: VTrait,
         val verb: String,
         val args: List<Value>,
     )
@@ -23,7 +24,7 @@ class Context(
     val callStack = ArrayDeque<Call>()
 
     // Push or pop the callstack.
-    fun push(vThis: Value, verb: String, args: List<Value>) = callStack.addFirst(Call(vThis, verb, args))
+    fun push(vThis: VObj, vTrait: VTrait, verb: String, args: List<Value>) = callStack.addFirst(Call(vThis, vTrait, verb, args))
     fun pop(): Call = callStack.removeFirst()
 
     fun getTrait(name: String) = world.getTrait(name)
