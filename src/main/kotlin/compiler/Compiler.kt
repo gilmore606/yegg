@@ -31,13 +31,11 @@ object Compiler {
             // Stage 4: Generate VM opcodes.
             code = Coder(ast).generate()
             return Result(code, variableIDs, tokens, ast)
+        } catch (e: CompileException) {
+            throw e.withInfo(code, variableIDs, tokens, ast)
         } catch (e: Exception) {
-            throw (if (e is CompileException) e else CompileException("COMPILER CRASH: " + e.stackTraceToString(), 0, 0)).apply {
-                code = code
-                variableIDs = variableIDs
-                tokens = tokens
-                ast = ast
-            }
+            throw CompileException("GURU: " + e.stackTraceToString(), 0, 0)
+                .withInfo(code, variableIDs, tokens, ast)
         }
     }
 
@@ -49,11 +47,10 @@ object Compiler {
             Log.d("  opcodes: \n${cOut.code.dumpText()}")
             val vmOut = VM(cOut.code).execute(Context(Yegg.world)).asString()
             return if (verbose) dumpText(cOut.tokens, cOut.ast, cOut.code, vmOut) else vmOut
+        } catch (e: CompileException) {
+            return if (verbose) dumpText(e.tokens, e.ast, e.code, "") else e.toString()
         } catch (e: Exception) {
-            return if (verbose) {
-                if (e is CompileException) dumpText(e.tokens, e.ast, e.code, "")
-                else dumpText(cOut?.tokens, cOut?.ast, cOut?.code, "")
-            } else e.toString()
+            return dumpText(cOut?.tokens, cOut?.ast, cOut?.code, "")
         }
     }
 
