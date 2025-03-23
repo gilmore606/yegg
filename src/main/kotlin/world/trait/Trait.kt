@@ -3,13 +3,13 @@ package com.dlfsystems.world.trait
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMWord
-import java.util.*
+import kotlin.uuid.Uuid
 
 // A collection of verbs and props, which can apply to an Obj.
 
 open class Trait(val name: String) {
 
-    val id: UUID = UUID.randomUUID()
+    val id: Uuid = Uuid.random()
 
     val verbs: MutableMap<String, Verb> = mutableMapOf()
     open val props: MutableMap<String, Value> = mutableMapOf()
