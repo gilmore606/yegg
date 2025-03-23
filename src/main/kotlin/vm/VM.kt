@@ -9,7 +9,7 @@ import com.dlfsystems.vm.VMException.Type.*
 
 class VM(
     val code: List<VMWord> = listOf(),
-    val variableIDs: Map<String, Int> = mapOf()
+    val symbols: Map<String, Int> = mapOf()
 ) {
 
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
@@ -59,7 +59,7 @@ class VM(
 
     // Initialize a variable to a value before execution.
     private fun initVar(name: String, value: Value) {
-        variableIDs[name]?.also { variables[it] = value }
+        symbols[name]?.also { variables[it] = value }
     }
 
     private fun executeCode(c: Context): Value {

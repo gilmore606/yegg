@@ -12,7 +12,7 @@ object Compiler {
 
     class Result(
         val code: List<VMWord>,
-        val variableIDs: Map<String, Int>,
+        val symbols: Map<String, Int>,
         val tokens: List<Token>,
         val ast: Node,
     )
@@ -21,7 +21,7 @@ object Compiler {
         var tokens: List<Token>? = null
         var code: List<VMWord>? = null
         var ast: Node? = null
-        var variableIDs: Map<String, Int>? = null
+        var symbols: Map<String, Int>? = null
         try {
             // Stage 1: Lex source into tokens.
             tokens = Lexer(source).lex()
@@ -30,15 +30,15 @@ object Compiler {
             // Stage 3: Find variables.
             val shaker = Shaker(parser.parse())
             ast = shaker.shake()
-            variableIDs = shaker.variableIDs
+            symbols = shaker.symbols
             // Stage 4: Generate VM opcodes.
             code = Coder(ast).generate()
-            return Result(code, variableIDs, tokens, ast)
+            return Result(code, symbols, tokens, ast)
         } catch (e: CompileException) {
-            throw e.withInfo(code, variableIDs, tokens, ast)
+            throw e.withInfo(code, symbols, tokens, ast)
         } catch (e: Exception) {
             throw CompileException("GURU: " + e.stackTraceToString(), 0, 0)
-                .withInfo(code, variableIDs, tokens, ast)
+                .withInfo(code, symbols, tokens, ast)
         }
     }
 
@@ -51,7 +51,7 @@ object Compiler {
         try {
             cOut = compile(code)
             Log.d("  opcodes: \n${cOut.code.dumpText()}")
-            val vmOut = VM(cOut.code, cOut.variableIDs).execute(c).asString()
+            val vmOut = VM(cOut.code, cOut.symbols).execute(c).asString()
             return if (verbose) dumpText(cOut.tokens, cOut.ast, cOut.code, vmOut) else vmOut
         } catch (e: CompileException) {
             return if (verbose) dumpText(e.tokens, e.ast, e.code, "") else e.toString()

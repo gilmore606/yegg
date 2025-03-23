@@ -7,7 +7,7 @@ import com.dlfsystems.compiler.ast.Node
 
 class Shaker(val root: Node) {
 
-    val variableIDs = mutableMapOf<String, Int>()
+    val symbols = mutableMapOf<String, Int>()
 
     fun shake(): Node {
 
@@ -17,8 +17,8 @@ class Shaker(val root: Node) {
         // Collect all unique variable names.
         root.traverse {
             if (it is N_IDENTIFIER && it.isVariable()) {
-                if (!variableIDs.containsKey(it.name)) {
-                    variableIDs[it.name] = variableIDs.size
+                if (!symbols.containsKey(it.name)) {
+                    symbols[it.name] = symbols.size
                 }
             }
         }
@@ -26,7 +26,7 @@ class Shaker(val root: Node) {
         // Set the variable ID for all variables.
         root.traverse {
             if (it is N_IDENTIFIER && it.isVariable()) {
-                it.variableID = variableIDs[it.name]
+                it.variableID = symbols[it.name]
             }
         }
 

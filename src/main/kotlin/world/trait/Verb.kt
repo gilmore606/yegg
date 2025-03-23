@@ -15,7 +15,7 @@ class Verb(
     var vm = VM()
 
     fun program(cOut: Compiler.Result) {
-        vm = VM(cOut.code, cOut.variableIDs)
+        vm = VM(cOut.code, cOut.symbols)
         Log.d("programmed $name with code ${vm.code.dumpText()}")
     }
 
