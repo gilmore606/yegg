@@ -1,13 +1,15 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
+import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
+@Serializable
 data class VTrait(val v: Uuid?): Value() {
 
     fun getTrait(c: Context?) = v?.let { c?.world?.getTrait(it) }
 
-    override val type = Type.TRAIT
+    override val yeggType = Type.TRAIT
 
     override fun toString() = "\$$v"
     override fun asString() = "\$TRAIT" // TODO: get from context

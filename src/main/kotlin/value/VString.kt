@@ -2,10 +2,12 @@ package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.*
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class VString(var v: String): Value() {
 
-    override val type = Type.STRING
+    override val yeggType = Type.STRING
 
     override fun toString() = "\"$v\""
     override fun asString() = v

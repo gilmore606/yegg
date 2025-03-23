@@ -6,10 +6,12 @@ import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.value.VTrait
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
+import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
 // A collection of verbs and props, which can apply to an Obj.
 
+@Serializable
 open class Trait(val name: String) {
 
     val id: Uuid = Uuid.random()

@@ -2,10 +2,12 @@ package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.*
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class VMap(val v: MutableMap<Value, Value>): Value() {
 
-    override val type = Type.MAP
+    override val yeggType = Type.MAP
     override fun toString() = "[${v.entries.joinToString()}]"
     override fun asString() = v.entries.joinToString(", ")
 
@@ -32,7 +34,7 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
     }
 
     override fun setIndex(c: Context, i: Value, value: Value): Boolean {
-        if (i.type !in keyTypes) fail(E_TYPE, "${i.type} cannot be map key")
+        if (i.yeggType !in keyTypes) fail(E_TYPE, "${i.yeggType} cannot be map key")
         v[i] = value
         return true
     }

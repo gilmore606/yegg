@@ -1,5 +1,6 @@
 package com.dlfsystems.world.trait
 
+import com.dlfsystems.Yegg
 import com.dlfsystems.value.VInt
 import com.dlfsystems.value.VString
 import com.dlfsystems.value.VVoid
@@ -27,6 +28,7 @@ class SysTrait : Trait("sys") {
     override fun callVerb(c: Context, verbName: String, args: List<Value>): Value? {
         when (verbName) {
             "addTrait" -> return verbAddTrait(c, args)
+            "dumpDatabase" -> return verbDumpDatabase(c, args)
         }
         return super.callVerb(c, verbName, args)
     }
@@ -34,6 +36,12 @@ class SysTrait : Trait("sys") {
     private fun verbAddTrait(c: Context, args: List<Value>): Value {
         if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for addTrait")
         c.world.addTrait(args[0].asString())
+        return VVoid()
+    }
+
+    private fun verbDumpDatabase(c: Context, args: List<Value>): Value {
+        if (args.isNotEmpty()) throw IllegalArgumentException("Bad args for dumpDatabase")
+        Yegg.dumpDatabase()?.also { return VString(it) }
         return VVoid()
     }
 
