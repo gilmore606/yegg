@@ -7,8 +7,6 @@ import com.dlfsystems.value.VObj
 
 object Yegg {
 
-    val vNullObj = VObj(null)
-
     // TODO: users, auth, *waves hands*
     class Connection() {
 
@@ -68,8 +66,8 @@ object Yegg {
         }
     }
 
-
-    var logLevel: Log.Level = Log.Level.DEBUG
+    val vNullObj = VObj(null)
+    var logLevel = Log.Level.DEBUG
     lateinit var world: World
 
     fun start() {

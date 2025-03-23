@@ -2,10 +2,10 @@ package com.dlfsystems.world.trait
 
 import com.dlfsystems.Yegg
 import com.dlfsystems.app.Log
+import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.value.VTrait
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
-import com.dlfsystems.vm.VMWord
 import java.util.*
 
 // A collection of verbs and props, which can apply to an Obj.
@@ -18,11 +18,11 @@ open class Trait(val name: String) {
     val verbs: MutableMap<String, Verb> = mutableMapOf()
     open val props: MutableMap<String, Value> = mutableMapOf()
 
-    fun programVerb(verbName: String, code: List<VMWord>, variableIDs: Map<String, Int>) {
+    fun programVerb(verbName: String, cOut: Compiler.Result) {
         verbs[verbName]?.also {
-            it.program(code, variableIDs)
+            it.program(cOut)
         } ?: run {
-            verbs[verbName] = Verb(verbName).apply { program(code, variableIDs) }
+            verbs[verbName] = Verb(verbName).apply { program(cOut) }
         }
     }
 

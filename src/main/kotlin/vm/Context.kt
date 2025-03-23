@@ -15,7 +15,9 @@ class Context(
         val vTrait: VTrait,
         val verb: String,
         val args: List<Value>,
-    )
+    ) {
+        override fun toString() = "$vThis $vTrait.$verb(${args.joinToString(",")})"
+    }
 
     var vThis: VObj = VObj(null)
     var vUser: VObj = VObj(null)
@@ -25,10 +27,13 @@ class Context(
     val callStack = ArrayDeque<Call>()
 
     // Push or pop the callstack.
-    fun push(vThis: VObj, vTrait: VTrait, verb: String, args: List<Value>) = callStack.addFirst(Call(vThis, vTrait, verb, args))
-    fun pop(): Call = callStack.removeFirst()
+    fun push(vThis: VObj, vTrait: VTrait, verb: String, args: List<Value>) =
+        callStack.addFirst(Call(vThis, vTrait, verb, args))
+    fun pop(): Call =
+        callStack.removeFirst()
 
     fun getTrait(name: String) = world.getTrait(name)
     fun getTrait(id: UUID) = world.getTrait(id)
 
+    fun stackDump() = callStack.joinToString(separator = "\n  ", postfix = "\n")
 }

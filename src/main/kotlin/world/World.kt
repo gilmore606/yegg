@@ -34,9 +34,9 @@ class World {
     fun programVerb(traitName: String, name: String, code: String): String {
         getTrait(traitName)?.also { trait ->
             try {
-                val result = Compiler.compile(code)
-                trait.programVerb(name, result.code, result.variableIDs)
-                return "programmed \$${traitName}.${name} (${result.code.size} words)"
+                val cOut = Compiler.compile(code)
+                trait.programVerb(name, cOut)
+                return "programmed \$${traitName}.${name} (${cOut.code.size} words)"
             } catch (e: Exception) {
                 return "compile error: $e"
             }

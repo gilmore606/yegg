@@ -44,19 +44,19 @@ object Compiler {
 
     fun eval(code: String, verbose: Boolean = false): String {
         Log.d("eval: $code")
-        var cOut: Compiler.Result? = null
+        var cOut: Result? = null
+        val c = Context(Yegg.world).apply {
+            push(VObj(null),  VTrait(null), "(eval)", listOf(VString(code)))
+        }
         try {
             cOut = compile(code)
             Log.d("  opcodes: \n${cOut.code.dumpText()}")
-            val c = Context(Yegg.world).apply {
-                push(VObj(null),  VTrait(null), "(eval)", listOf(VString(code)))
-            }
-            val vmOut = VM(cOut.code).execute(c).asString()
+            val vmOut = VM(cOut.code, cOut.variableIDs).execute(c).asString()
             return if (verbose) dumpText(cOut.tokens, cOut.ast, cOut.code, vmOut) else vmOut
         } catch (e: CompileException) {
             return if (verbose) dumpText(e.tokens, e.ast, e.code, "") else e.toString()
         } catch (e: Exception) {
-            return dumpText(cOut?.tokens, cOut?.ast, cOut?.code, "")
+            return if (verbose) dumpText(cOut?.tokens, cOut?.ast, cOut?.code, "") else "$e\n${c.stackDump()}"
         }
     }
 
