@@ -1,9 +1,9 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
-import java.util.*
+import kotlin.uuid.Uuid
 
-data class VObj(val v: UUID?): Value() {
+data class VObj(val v: Uuid?): Value() {
 
     override val type = Type.OBJ
 

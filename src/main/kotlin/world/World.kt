@@ -5,17 +5,17 @@ import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.SysTrait
 import com.dlfsystems.world.trait.Trait
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 class World {
 
-    val traits: MutableMap<UUID, Trait> = mutableMapOf()
-    val traitIDs: MutableMap<String, UUID> = mutableMapOf()
+    val traits: MutableMap<Uuid, Trait> = mutableMapOf()
+    val traitIDs: MutableMap<String, Uuid> = mutableMapOf()
 
-    val objs: MutableMap<UUID, Obj> = mutableMapOf()
+    val objs: MutableMap<Uuid, Obj> = mutableMapOf()
 
     fun getTrait(named: String) = traits[traitIDs[named]]
-    fun getTrait(id: UUID) = traits[id]
+    fun getTrait(id: Uuid) = traits[id]
 
     fun getSysValue(c: Context, name: String): Value = getTrait("sys")!!.getProp(c, name)!!
 

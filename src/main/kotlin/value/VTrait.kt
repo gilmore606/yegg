@@ -1,9 +1,9 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
-import java.util.*
+import kotlin.uuid.Uuid
 
-data class VTrait(val v: UUID?): Value() {
+data class VTrait(val v: Uuid?): Value() {
 
     fun getTrait(c: Context?) = v?.let { c?.world?.getTrait(it) }
 

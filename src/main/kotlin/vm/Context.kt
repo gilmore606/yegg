@@ -2,7 +2,7 @@ package com.dlfsystems.vm
 
 import com.dlfsystems.world.World
 import com.dlfsystems.value.*
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 // Variables from the world which a VM uses to execute a func.
 // A persistent VM will own a context whose values are updated from outside it.
@@ -33,7 +33,7 @@ class Context(
         callStack.removeFirst()
 
     fun getTrait(name: String) = world.getTrait(name)
-    fun getTrait(id: UUID) = world.getTrait(id)
+    fun getTrait(id: Uuid) = world.getTrait(id)
 
     fun stackDump() = callStack.joinToString(separator = "\n  ", postfix = "\n")
 }
