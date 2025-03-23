@@ -102,20 +102,20 @@ class VM(
                 O_GETI -> {
                     val (a2, a1) = popTwo()
                     a1.getIndex(c, a2)?.also { push(it) }
-                        ?: fail(E_TYPE, "cannot index into ${a1.yeggType} with ${a2.yeggType}")
+                        ?: fail(E_TYPE, "cannot index into ${a1.type} with ${a2.type}")
                 }
                 O_GETRANGE -> {
                     val (a3, a2, a1) = popThree()
                     a1.getRange(c, a2, a3)?.also { push(it) }
-                        ?: fail(E_TYPE, "cannot range into ${a1.yeggType} with ${a2.yeggType}..${a3.yeggType}")
+                        ?: fail(E_TYPE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
                 }
                 O_SETI -> {
                     val (a3, a2, a1) = popThree()
-                    if (!a2.setIndex(c, a3, a1)) fail(E_RANGE, "cannot index into ${a2.yeggType} with ${a3.yeggType}")
+                    if (!a2.setIndex(c, a3, a1)) fail(E_RANGE, "cannot index into ${a2.type} with ${a3.type}")
                 }
                 O_SETRANGE -> {
                     val (a4, a3, a2, a1) = popFour()
-                    if (!a2.setRange(c, a3, a4, a1)) fail(E_RANGE, "cannot range into ${a1.yeggType} with ${a2.yeggType}..${a3.yeggType}")
+                    if (!a2.setRange(c, a3, a4, a1)) fail(E_RANGE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
                 }
 
                 // Control flow ops
@@ -179,7 +179,7 @@ class VM(
                     variables[varID]?.also {
                         if (it is VInt)
                             variables[varID] = VInt(it.v + if (word.opcode == O_INCVAR) 1 else -1)
-                        else fail(E_TYPE, "cannot increment ${it.yeggType}")
+                        else fail(E_TYPE, "cannot increment ${it.type}")
                     } ?: fail(E_VARNF, "variable not found")
                 }
 
@@ -189,7 +189,7 @@ class VM(
                     val a1 = pop()
                     a1.iterableSize()?.also {
                         push(VInt(it))
-                    } ?: fail(E_TYPE, "cannot iterate ${a1.yeggType}")
+                    } ?: fail(E_TYPE, "cannot iterate ${a1.type}")
                 }
                 O_ITERPICK -> {
                     val sourceID = next().intFromV
@@ -225,22 +225,22 @@ class VM(
                 O_NEGATE -> {
                     val a1 = pop()
                     a1.negate()?.also { push(it) }
-                        ?: fail(E_TYPE, "cannot negate ${a1.yeggType}")
+                        ?: fail(E_TYPE, "cannot negate ${a1.type}")
                 }
                 O_AND -> {
                     val (a2, a1) = popTwo()
                     if (a1 is VBool && a2 is VBool) push(VBool(a1.v && a2.v))
-                    else fail(E_TYPE, "cannot AND ${a1.yeggType} and ${a2.yeggType}")
+                    else fail(E_TYPE, "cannot AND ${a1.type} and ${a2.type}")
                 }
                 O_OR -> {
                     val (a2, a1) = popTwo()
                     if (a1 is VBool && a2 is VBool) push(VBool(a1.v || a2.v))
-                    else fail(E_TYPE, "cannot OR ${a1.yeggType} and ${a2.yeggType}")
+                    else fail(E_TYPE, "cannot OR ${a1.type} and ${a2.type}")
                 }
                 O_IN -> {
                     val (a2, a1) = popTwo()
                     a1.isIn(a2)?.also { push(VBool(it)) }
-                        ?: fail(E_TYPE, "cannot check ${a1.yeggType} in ${a2.yeggType}")
+                        ?: fail(E_TYPE, "cannot check ${a1.type} in ${a2.type}")
                 }
                 O_CMP_EQ, O_CMP_GT, O_CMP_GE, O_CMP_LT, O_CMP_LE -> {
                     val (a2, a1) = popTwo()
@@ -264,18 +264,18 @@ class VM(
                 O_ADD -> {
                     val (a2, a1) = popTwo()
                     a1.plus(a2)?.also { push(it) }
-                        ?: fail(E_TYPE, "cannot add ${a1.yeggType} and ${a2.yeggType}")
+                        ?: fail(E_TYPE, "cannot add ${a1.type} and ${a2.type}")
                 }
                 O_MULT -> {
                     val (a2, a1) = popTwo()
                     a1.multiply(a2)?.also { push(it) }
-                        ?: fail(E_TYPE, "cannot multiply ${a1.yeggType} and ${a2.yeggType}")
+                        ?: fail(E_TYPE, "cannot multiply ${a1.type} and ${a2.type}")
                 }
                 O_DIV -> {
                     val (a2, a1) = popTwo()
                     if (a2.isZero() || a1.isZero()) fail(E_DIV, "divide by zero")
                     a1.divide(a2)?.also { push(it) }
-                        ?: fail(E_TYPE, "cannot divide ${a1.yeggType} and ${a2.yeggType}")
+                        ?: fail(E_TYPE, "cannot divide ${a1.type} and ${a2.type}")
                 }
 
                 else -> fail(E_SYS, "unknown opcode $word")

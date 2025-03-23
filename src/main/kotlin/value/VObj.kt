@@ -1,13 +1,15 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
 @Serializable
 data class VObj(val v: Uuid?): Value() {
 
-    override val yeggType = Type.OBJ
+    @SerialName("yType")
+    override val type = Type.OBJ
 
     override fun toString() = "#$v"
     override fun asString() = "OBJ" // TODO: use name from passed context?

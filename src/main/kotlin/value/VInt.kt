@@ -1,9 +1,13 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class VInt(val v: Int): Value() {
 
+    @SerialName("yType")
     override val type = Type.INT
 
     override fun toString() = v.toString()

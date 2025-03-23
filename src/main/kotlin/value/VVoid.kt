@@ -1,12 +1,14 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class VVoid(val v: Unit = Unit): Value() {
 
-    override val yeggType = Type.VOID
+    @SerialName("yType")
+    override val type = Type.VOID
 
     override fun toString() = "<VOID>"
     override fun asString() = ""
