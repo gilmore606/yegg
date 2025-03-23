@@ -13,8 +13,10 @@ class Verb(
     val name: String,
 ) {
     var vm = VM()
+    private var source = ""
 
     fun program(cOut: Compiler.Result) {
+        source = cOut.source
         vm = VM(cOut.code, cOut.symbols)
         Log.d("programmed $name with code ${vm.code.dumpText()}")
     }

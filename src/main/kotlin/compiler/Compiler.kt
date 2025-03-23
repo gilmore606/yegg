@@ -3,14 +3,13 @@ package com.dlfsystems.compiler
 import com.dlfsystems.Yegg
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.ast.Node
-import com.dlfsystems.value.VObj
 import com.dlfsystems.value.VString
-import com.dlfsystems.value.VTrait
 import com.dlfsystems.vm.*
 
 object Compiler {
 
     class Result(
+        val source: String,
         val code: List<VMWord>,
         val symbols: Map<String, Int>,
         val tokens: List<Token>,
@@ -33,7 +32,7 @@ object Compiler {
             symbols = shaker.symbols
             // Stage 4: Generate VM opcodes.
             code = Coder(ast).generate()
-            return Result(code, symbols, tokens, ast)
+            return Result(source, code, symbols, tokens, ast)
         } catch (e: CompileException) {
             throw e.withInfo(code, symbols, tokens, ast)
         } catch (e: Exception) {
