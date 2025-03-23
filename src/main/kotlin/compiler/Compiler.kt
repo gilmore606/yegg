@@ -46,7 +46,7 @@ object Compiler {
         Log.d("eval: $code")
         var cOut: Result? = null
         val c = Context(Yegg.world).apply {
-            push(VObj(null),  VTrait(null), "(eval)", listOf(VString(code)))
+            push(Yegg.vNullObj, Yegg.vNullTrait, "(eval)", listOf(VString(code)))
         }
         try {
             cOut = compile(code)

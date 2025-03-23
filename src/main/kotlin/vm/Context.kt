@@ -1,5 +1,6 @@
 package com.dlfsystems.vm
 
+import com.dlfsystems.Yegg
 import com.dlfsystems.world.World
 import com.dlfsystems.value.*
 import kotlin.uuid.Uuid
@@ -19,8 +20,8 @@ class Context(
         override fun toString() = "$vThis $vTrait.$verb(${args.joinToString(",")})"
     }
 
-    var vThis: VObj = VObj(null)
-    var vUser: VObj = VObj(null)
+    var vThis: VObj = Yegg.vNullObj
+    var vUser: VObj = Yegg.vNullObj
 
     var ticksLeft: Int = (world.getSysValue(this, "tickLimit") as VInt).v
     val callLimit: Int = (world.getSysValue(this, "callLimit") as VInt).v

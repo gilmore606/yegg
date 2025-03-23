@@ -4,6 +4,7 @@ import com.dlfsystems.app.Log
 import com.dlfsystems.world.World
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.value.VObj
+import com.dlfsystems.value.VTrait
 
 object Yegg {
 
@@ -67,6 +68,8 @@ object Yegg {
     }
 
     val vNullObj = VObj(null)
+    val vNullTrait = VTrait(null)
+
     var logLevel = Log.Level.DEBUG
     lateinit var world: World
 
