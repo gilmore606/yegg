@@ -13,7 +13,8 @@ class SysTrait : Trait("sys") {
 
     override val props = mutableMapOf<String, Value>(
         "tickLimit" to VInt(100000),
-        "stackLimit" to VInt(100)
+        "stackLimit" to VInt(100),
+        "callLimit" to VInt(50),
     )
 
     override fun getProp(c: Context, propName: String): Value? {

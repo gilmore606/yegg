@@ -21,6 +21,7 @@ class Context(
     var vUser: VObj = VObj(null)
 
     var ticksLeft: Int = (world.getSysValue(this, "tickLimit") as VInt).v
+    val callLimit: Int = (world.getSysValue(this, "callLimit") as VInt).v
     val callStack = ArrayDeque<Call>()
 
     // Push or pop the callstack.

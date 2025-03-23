@@ -147,6 +147,7 @@ class VM(
                     val args = mutableListOf<Value>()
                     repeat(argCount) { args.add(pop()) }
                     if (a2 is VString) {
+                        if (c.callStack.size >= c.callLimit) fail(E_MAXREC, "call limit exceeded")
                         c.ticksLeft = ticksLeft
                         a1.callVerb(c, a2.v, args)?.also { push(it) }
                             ?: fail(E_VERBNF, "verb not found")
