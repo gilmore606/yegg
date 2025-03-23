@@ -9,24 +9,20 @@ import java.util.UUID
 
 class Coder(val ast: Node) {
 
-    var mem = ArrayList<VMWord>()
+    private val mem = ArrayList<VMWord>()
 
     // Addresses to be filled in with a named jump point once coded.
-    val forwardJumps = HashMap<String, MutableSet<Int>>()
+    private val forwardJumps = HashMap<String, MutableSet<Int>>()
     // Addresses stored to be used as future jump destinations.
-    val backJumps = HashMap<String, Int>()
+    private val backJumps = HashMap<String, Int>()
 
     fun last() = if (mem.isEmpty()) null else mem[mem.size - 1]
 
     // Compile the AST into a list of opcodes, by recursively asking the nodes to code themselves.
     // Nodes will then call Coder.code() and Coder.value() to output their compiled code.
-    fun generate() {
+    fun generate(): List<VMWord> {
         ast.code(this)
-    }
-
-    fun postOptimize() {
-        Optimizer.postOptimize(mem)
-        mem = Optimizer.mem
+        return Optimizer(mem).optimize()
     }
 
     // Write an opcode into memory.
@@ -81,24 +77,21 @@ class Coder(val ast: Node) {
     }
 
 
-    object Optimizer {
-        var source = ArrayList<VMWord>()
-        var mem = ArrayList<VMWord>()
-        val jumpMap = HashMap<Int, Int>()
-        var pc = 0
-        var lastMatchSize = 0
+    class Optimizer(private val source: List<VMWord>) {
+        private val mem = ArrayList<VMWord>()
+        private val jumpMap = HashMap<Int, Int>()
+        private var pc = 0
+        private var lastMatchSize = 0
 
-        fun postOptimize(withSource: ArrayList<VMWord>) {
+        fun optimize(): List<VMWord> {
 
             // Find all jump destinations in source
-            source = withSource
             source.forEach { word ->
                 word.address?.also { address ->
                     jumpMap[address] = -1
                 }
             }
 
-            mem.clear()
             pc = 0
             while (pc < source.size) {
                 // If we've reached a jump dest, record its new address
@@ -136,6 +129,8 @@ class Coder(val ast: Node) {
                     if (word.address == old) word.address = jumpMap[old]
                 }
             }
+
+            return mem
         }
 
         // Match and consume a series of opcodes (or null for any non-opcode word).

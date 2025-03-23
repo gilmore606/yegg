@@ -13,12 +13,15 @@ class Verb(
     var vm = VM()
 
     fun program(code: List<VMWord>, variableIDs: Map<String, Int>) {
-        vm = VM(listOf<VMWord>() + code, mapOf<String, Int>() + variableIDs)
+        vm = VM(code, variableIDs)
         Log.d("programmed $name with code ${vm.code.dumpText()}")
     }
 
-    fun call(c: Context, args: List<Value>): Value {
-        return vm.execute(c, args)
+    fun call(c: Context, vThis: Value, args: List<Value>): Value {
+        c.push(vThis, name, args)
+        val r = vm.execute(c, args)
+        c.pop()
+        return r
     }
 
     fun getListing() = vm.code.dumpText()

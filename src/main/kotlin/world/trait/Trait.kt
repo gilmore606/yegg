@@ -1,6 +1,7 @@
 package com.dlfsystems.world.trait
 
 import com.dlfsystems.app.Log
+import com.dlfsystems.value.VTrait
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMWord
@@ -11,6 +12,7 @@ import java.util.*
 open class Trait(val name: String) {
 
     val id: UUID = UUID.randomUUID()
+    private val vThis = VTrait(id)
 
     val verbs: MutableMap<String, Verb> = mutableMapOf()
     open val props: MutableMap<String, Value> = mutableMapOf()
@@ -32,7 +34,7 @@ open class Trait(val name: String) {
     open fun callVerb(c: Context, verbName: String, args: List<Value>): Value? {
         verbs[verbName]?.also {
             Log.i("static verb call: \$$name.$verbName($args)")
-            return it.call(c, args)
+            return it.call(c, vThis, args)
         }
         return null
     }

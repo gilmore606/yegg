@@ -305,13 +305,6 @@ data class VMWord(
         get() = (value as VInt).v
 }
 
-// A stack recording the history of a chain of nested func calls, held by a Context.
-class VMCallstack {
-    class Call()
-
-    private val stack = ArrayDeque<Call>()
-}
-
 fun List<VMWord>.dumpText(): String {
     if (isEmpty()) return "<not programmed>\n"
     var s = ""

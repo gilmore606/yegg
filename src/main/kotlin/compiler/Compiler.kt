@@ -8,10 +8,10 @@ import com.dlfsystems.vm.*
 object Compiler {
 
     class Result(
-        var code: List<VMWord>,
-        var variableIDs: Map<String, Int>,
-        var tokens: List<Token>,
-        var ast: Node,
+        val code: List<VMWord>,
+        val variableIDs: Map<String, Int>,
+        val tokens: List<Token>,
+        val ast: Node,
     )
 
     fun compile(source: String): Result {
@@ -24,16 +24,12 @@ object Compiler {
             tokens = Lexer(source).lex()
             // Stage 2: Parse tokens into AST nodes.
             val parser = Parser(tokens)
-            // Stage 3: Find variables and optimize tree nodes.
+            // Stage 3: Find variables.
             val shaker = Shaker(parser.parse())
             ast = shaker.shake()
             variableIDs = shaker.variableIDs
             // Stage 4: Generate VM opcodes.
-            val coder = Coder(ast).apply {
-                generate()
-                postOptimize()
-            }
-            code = coder.mem
+            code = Coder(ast).generate()
             return Result(code, variableIDs, tokens, ast)
         } catch (e: Exception) {
             throw (if (e is CompileException) e else CompileException("COMPILER CRASH: " + e.stackTraceToString(), 0, 0)).apply {
@@ -52,15 +48,16 @@ object Compiler {
             cOut = compile(code)
             Log.d("  opcodes: \n${cOut.code.dumpText()}")
             val vmOut = VM(cOut.code).execute(Context(Yegg.world)).asString()
-            return if (verbose) {
-                "TOKENS:\n${cOut.tokens}\n\nNODES:\n${cOut.ast}\n\nCODE:\n${cOut.code.dumpText()}\nRESULT:\n$vmOut\n"
-            } else "$vmOut\n"
+            return if (verbose) dumpText(cOut.tokens, cOut.ast, cOut.code, vmOut) else vmOut
         } catch (e: Exception) {
             return if (verbose) {
-                if (e is CompileException) "TOKENS:\n${e.tokens}\n\nNODES:\n${e.ast}\n\nCODE:\n${e.code?.dumpText()}\n"
-                else "TOKENS:\n${cOut?.tokens}\n\nNODES:\n${cOut?.ast}\n\nCODE:\n${cOut?.code?.dumpText()}\n"
+                if (e is CompileException) dumpText(e.tokens, e.ast, e.code, "")
+                else dumpText(cOut?.tokens, cOut?.ast, cOut?.code, "")
             } else e.toString()
         }
     }
+
+    private fun dumpText(tokens: List<Token>?, ast: Node?, code: List<VMWord>?, result: String?): String =
+        "TOKENS:\n${tokens}\n\nNODES:\n${ast}\n\nCODE:\n${code?.dumpText()}\nRESULT:\n$result\n"
 
 }

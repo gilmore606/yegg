@@ -3,8 +3,7 @@ package com.dlfsystems.compiler
 import com.dlfsystems.compiler.ast.N_IDENTIFIER
 import com.dlfsystems.compiler.ast.Node
 
-// Validate the tree for semantic consistency.
-// Label nodes along the way (variable IDs, etc) to assist execution.
+// Assign variable IDs to identifiers.
 
 class Shaker(val root: Node) {
 
