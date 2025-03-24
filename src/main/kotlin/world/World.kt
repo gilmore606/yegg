@@ -33,11 +33,22 @@ class World {
 
     fun programVerb(traitName: String, name: String, code: String): String {
         getTrait(traitName)?.also { trait ->
-            val result = Compiler.compile(code)
-            result.code?.also { outcode ->
-                trait.programVerb(name, outcode)
-                return "programmed \$${traitName}.${name} (${outcode.size} words)"
-            } ?: return "compile error: ${result.e}"
-        } ?: return "ERR: unknown trait"
+            try {
+                val cOut = Compiler.compile(code)
+                trait.programVerb(name, cOut)
+                return "programmed \$${traitName}.${name} (${cOut.code.size} words)"
+            } catch (e: Exception) {
+                return "compile error: $e"
+            }
+        }
+        return "ERR: unknown trait $traitName"
+    }
+
+    fun listVerb(traitName: String, name: String): String {
+        getTrait(traitName)?.also { trait ->
+            trait.verbs[name]?.also { return it.getListing() }
+                ?: return "ERR: verb not found $name"
+        }
+        return "ERR: unknown trait $traitName"
     }
 }

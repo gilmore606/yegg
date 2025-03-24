@@ -7,7 +7,10 @@ import com.dlfsystems.vm.VMException.Type.*
 
 // A stack machine for executing a verb.
 
-class VM(val code: List<VMWord> = listOf()) {
+class VM(
+    val code: List<VMWord> = listOf(),
+    val symbols: Map<String, Int> = mapOf()
+) {
 
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
@@ -31,15 +34,18 @@ class VM(val code: List<VMWord> = listOf()) {
     private inline fun popFour() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
     private inline fun next() = code[pc++]
 
-    // Given a Context, execute each word of the input code starting from pc=0.
+    // Given a Context and args, execute each word of the input code starting from pc=0.
     // Mutate the stack and variables as we go.
     // Return back a Value (VVoid if no explicit return).
-    fun execute(c: Context? = null): Value {
+    fun execute(c: Context, args: List<Value> = listOf()): Value {
         // Intercept success or failure, so we get to clean up either way.
         var returnValue: Value? = null
         var exception: Exception? = null
         try {
-            returnValue = executeCode(c ?: Context())
+            initVar("args", VList.make(args))
+            initVar("this", c.vThis)
+            initVar("user", c.vUser)
+            returnValue = executeCode(c)
         } catch (e: Exception) {
             exception = e as? VMException ?: VMException(E_SYS, e.toString(), lineNum, charNum)
         }
@@ -49,6 +55,11 @@ class VM(val code: List<VMWord> = listOf()) {
         // Then we succeed or fail.
         exception?.also { throw it }
         return returnValue!!
+    }
+
+    // Initialize a variable to a value before execution.
+    private fun initVar(name: String, value: Value) {
+        symbols[name]?.also { variables[it] = value }
     }
 
     private fun executeCode(c: Context): Value {
@@ -136,12 +147,11 @@ class VM(val code: List<VMWord> = listOf()) {
                     val args = mutableListOf<Value>()
                     repeat(argCount) { args.add(pop()) }
                     if (a2 is VString) {
+                        if (c.callStack.size >= c.callLimit) fail(E_MAXREC, "call limit exceeded")
                         c.ticksLeft = ticksLeft
-                        // TODO: put our frame on the callstack (opt: skip this for builtin type verbs?)
                         a1.callVerb(c, a2.v, args)?.also { push(it) }
                             ?: fail(E_VERBNF, "verb not found")
                     } else fail(E_VERBNF, "verb name must be string")
-                    // TODO: pop our frame off the callstack
                     ticksLeft = c.ticksLeft
                 }
 
@@ -275,7 +285,7 @@ class VM(val code: List<VMWord> = listOf()) {
 // An atom of VM opcode memory.
 // Can hold an Opcode, a Value, or an int representing a memory address (for jumps).
 // TODO: rework this as a sealed class like Value
-class VMWord(
+data class VMWord(
     val lineNum: Int, val charNum: Int,
     val opcode: Opcode? = null, val value: Value? = null, var address: Int? = null
 ) {
@@ -296,9 +306,23 @@ class VMWord(
         get() = (value as VInt).v
 }
 
-// A stack recording the history of a chain of nested func calls, held by a Context.
-class VMCallstack {
-    class Call()
-
-    private val stack = ArrayDeque<Call>()
+fun List<VMWord>.dumpText(): String {
+    if (isEmpty()) return "<not programmed>\n"
+    var s = ""
+    var pc = 0
+    while (pc < size) {
+        val cell = get(pc)
+        s += "<$pc> "
+        s += cell.toString()
+        cell.opcode?.also { opcode ->
+            repeat (opcode.argCount) {
+                pc++
+                val arg = get(pc)
+                s += " $arg"
+            }
+        }
+        s += "\n"
+        pc++
+    }
+    return s
 }

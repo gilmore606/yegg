@@ -25,8 +25,11 @@ class VMException(val type: Type, val m: String, val lineNum: Int, val charNum: 
         // Division by zero
         E_DIV,
 
-        // System resource limit exceeded (stack, ticks)
+        // System resource limit exceeded
         E_LIMIT,
+
+        // Callstack recursion limit exceeded
+        E_MAXREC,
 
         // Other system failures
         E_SYS,

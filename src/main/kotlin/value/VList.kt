@@ -119,4 +119,9 @@ data class VList(var v: MutableList<Value>): Value() {
         requireArgCount(args, 1, 1)
         return if (v.contains(args[0])) VInt(v.indexOf(args[0])) else VInt(-1)
     }
+
+    companion object {
+        // TODO: figure out consistent mutability semantics
+        fun make(v: List<Value>) = VList(v.toMutableList())
+    }
 }

@@ -13,21 +13,22 @@ class SysTrait : Trait("sys") {
 
     override val props = mutableMapOf<String, Value>(
         "tickLimit" to VInt(100000),
-        "stackLimit" to VInt(100)
+        "stackLimit" to VInt(100),
+        "callLimit" to VInt(50),
     )
 
-    override fun getProp(c: Context, name: String): Value? {
-        when (name) {
+    override fun getProp(c: Context, propName: String): Value? {
+        when (propName) {
             "time" -> return VInt((System.currentTimeMillis() / 1000L).toInt())
         }
-        return super.getProp(c, name)
+        return super.getProp(c, propName)
     }
 
-    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
-        when (name) {
+    override fun callVerb(c: Context, verbName: String, args: List<Value>): Value? {
+        when (verbName) {
             "addTrait" -> return verbAddTrait(c, args)
         }
-        return null
+        return super.callVerb(c, verbName, args)
     }
 
     private fun verbAddTrait(c: Context, args: List<Value>): Value {

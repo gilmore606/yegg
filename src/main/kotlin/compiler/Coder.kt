@@ -9,24 +9,20 @@ import kotlin.uuid.Uuid
 
 class Coder(val ast: Node) {
 
-    var mem = ArrayList<VMWord>()
+    private val mem = ArrayList<VMWord>()
 
     // Addresses to be filled in with a named jump point once coded.
-    val forwardJumps = HashMap<String, MutableSet<Int>>()
+    private val forwardJumps = HashMap<String, MutableSet<Int>>()
     // Addresses stored to be used as future jump destinations.
-    val backJumps = HashMap<String, Int>()
+    private val backJumps = HashMap<String, Int>()
 
     fun last() = if (mem.isEmpty()) null else mem[mem.size - 1]
 
     // Compile the AST into a list of opcodes, by recursively asking the nodes to code themselves.
     // Nodes will then call Coder.code() and Coder.value() to output their compiled code.
-    fun generate() {
+    fun generate(): List<VMWord> {
         ast.code(this)
-    }
-
-    fun postOptimize() {
-        Optimizer.postOptimize(mem)
-        mem = Optimizer.mem
+        return Optimizer(mem).optimize()
     }
 
     // Write an opcode into memory.
@@ -80,45 +76,22 @@ class Coder(val ast: Node) {
         mem.add(VMWord(from.lineNum, from.charNum, address = dest))
     }
 
-    fun dumpText(): String {
-        var s = ""
-        var pc = 0
-        while (pc < mem.size) {
-            val cell = mem[pc]
-            s += "<$pc> "
-            s += cell.toString()
-            cell.opcode?.also { opcode ->
-                repeat (opcode.argCount) {
-                    pc++
-                    val arg = mem[pc]
-                    s += " $arg"
-                }
-            }
-            s += "\n"
-            pc++
-        }
-        return s
-    }
 
+    class Optimizer(private val source: List<VMWord>) {
+        private val mem = ArrayList<VMWord>()
+        private val jumpMap = HashMap<Int, Int>()
+        private var pc = 0
+        private var lastMatchSize = 0
 
-    object Optimizer {
-        var source = ArrayList<VMWord>()
-        var mem = ArrayList<VMWord>()
-        val jumpMap = HashMap<Int, Int>()
-        var pc = 0
-        var lastMatchSize = 0
-
-        fun postOptimize(withSource: ArrayList<VMWord>) {
+        fun optimize(): List<VMWord> {
 
             // Find all jump destinations in source
-            source = withSource
             source.forEach { word ->
                 word.address?.also { address ->
                     jumpMap[address] = -1
                 }
             }
 
-            mem.clear()
             pc = 0
             while (pc < source.size) {
                 // If we've reached a jump dest, record its new address
@@ -156,13 +129,15 @@ class Coder(val ast: Node) {
                     if (word.address == old) word.address = jumpMap[old]
                 }
             }
+
+            return mem
         }
 
         // Match and consume a series of opcodes (or null for any non-opcode word).
         private fun consume(vararg opcodes: Opcode?, check: ((List<VMWord>)->Boolean)? = null): List<VMWord>? {
             if (opcodes.size > (source.size - pc)) return null
             var hit = true
-            var nulls = mutableListOf<VMWord>()
+            val nulls = mutableListOf<VMWord>()
             opcodes.forEachIndexed { i, t ->
                 if (t == null) nulls.add(source[pc + i])
                 else if ((pc + i) in jumpMap.keys) hit = false  // Miss if we overlap a jump dest

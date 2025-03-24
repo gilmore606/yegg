@@ -3,13 +3,11 @@ package com.dlfsystems.compiler
 import com.dlfsystems.compiler.ast.N_IDENTIFIER
 import com.dlfsystems.compiler.ast.Node
 
-// Validate the tree for semantic consistency.
-// Label nodes along the way (variable IDs, etc) to assist execution.
+// Assign variable IDs to identifiers.
 
 class Shaker(val root: Node) {
 
-    val varIDs = mutableListOf<String>()
-    val varNameToID = mutableMapOf<String, Int>()
+    val symbols = mutableMapOf<String, Int>()
 
     fun shake(): Node {
 
@@ -19,9 +17,8 @@ class Shaker(val root: Node) {
         // Collect all unique variable names.
         root.traverse {
             if (it is N_IDENTIFIER && it.isVariable()) {
-                if (!varIDs.contains(it.name)) {
-                    varNameToID[it.name] = varIDs.size
-                    varIDs.add(it.name)
+                if (!symbols.containsKey(it.name)) {
+                    symbols[it.name] = symbols.size
                 }
             }
         }
@@ -29,7 +26,7 @@ class Shaker(val root: Node) {
         // Set the variable ID for all variables.
         root.traverse {
             if (it is N_IDENTIFIER && it.isVariable()) {
-                it.variableID = varNameToID[it.name]
+                it.variableID = symbols[it.name]
             }
         }
 

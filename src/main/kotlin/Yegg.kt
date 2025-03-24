@@ -1,7 +1,10 @@
 package com.dlfsystems
 
+import com.dlfsystems.app.Log
 import com.dlfsystems.world.World
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.value.VObj
+import com.dlfsystems.value.VTrait
 
 object Yegg {
 
@@ -37,6 +40,7 @@ object Yegg {
             val words = text.split(" ")
             return when (words[0].substring(1, words[0].length)) {
                 "program" -> parseProgram(words)
+                "list" -> parseList(words)
                 "quit" -> parseQuit(words)
                 else -> "I don't understand that."
             }
@@ -50,12 +54,23 @@ object Yegg {
             return "Enter verbcode.  Terminate with '.' on a line by itself."
         }
 
+        fun parseList(words: List<String>): String {
+            if (words.size < 2) return "@list what?"
+            val terms = words[1].split(".")
+            if (terms.size != 2) return "@list what?"
+            return world.listVerb(terms[0], terms[1])
+        }
+
         fun parseQuit(words: List<String>): String {
             quitRequested = true
             return "Goodbye!"
         }
     }
 
+    val vNullObj = VObj(null)
+    val vNullTrait = VTrait(null)
+
+    var logLevel = Log.Level.DEBUG
     lateinit var world: World
 
     fun start() {
