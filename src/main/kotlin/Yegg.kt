@@ -86,7 +86,7 @@ object Yegg {
                 Log.i("Loaded ${world.name} with ${world.traits.size} traits and ${world.objs.size} objs.")
             } catch (e: Exception) {
                 Log.e("FATAL: Failed to load from ${file.path} !")
-                exitProcess(0)
+                exitProcess(1)
             }
         } else {
             Log.i("No database $worldName found, initializing new world.")
