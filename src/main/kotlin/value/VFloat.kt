@@ -1,11 +1,15 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlin.math.ceil
 import kotlin.math.floor
 
+@Serializable
 data class VFloat(val v: Float): Value() {
 
+    @SerialName("yType")
     override val type = Type.FLOAT
 
     override fun toString() = v.toString()

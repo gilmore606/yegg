@@ -6,8 +6,12 @@ import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.SysTrait
 import com.dlfsystems.world.trait.Trait
 import kotlin.uuid.Uuid
+import kotlinx.serialization.Serializable
 
-class World {
+@Serializable
+data class World(
+    val name: String = "world"
+) {
 
     val traits: MutableMap<Uuid, Trait> = mutableMapOf()
     val traitIDs: MutableMap<String, Uuid> = mutableMapOf()

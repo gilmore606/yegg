@@ -2,9 +2,13 @@ package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class VMap(val v: MutableMap<Value, Value>): Value() {
 
+    @SerialName("yType")
     override val type = Type.MAP
     override fun toString() = "[${v.entries.joinToString()}]"
     override fun asString() = v.entries.joinToString(", ")

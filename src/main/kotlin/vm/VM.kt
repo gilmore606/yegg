@@ -4,9 +4,12 @@ import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 // A stack machine for executing a verb.
 
+@Serializable
 class VM(
     val code: List<VMWord> = listOf(),
     val symbols: Map<String, Int> = mapOf()
@@ -15,6 +18,7 @@ class VM(
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
     // The local stack.
+    @Transient
     private val stack = ArrayDeque<Value>()
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
@@ -285,6 +289,7 @@ class VM(
 // An atom of VM opcode memory.
 // Can hold an Opcode, a Value, or an int representing a memory address (for jumps).
 // TODO: rework this as a sealed class like Value
+@Serializable
 data class VMWord(
     val lineNum: Int, val charNum: Int,
     val opcode: Opcode? = null, val value: Value? = null, var address: Int? = null

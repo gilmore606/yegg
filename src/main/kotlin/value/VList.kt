@@ -2,9 +2,13 @@ package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class VList(var v: MutableList<Value>): Value() {
 
+    @SerialName("yType")
     override val type = Type.LIST
 
     override fun toString() = "[${v.joinToString(", ")}]"

@@ -2,11 +2,16 @@ package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 // A literal value in VM language.
 
+@Serializable
 sealed class Value {
     enum class Type { VOID, BOOL, INT, FLOAT, STRING, LIST, MAP, OBJ, TRAIT }
+
+    @SerialName("yType")
     abstract val type: Type
 
     // utility func for throwing a runtime exception

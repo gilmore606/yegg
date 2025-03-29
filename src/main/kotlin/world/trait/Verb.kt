@@ -8,7 +8,9 @@ import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VM
 import com.dlfsystems.vm.dumpText
+import kotlinx.serialization.Serializable
 
+@Serializable
 class Verb(
     val name: String,
 ) {
