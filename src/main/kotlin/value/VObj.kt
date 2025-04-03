@@ -3,10 +3,10 @@ package com.dlfsystems.value
 import com.dlfsystems.vm.Context
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.uuid.Uuid
+import ulid.ULID
 
 @Serializable
-data class VObj(val v: Uuid?): Value() {
+data class VObj(val v: ULID?): Value() {
 
     @SerialName("yType")
     override val type = Type.OBJ

@@ -12,7 +12,7 @@ import com.dlfsystems.world.Obj
 import com.dlfsystems.world.World
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlin.uuid.Uuid
+import ulid.ULID
 
 // A collection of verbs and props, which can apply to an Obj.
 
@@ -21,15 +21,15 @@ open class Trait(val name: String) {
 
     @Transient lateinit var world: World
 
-    val id: Uuid = Uuid.random()
+    val id: ULID = ULID.nextULID()
     private val vTrait = VTrait(id)
 
-    val traits: MutableList<Uuid> = mutableListOf()
+    val traits: MutableList<ULID> = mutableListOf()
 
     val verbs: MutableMap<String, Verb> = mutableMapOf()
     open val props: MutableMap<String, Value> = mutableMapOf()
 
-    val objects: MutableSet<Uuid> = mutableSetOf()
+    val objects: MutableSet<ULID> = mutableSetOf()
 
     fun applyTo(obj: Obj) {
         obj.traits.forEach {
@@ -45,7 +45,7 @@ open class Trait(val name: String) {
         obj.dispelTrait(this)
     }
 
-    fun hasTrait(trait: Uuid): Boolean = (trait in traits) || (traits.first { world.getTrait(it)?.hasTrait(trait) ?: false } != null)
+    fun hasTrait(trait: ULID): Boolean = (trait in traits) || (traits.first { world.getTrait(it)?.hasTrait(trait) ?: false } != null)
 
     fun programVerb(verbName: String, cOut: Compiler.Result) {
         verbs[verbName]?.also {

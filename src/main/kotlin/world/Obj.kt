@@ -1,23 +1,21 @@
 package com.dlfsystems.world
 
-import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
-import com.dlfsystems.value.VTrait
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.Trait
 import kotlinx.serialization.Serializable
-import kotlin.uuid.Uuid
+import ulid.ULID
 
 // An instance in the world.
 
 @Serializable
 class Obj {
 
-    val id: Uuid = Uuid.random()
+    val id: ULID = ULID.nextULID()
     val vThis = VObj(id)
 
-    val traits: MutableList<Uuid> = mutableListOf()
+    val traits: MutableList<ULID> = mutableListOf()
 
     val props: MutableMap<String, Value> = mutableMapOf()
 
