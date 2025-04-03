@@ -34,7 +34,8 @@ class Context(
         callStack.removeFirst()
 
     fun getTrait(name: String) = world.getTrait(name)
-    fun getTrait(id: Uuid) = world.getTrait(id)
+    fun getTrait(id: Uuid?) = id?.let { world.getTrait(id) }
+    fun getObj(id: Uuid?) = id?.let { world.getObj(id) }
 
     fun stackDump() = callStack.joinToString(separator = "\n  ", postfix = "\n")
 }
