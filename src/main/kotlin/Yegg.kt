@@ -98,8 +98,6 @@ object Yegg {
             try {
                 // Deserialize the world
                 world = Json.decodeFromString<World>(file.readText())
-                // Restore transient references
-                world.traits.values.forEach { it.world = world }
                 Log.i("Loaded ${world.name} with ${world.traits.size} traits and ${world.objs.size} objs.")
             } catch (e: Exception) {
                 Log.e("FATAL: Failed to load from ${file.path} !")

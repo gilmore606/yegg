@@ -9,17 +9,13 @@ import com.dlfsystems.value.VTrait
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
-import com.dlfsystems.world.World
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import ulid.ULID
 
 // A collection of verbs and props, which can apply to an Obj.
 
 @Serializable
 open class Trait(val name: String) {
-
-    @Transient lateinit var world: World
 
     val id: ULID = ULID.nextULID()
     private val vTrait = VTrait(id)
@@ -33,7 +29,7 @@ open class Trait(val name: String) {
 
     fun applyTo(obj: Obj) {
         obj.traits.forEach {
-            if (world.getTrait(it)?.hasTrait(this.id) == true)
+            if (Yegg.world.getTrait(it)?.hasTrait(this.id) == true)
                 throw IllegalArgumentException("obj already inherits trait")
         }
         objects.add(obj.id)
@@ -45,7 +41,7 @@ open class Trait(val name: String) {
         obj.dispelTrait(this)
     }
 
-    fun hasTrait(trait: ULID): Boolean = (trait in traits) || (traits.first { world.getTrait(it)?.hasTrait(trait) ?: false } != null)
+    fun hasTrait(trait: ULID): Boolean = (trait in traits) || (traits.first { Yegg.world.getTrait(it)?.hasTrait(trait) ?: false } != null)
 
     fun programVerb(verbName: String, cOut: Compiler.Result) {
         verbs[verbName]?.also {

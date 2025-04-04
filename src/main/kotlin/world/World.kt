@@ -49,7 +49,6 @@ data class World(
                 "user" -> UserTrait()
                 else -> Trait(name)
             }.also {
-                it.world = this
                 traits[it.id] = it
                 traitIDs[it.name] = it.id
             }
