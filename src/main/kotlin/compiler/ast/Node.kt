@@ -2,12 +2,12 @@ package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
 import com.dlfsystems.compiler.CompileException
-import kotlin.uuid.Uuid
+import ulid.ULID
 
 // A node in the syntax tree.
 
 abstract class Node {
-    val id = Uuid.random()
+    val id = ULID.nextULID()
 
     var lineNum = 0
     var charNum = 0

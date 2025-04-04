@@ -3,10 +3,10 @@ package com.dlfsystems.value
 import com.dlfsystems.vm.Context
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.uuid.Uuid
+import ulid.ULID
 
 @Serializable
-data class VObj(val v: Uuid?): Value() {
+data class VObj(val v: ULID?): Value() {
 
     @SerialName("yType")
     override val type = Type.OBJ
@@ -23,11 +23,15 @@ data class VObj(val v: Uuid?): Value() {
     override fun getProp(c: Context, name: String): Value? {
         when (name) {
             "asString" -> return propAsString()
+            "traits" -> return propTraits(c)
         }
-        return null
+        return v?.let { c.getObj(it)?.getProp(c, name) }
     }
 
     override fun setProp(c: Context, name: String, value: Value): Boolean {
+        c.getObj(v)?.also { obj ->
+            return obj.setProp(c, name, value)
+        }
         return false
     }
 
@@ -35,6 +39,10 @@ data class VObj(val v: Uuid?): Value() {
     // Custom props
 
     private fun propAsString() = VString(toString())
+
+    private fun propTraits(c: Context) = VList((
+        v?.let { c.getObj(it)?.traits?.map { VTrait(it) } } ?: mutableListOf()
+    ).toMutableList())
 
     // Custom verbs
 

@@ -1,31 +1,54 @@
 package com.dlfsystems.world
 
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.value.VString
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.SysTrait
 import com.dlfsystems.world.trait.Trait
-import kotlin.uuid.Uuid
+import com.dlfsystems.world.trait.UserTrait
 import kotlinx.serialization.Serializable
+import ulid.ULID
 
 @Serializable
 data class World(
     val name: String = "world"
 ) {
 
-    val traits: MutableMap<Uuid, Trait> = mutableMapOf()
-    val traitIDs: MutableMap<String, Uuid> = mutableMapOf()
+    val traits: MutableMap<ULID, Trait> = mutableMapOf()
+    val traitIDs: MutableMap<String, ULID> = mutableMapOf()
 
-    val objs: MutableMap<Uuid, Obj> = mutableMapOf()
+    val objs: MutableMap<ULID, Obj> = mutableMapOf()
+
+    fun getUserLogin(name: String, password: String): Obj? {
+        val c = Context(this)
+        getTrait("user")?.objects?.forEach { obj ->
+            objs[obj]?.getProp(c, "username")?.also {
+                if (it == VString(name)) {
+                    objs[obj]?.getProp(c, "password")?.also {
+                        if (it == VString(password)) {
+                            return objs[obj]
+                        }
+                    }
+                }
+            }
+        }
+        return null
+    }
 
     fun getTrait(named: String) = traits[traitIDs[named]]
-    fun getTrait(id: Uuid) = traits[id]
+    fun getTrait(id: ULID) = traits[id]
+    fun getObj(id: ULID) = objs[id]
 
     fun getSysValue(c: Context, name: String): Value = getTrait("sys")!!.getProp(c, name)!!
 
     fun addTrait(name: String): Trait {
         if (traits.values.none { it.name == name }) {
-            return (if (name == "sys") SysTrait() else Trait(name)).also {
+            return when (name) {
+                "sys" -> SysTrait()
+                "user" -> UserTrait()
+                else -> Trait(name)
+            }.also {
                 traits[it.id] = it
                 traitIDs[it.name] = it.id
             }
@@ -34,6 +57,19 @@ data class World(
     }
 
     fun createObj() = Obj().also { objs[it.id] = it }
+
+    fun recycleObj(objID: ULID) {
+        objs[objID]?.traits?.forEach { getTrait(it)?.removeFrom(objs[objID]!!) }
+        objs.remove(objID)
+    }
+
+    fun applyTrait(traitID: ULID, objID: ULID) {
+        traits[traitID]?.applyTo(objs[objID]!!)
+    }
+
+    fun dispelTrait(traitID: ULID, objID: ULID) {
+        traits[traitID]?.removeFrom(objs[objID]!!)
+    }
 
     fun programVerb(traitName: String, name: String, code: String): String {
         getTrait(traitName)?.also { trait ->
