@@ -38,7 +38,7 @@ data class World(
 
     fun getTrait(named: String) = traits[traitIDs[named]]
     fun getTrait(id: ULID) = traits[id]
-    fun getObj(id: ULID) = objs[id]
+    fun getObj(id: ULID?) = id?.let { objs[it] }
 
     fun getSysValue(c: Context, name: String): Value = getTrait("sys")!!.getProp(c, name)!!
 
@@ -58,9 +58,27 @@ data class World(
 
     fun createObj() = Obj().also { objs[it.id] = it }
 
-    fun recycleObj(objID: ULID) {
-        objs[objID]?.traits?.forEach { getTrait(it)?.removeFrom(objs[objID]!!) }
-        objs.remove(objID)
+    fun destroyObj(obj: Obj) {
+        obj.traits.forEach { getTrait(it)?.removeFrom(obj) }
+        if (obj.contents.isNotEmpty()) {
+            val dumpLoc = getObj(obj.location)
+            obj.contents.forEach { getObj(it)?.also { moveObj(it, dumpLoc) } }
+        }
+        moveObj(obj, null)
+        objs.remove(obj.id)
+    }
+
+    fun moveObj(obj: Obj, newLoc: Obj?) {
+        val oldLoc = getObj(obj.location)
+        // Prevent recursive move
+        var checkLoc = newLoc
+        while (checkLoc != null) {
+            if (checkLoc.location == obj.id) throw IllegalArgumentException("Recursive move")
+            checkLoc = getObj(checkLoc.location)
+        }
+        oldLoc?.also { it.contents.remove(obj.id) }
+        newLoc?.also { it.contents.add(obj.id) }
+        obj.location = newLoc?.id
     }
 
     fun applyTrait(traitID: ULID, objID: ULID) {

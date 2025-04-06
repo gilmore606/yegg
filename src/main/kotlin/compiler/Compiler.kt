@@ -50,7 +50,7 @@ object Compiler {
         try {
             cOut = compile(code)
             Log.d("  opcodes: \n${cOut.code.dumpText()}")
-            val vmOut = VM(cOut.code, cOut.symbols).execute(c).asString()
+            val vmOut = VM(cOut.code, cOut.symbols).execute(c).toString()
             return if (verbose) dumpText(cOut.tokens, cOut.ast, cOut.code, vmOut) else vmOut
         } catch (e: CompileException) {
             return if (verbose) dumpText(e.tokens, e.ast, e.code, "") else e.toString()

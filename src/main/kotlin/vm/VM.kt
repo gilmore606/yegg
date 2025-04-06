@@ -149,7 +149,7 @@ class VM(
                     val argCount = next().intFromV
                     val (a2, a1) = popTwo()
                     val args = mutableListOf<Value>()
-                    repeat(argCount) { args.add(pop()) }
+                    repeat(argCount) { args.add(0, pop()) }
                     if (a2 is VString) {
                         if (c.callStack.size >= c.callLimit) fail(E_MAXREC, "call limit exceeded")
                         c.ticksLeft = ticksLeft
