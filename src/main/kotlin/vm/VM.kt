@@ -51,7 +51,7 @@ class VM(
             initVar("user", c.vUser)
             returnValue = executeCode(c)
         } catch (e: Exception) {
-            exception = e as? VMException ?: VMException(E_SYS, e.toString(), lineNum, charNum)
+            exception = e as? VMException ?: VMException(E_SYS, e.message ?: "???", lineNum, charNum)
         }
         // Win or lose, we clean up after.
         stack.clear()
