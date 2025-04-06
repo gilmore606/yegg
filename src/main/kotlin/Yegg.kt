@@ -5,7 +5,6 @@ import com.dlfsystems.world.World
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.VTrait
-import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 import kotlinx.serialization.json.Json
 import java.io.File

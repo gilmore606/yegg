@@ -1,6 +1,5 @@
 package com.dlfsystems.world
 
-import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context

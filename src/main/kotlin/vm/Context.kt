@@ -37,5 +37,5 @@ class Context(
     fun getTrait(id: ULID?) = id?.let { world.getTrait(id) }
     fun getObj(id: ULID?) = id?.let { world.getObj(id) }
 
-    fun stackDump() = callStack.joinToString(separator = "\n  ", postfix = "\n")
+    fun stackDump() = callStack.joinToString(separator = "\n...", postfix = "\n")
 }
