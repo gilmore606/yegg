@@ -64,8 +64,7 @@ class SysTrait : Trait("sys") {
     private fun verbMove(c: Context, args: List<Value>): Value {
         if (args.size != 2 || args[0] !is VObj || args[1] !is VObj) throw IllegalArgumentException("Bad args for move")
         c.getObj((args[0] as VObj).v)?.also { subject ->
-            val newLoc = c.getObj((args[1] as VObj).v)
-            c.world.moveObj(subject, newLoc)
+            c.world.moveObj(subject, args[1] as VObj)
         } ?: throw IllegalArgumentException("Cannot move invalid obj")
         return VVoid()
     }

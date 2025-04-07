@@ -1,5 +1,7 @@
 package com.dlfsystems.world
 
+import com.dlfsystems.Yegg
+import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
@@ -19,8 +21,8 @@ class Obj {
 
     val props: MutableMap<String, Value> = mutableMapOf()
 
-    var location: ULID? = null
-    var contents: MutableList<ULID> = mutableListOf()
+    var location: VObj = Yegg.vNullObj
+    var contents: VList = VList()
 
     fun acquireTrait(trait: Trait) {
         traits.add(trait.id)

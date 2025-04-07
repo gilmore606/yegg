@@ -26,8 +26,8 @@ data class VObj(val v: ULID?): Value() {
             when (name) {
                 "asString" -> return propAsString()
                 "traits" -> return propTraits(obj)
-                "location" -> return propLocation(obj)
-                "contents" -> return propContents(obj)
+                "location" -> return obj.location
+                "contents" -> return obj.contents
             }
             return obj.getProp(c, name)
         }
@@ -47,10 +47,6 @@ data class VObj(val v: ULID?): Value() {
     private fun propAsString() = VString(toString())
 
     private fun propTraits(obj: Obj) = VList(obj.traits.map { VTrait(it) }.toMutableList())
-
-    private fun propLocation(obj: Obj) = VObj(obj.location)
-
-    private fun propContents(obj: Obj) = VList(obj.contents.map { VObj(it) }.toMutableList())
 
     // Custom verbs
 
