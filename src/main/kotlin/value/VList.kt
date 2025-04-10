@@ -6,7 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class VList(var v: MutableList<Value>): Value() {
+data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
 
     @SerialName("yType")
     override val type = Type.LIST

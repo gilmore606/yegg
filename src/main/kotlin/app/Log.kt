@@ -1,6 +1,6 @@
 package com.dlfsystems.app
 
-import com.dlfsystems.Yegg
+import com.dlfsystems.server.Yegg
 
 object Log {
 

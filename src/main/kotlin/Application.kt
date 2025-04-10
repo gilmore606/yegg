@@ -1,6 +1,7 @@
 package com.dlfsystems
 
 import com.dlfsystems.app.configureRouting
+import com.dlfsystems.server.Yegg
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*

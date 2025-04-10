@@ -1,6 +1,6 @@
 package com.dlfsystems.world.trait
 
-import com.dlfsystems.Yegg
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.value.VList
@@ -9,23 +9,26 @@ import com.dlfsystems.value.VTrait
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
+import com.dlfsystems.world.ObjID
 import kotlinx.serialization.Serializable
-import ulid.ULID
 
 // A collection of verbs and props, which can apply to an Obj.
 
 @Serializable
+data class TraitID(val id: String) { override fun toString() = id }
+
+@Serializable
 open class Trait(val name: String) {
 
-    val id: ULID = ULID.nextULID()
+    val id = TraitID(Yegg.newID())
     private val vTrait = VTrait(id)
 
-    val traits: MutableList<ULID> = mutableListOf()
+    val traits: MutableList<TraitID> = mutableListOf()
 
     val verbs: MutableMap<String, Verb> = mutableMapOf()
     open val props: MutableMap<String, Value> = mutableMapOf()
 
-    val objects: MutableSet<ULID> = mutableSetOf()
+    val objects: MutableSet<ObjID> = mutableSetOf()
 
     fun applyTo(obj: Obj) {
         obj.traits.forEach {
@@ -41,7 +44,8 @@ open class Trait(val name: String) {
         obj.dispelTrait(this)
     }
 
-    fun hasTrait(trait: ULID): Boolean = (trait in traits) || (traits.first { Yegg.world.getTrait(it)?.hasTrait(trait) ?: false } != null)
+    fun hasTrait(trait: TraitID): Boolean = (trait in traits) ||
+            (traits.firstOrNull { Yegg.world.getTrait(it)?.hasTrait(trait) ?: false } != null)
 
     fun programVerb(verbName: String, cOut: Compiler.Result) {
         verbs[verbName]?.also {

@@ -14,13 +14,13 @@ import kotlinx.serialization.Serializable
 class Verb(
     val name: String,
 ) {
-    var vm = VM()
+    private var vm = VM()
     private var source = ""
 
     fun program(cOut: Compiler.Result) {
         source = cOut.source
         vm = VM(cOut.code, cOut.symbols)
-        Log.d("programmed $name with code ${vm.code.dumpText()}")
+        Log.d("programmed $name with code ${vm.dumpText()}")
     }
 
     fun call(c: Context, vThis: VObj, vTrait: VTrait, args: List<Value>): Value {
@@ -30,6 +30,6 @@ class Verb(
         return r
     }
 
-    fun getListing() = vm.code.dumpText()
+    fun getListing() = vm.dumpText()
 
 }

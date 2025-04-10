@@ -1,12 +1,12 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
+import com.dlfsystems.world.trait.TraitID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import ulid.ULID
 
 @Serializable
-data class VTrait(val v: ULID?): Value() {
+data class VTrait(val v: TraitID?): Value() {
 
     @SerialName("yType")
     override val type = Type.TRAIT

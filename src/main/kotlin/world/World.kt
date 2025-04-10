@@ -1,24 +1,26 @@
 package com.dlfsystems.world
 
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.value.VObj
 import com.dlfsystems.value.VString
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.SysTrait
 import com.dlfsystems.world.trait.Trait
+import com.dlfsystems.world.trait.TraitID
 import com.dlfsystems.world.trait.UserTrait
 import kotlinx.serialization.Serializable
-import ulid.ULID
 
 @Serializable
 data class World(
     val name: String = "world"
 ) {
 
-    val traits: MutableMap<ULID, Trait> = mutableMapOf()
-    val traitIDs: MutableMap<String, ULID> = mutableMapOf()
+    val traits: MutableMap<TraitID, Trait> = mutableMapOf()
+    val traitIDs: MutableMap<String, TraitID> = mutableMapOf()
 
-    val objs: MutableMap<ULID, Obj> = mutableMapOf()
+    val objs: MutableMap<ObjID, Obj> = mutableMapOf()
 
     fun getUserLogin(name: String, password: String): Obj? {
         val c = Context(this)
@@ -37,8 +39,8 @@ data class World(
     }
 
     fun getTrait(named: String) = traits[traitIDs[named]]
-    fun getTrait(id: ULID) = traits[id]
-    fun getObj(id: ULID) = objs[id]
+    fun getTrait(id: TraitID?) = id?.let { traits[it] }
+    fun getObj(id: ObjID?) = id?.let { objs[it] }
 
     fun getSysValue(c: Context, name: String): Value = getTrait("sys")!!.getProp(c, name)!!
 
@@ -58,16 +60,37 @@ data class World(
 
     fun createObj() = Obj().also { objs[it.id] = it }
 
-    fun recycleObj(objID: ULID) {
-        objs[objID]?.traits?.forEach { getTrait(it)?.removeFrom(objs[objID]!!) }
-        objs.remove(objID)
+    fun destroyObj(obj: Obj) {
+        obj.traits.forEach { getTrait(it)?.removeFrom(obj) }
+        obj.contents.v.forEach {
+            moveObj(getObj((it as VObj).v)!!, obj.location)
+        }
+        moveObj(obj, Yegg.vNullObj)
+        objs.remove(obj.id)
     }
 
-    fun applyTrait(traitID: ULID, objID: ULID) {
+    fun moveObj(obj: Obj, newLocV: VObj) {
+        val oldLoc = obj.location
+        // Prevent recursive move
+        var checkLoc = getObj(newLocV.v)
+        while (checkLoc != null) {
+            if (checkLoc.location == obj.vThis) throw IllegalArgumentException("Recursive move")
+            checkLoc = getObj(checkLoc.location.v)
+        }
+        oldLoc.v?.also { getObj(it)!!.contents.v.removeIf { it == obj.vThis } }
+        getObj(newLocV.v)?.also {
+            it.contents.v.add(obj.vThis)
+            obj.location = newLocV
+        } ?: run {
+            obj.location = Yegg.vNullObj
+        }
+    }
+
+    fun applyTrait(traitID: TraitID, objID: ObjID) {
         traits[traitID]?.applyTo(objs[objID]!!)
     }
 
-    fun dispelTrait(traitID: ULID, objID: ULID) {
+    fun dispelTrait(traitID: TraitID, objID: ObjID) {
         traits[traitID]?.removeFrom(objs[objID]!!)
     }
 

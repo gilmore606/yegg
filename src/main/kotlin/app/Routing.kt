@@ -1,7 +1,9 @@
 package com.dlfsystems.app
 
-import com.dlfsystems.Yegg
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.server.Connection
+import io.ktor.network.sockets.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -22,7 +24,7 @@ fun Application.configureRouting() {
     routing {
 
         webSocket("/ws") { // websocketSession
-            val conn = Yegg.Connection()
+            val conn = Connection()
             for (frame in incoming) {
                 if (frame is Frame.Text) {
                     val text = frame.readText()
@@ -48,7 +50,7 @@ fun Application.configureRouting() {
             var result = ""
             call.parameters["traitName"]?.also { traitName ->
                 call.parameters["verbName"]?.also { verbName ->
-                    result = Yegg.programVerb(traitName, verbName, code)
+                    result = Yegg.world.programVerb(traitName, verbName, code)
                 }
             }
             call.respondText(result)

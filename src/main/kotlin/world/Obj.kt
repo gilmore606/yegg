@@ -1,23 +1,30 @@
 package com.dlfsystems.world
 
+import com.dlfsystems.server.Yegg
+import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.Trait
+import com.dlfsystems.world.trait.TraitID
 import kotlinx.serialization.Serializable
-import ulid.ULID
 
 // An instance in the world.
 
 @Serializable
-class Obj {
+data class ObjID(val id: String) { override fun toString() = id }
 
-    val id: ULID = ULID.nextULID()
+@Serializable
+class Obj {
+    val id = ObjID(Yegg.newID())
     val vThis = VObj(id)
 
-    val traits: MutableList<ULID> = mutableListOf()
+    val traits: MutableList<TraitID> = mutableListOf()
 
     val props: MutableMap<String, Value> = mutableMapOf()
+
+    var location: VObj = Yegg.vNullObj
+    var contents: VList = VList()
 
     fun acquireTrait(trait: Trait) {
         traits.add(trait.id)

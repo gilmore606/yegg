@@ -1,17 +1,18 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
+import com.dlfsystems.world.Obj
+import com.dlfsystems.world.ObjID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import ulid.ULID
 
 @Serializable
-data class VObj(val v: ULID?): Value() {
+data class VObj(val v: ObjID?): Value() {
 
     @SerialName("yType")
     override val type = Type.OBJ
 
-    override fun toString() = "#$v"
+    override fun toString() = "#${v.toString().takeLast(5)}"
     override fun asString() = "OBJ" // TODO: use name from passed context?
 
     override fun isTrue() = v != null
@@ -21,11 +22,16 @@ data class VObj(val v: ULID?): Value() {
     override fun plus(a2: Value) = if (a2 is VString) VString(v.toString() + a2.v) else null
 
     override fun getProp(c: Context, name: String): Value? {
-        when (name) {
-            "asString" -> return propAsString()
-            "traits" -> return propTraits(c)
+        c.getObj(v)?.also { obj ->
+            when (name) {
+                "asString" -> return propAsString()
+                "traits" -> return propTraits(obj)
+                "location" -> return obj.location
+                "contents" -> return obj.contents
+            }
+            return obj.getProp(c, name)
         }
-        return v?.let { c.getObj(it)?.getProp(c, name) }
+        throw IllegalArgumentException("Invalid obj")
     }
 
     override fun setProp(c: Context, name: String, value: Value): Boolean {
@@ -40,9 +46,7 @@ data class VObj(val v: ULID?): Value() {
 
     private fun propAsString() = VString(toString())
 
-    private fun propTraits(c: Context) = VList((
-        v?.let { c.getObj(it)?.traits?.map { VTrait(it) } } ?: mutableListOf()
-    ).toMutableList())
+    private fun propTraits(obj: Obj) = VList(obj.traits.map { VTrait(it) }.toMutableList())
 
     // Custom verbs
 

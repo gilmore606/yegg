@@ -5,7 +5,7 @@ import com.dlfsystems.vm.Opcode
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.vm.VMWord
 import com.dlfsystems.value.*
-import ulid.ULID
+import com.dlfsystems.world.ObjID
 
 class Coder(val ast: Node) {
 
@@ -38,7 +38,7 @@ class Coder(val ast: Node) {
     fun value(from: Node, boolValue: Boolean) { value(from, VBool(boolValue)) }
     fun value(from: Node, floatValue: Float) { value(from, VFloat(floatValue)) }
     fun value(from: Node, stringValue: String) { value(from, VString(stringValue)) }
-    fun value(from: Node, objValue: ULID) { value(from, VObj(objValue)) }
+    fun value(from: Node, objValue: ObjID) { value(from, VObj(objValue)) }
 
     // Write a placeholder address for a jump we'll locate in the future.
     // Nodes call this to jump to a named future address.
