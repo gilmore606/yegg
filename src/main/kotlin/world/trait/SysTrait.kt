@@ -1,6 +1,6 @@
 package com.dlfsystems.world.trait
 
-import com.dlfsystems.Yegg
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
 

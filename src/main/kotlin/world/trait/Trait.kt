@@ -1,6 +1,6 @@
 package com.dlfsystems.world.trait
 
-import com.dlfsystems.Yegg
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.value.VList
@@ -10,7 +10,6 @@ import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 import com.dlfsystems.world.ObjID
-import io.viascom.nanoid.NanoId
 import kotlinx.serialization.Serializable
 
 // A collection of verbs and props, which can apply to an Obj.
@@ -21,7 +20,7 @@ data class TraitID(val id: String) { override fun toString() = id }
 @Serializable
 open class Trait(val name: String) {
 
-    val id = TraitID(NanoId.generateOptimized(8, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 61, 16))
+    val id = TraitID(Yegg.newID())
     private val vTrait = VTrait(id)
 
     val traits: MutableList<TraitID> = mutableListOf()

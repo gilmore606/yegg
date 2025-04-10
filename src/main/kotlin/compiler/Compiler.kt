@@ -1,6 +1,6 @@
 package com.dlfsystems.compiler
 
-import com.dlfsystems.Yegg
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.ast.Node
 import com.dlfsystems.value.VString

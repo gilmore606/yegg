@@ -1,13 +1,12 @@
 package com.dlfsystems.world
 
-import com.dlfsystems.Yegg
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.Trait
 import com.dlfsystems.world.trait.TraitID
-import io.viascom.nanoid.NanoId
 import kotlinx.serialization.Serializable
 
 // An instance in the world.
@@ -17,7 +16,7 @@ data class ObjID(val id: String) { override fun toString() = id }
 
 @Serializable
 class Obj {
-    val id = ObjID(NanoId.generateOptimized(8, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 61, 16))
+    val id = ObjID(Yegg.newID())
     val vThis = VObj(id)
 
     val traits: MutableList<TraitID> = mutableListOf()

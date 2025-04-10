@@ -1,6 +1,6 @@
 package com.dlfsystems.vm
 
-import com.dlfsystems.Yegg
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.world.World
 import com.dlfsystems.value.*
 import com.dlfsystems.world.ObjID

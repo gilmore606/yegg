@@ -1,6 +1,6 @@
 package com.dlfsystems.world
 
-import com.dlfsystems.Yegg
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.VString
