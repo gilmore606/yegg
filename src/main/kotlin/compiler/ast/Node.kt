@@ -2,12 +2,14 @@ package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
 import com.dlfsystems.compiler.CompileException
-import ulid.ULID
+import io.viascom.nanoid.NanoId
 
 // A node in the syntax tree.
 
+data class NodeID(val id: String) { override fun toString() = id }
+
 abstract class Node {
-    val id = ULID.nextULID()
+    val id: NodeID = makeID()
 
     var lineNum = 0
     var charNum = 0
@@ -31,4 +33,8 @@ abstract class Node {
 
     // Generate opcodes for this node.
     open fun code(code: Coder) { }
+
+    companion object {
+        fun makeID() = NodeID(NanoId.generateOptimized(8, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 61, 16))
+    }
 }

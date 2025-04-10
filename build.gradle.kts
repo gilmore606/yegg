@@ -35,7 +35,7 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 
-    implementation("com.aallam.ulid:ulid-kotlin:1.3.0")
+    implementation("io.viascom.nanoid:nanoid:1.0.1")
 }
 
 tasks.named<KotlinCompilationTask<*>>("compileKotlin").configure {

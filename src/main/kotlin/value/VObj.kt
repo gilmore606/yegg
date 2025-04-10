@@ -6,7 +6,6 @@ import com.dlfsystems.world.ObjID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class VObj(val v: ObjID?): Value() {
 

@@ -7,17 +7,17 @@ import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.Trait
 import com.dlfsystems.world.trait.TraitID
+import io.viascom.nanoid.NanoId
 import kotlinx.serialization.Serializable
-import ulid.ULID
 
 // An instance in the world.
 
-typealias ObjID = ULID
+@Serializable
+data class ObjID(val id: String) { override fun toString() = id }
 
 @Serializable
 class Obj {
-
-    val id: ObjID = ULID.nextULID()
+    val id = ObjID(NanoId.generateOptimized(8, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 61, 16))
     val vThis = VObj(id)
 
     val traits: MutableList<TraitID> = mutableListOf()

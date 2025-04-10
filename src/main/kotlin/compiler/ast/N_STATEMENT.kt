@@ -2,7 +2,6 @@ package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
 import com.dlfsystems.vm.Opcode.*
-import ulid.ULID
 
 // A statement which doesn't necessarily return a value.
 
@@ -60,8 +59,8 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
 }
 
 class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
-    private val internalIndex = N_IDENTIFIER(ULID.nextULID().toString())
-    private val internalSource = N_IDENTIFIER(ULID.nextULID().toString())
+    private val internalIndex = N_IDENTIFIER(makeID().toString())
+    private val internalSource = N_IDENTIFIER(makeID().toString())
 
     override fun toText(depth: Int) = tab(depth) + "for ($index in $source) " + body.toText(depth + 1)
     override fun toText() = toText(0)
@@ -96,7 +95,7 @@ class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEM
 }
 
 class N_FORRANGE(val index: N_IDENTIFIER, val from: N_EXPR, val to: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
-    private val internalTo = N_IDENTIFIER(ULID.nextULID().toString())
+    private val internalTo = N_IDENTIFIER(makeID().toString())
 
     override fun toText(depth: Int) = tab(depth) + "for ($index in $from..$to) " + body.toText(depth + 1)
     override fun toText() = toText(0)
