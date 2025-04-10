@@ -48,7 +48,7 @@ fun Application.configureRouting() {
             var result = ""
             call.parameters["traitName"]?.also { traitName ->
                 call.parameters["verbName"]?.also { verbName ->
-                    result = Yegg.programVerb(traitName, verbName, code)
+                    result = Yegg.world.programVerb(traitName, verbName, code)
                 }
             }
             call.respondText(result)

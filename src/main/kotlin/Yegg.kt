@@ -13,7 +13,7 @@ import kotlin.system.exitProcess
 object Yegg {
 
     // TODO: users, auth, *waves hands*
-    class Connection() {
+    class Connection {
 
         var buffer = mutableListOf<String>()
         var programming: Pair<String, String>? = null
@@ -25,7 +25,7 @@ object Yegg {
         fun receiveText(text: String): String {
             programming?.also { verb ->
                 if (text == ".") {
-                    val result = programVerb(verb.first, verb.second, buffer.joinToString("\n"))
+                    val result = world.programVerb(verb.first, verb.second, buffer.joinToString("\n"))
                     buffer.clear()
                     programming = null
                     return result
@@ -121,7 +121,5 @@ object Yegg {
         }
         return null
     }
-
-    fun programVerb(traitName: String, name: String, code: String): String = world.programVerb(traitName, name, code)
 
 }

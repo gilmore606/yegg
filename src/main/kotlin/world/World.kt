@@ -8,19 +8,19 @@ import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.SysTrait
 import com.dlfsystems.world.trait.Trait
+import com.dlfsystems.world.trait.TraitID
 import com.dlfsystems.world.trait.UserTrait
 import kotlinx.serialization.Serializable
-import ulid.ULID
 
 @Serializable
 data class World(
     val name: String = "world"
 ) {
 
-    val traits: MutableMap<ULID, Trait> = mutableMapOf()
-    val traitIDs: MutableMap<String, ULID> = mutableMapOf()
+    val traits: MutableMap<TraitID, Trait> = mutableMapOf()
+    val traitIDs: MutableMap<String, TraitID> = mutableMapOf()
 
-    val objs: MutableMap<ULID, Obj> = mutableMapOf()
+    val objs: MutableMap<ObjID, Obj> = mutableMapOf()
 
     fun getUserLogin(name: String, password: String): Obj? {
         val c = Context(this)
@@ -39,8 +39,8 @@ data class World(
     }
 
     fun getTrait(named: String) = traits[traitIDs[named]]
-    fun getTrait(id: ULID) = traits[id]
-    fun getObj(id: ULID?) = id?.let { objs[it] }
+    fun getTrait(id: TraitID?) = id?.let { traits[it] }
+    fun getObj(id: ObjID?) = id?.let { objs[it] }
 
     fun getSysValue(c: Context, name: String): Value = getTrait("sys")!!.getProp(c, name)!!
 
@@ -86,11 +86,11 @@ data class World(
         }
     }
 
-    fun applyTrait(traitID: ULID, objID: ULID) {
+    fun applyTrait(traitID: TraitID, objID: ObjID) {
         traits[traitID]?.applyTo(objs[objID]!!)
     }
 
-    fun dispelTrait(traitID: ULID, objID: ULID) {
+    fun dispelTrait(traitID: TraitID, objID: ObjID) {
         traits[traitID]?.removeFrom(objs[objID]!!)
     }
 

@@ -6,18 +6,21 @@ import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.Trait
+import com.dlfsystems.world.trait.TraitID
 import kotlinx.serialization.Serializable
 import ulid.ULID
 
 // An instance in the world.
 
+typealias ObjID = ULID
+
 @Serializable
 class Obj {
 
-    val id: ULID = ULID.nextULID()
+    val id: ObjID = ULID.nextULID()
     val vThis = VObj(id)
 
-    val traits: MutableList<ULID> = mutableListOf()
+    val traits: MutableList<TraitID> = mutableListOf()
 
     val props: MutableMap<String, Value> = mutableMapOf()
 

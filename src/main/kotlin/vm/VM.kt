@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.dlfsystems.vm
 
 import com.dlfsystems.value.Value
@@ -11,9 +13,11 @@ import kotlinx.serialization.Transient
 
 @Serializable
 class VM(
-    val code: List<VMWord> = listOf(),
-    val symbols: Map<String, Int> = mapOf()
+    private val code: List<VMWord> = listOf(),
+    private val symbols: Map<String, Int> = mapOf()
 ) {
+
+    fun dumpText() = code.dumpText()
 
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
@@ -25,9 +29,9 @@ class VM(
 
     // Preserve error position.
     private val lineNum: Int
-        get() = code.getOrNull(pc)?.let { it.lineNum } ?: 0
+        get() = code.getOrNull(pc)?.lineNum ?: 0
     private val charNum: Int
-        get() = code.getOrNull(pc)?.let { it.charNum } ?: 0
+        get() = code.getOrNull(pc)?.charNum ?: 0
     private fun fail(type: VMException.Type, m: String) { throw VMException(type, m, lineNum, charNum) }
 
     private inline fun push(v: Value) = stack.addFirst(v)
@@ -215,7 +219,7 @@ class VM(
                 O_GETTRAIT -> {
                     val a1 = pop()
                     if (a1 is VString) {
-                        c?.getTrait(a1.v)?.also { push(VTrait(it.id)) }
+                        c.getTrait(a1.v)?.also { push(VTrait(it.id)) }
                             ?: fail (E_TRAITNF, "trait not found")
                     } else fail(E_TRAITNF, "trait name must be string")
                 }

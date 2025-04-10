@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.dlfsystems.compiler
 
 import com.dlfsystems.compiler.TokenType.*
@@ -30,7 +32,7 @@ class Parser(inputTokens: List<Token>) {
     private inline fun nextIs(types: List<TokenType>) = (nextToken().type in types)
     // Are the next tokens each of the given ordered types?
     private inline fun nextAre(vararg types: TokenType): Boolean {
-        for (i in 0 until types.size) {
+        for (i in types.indices) {
             if (nextToken(i).type != types[i]) return false
         }
         return true
@@ -107,10 +109,10 @@ class Parser(inputTokens: List<Token>) {
     private fun pForLoop(): N_STATEMENT? {
         consume(T_FOR) ?: return null
         val withParen = consume(T_PAREN_OPEN)
-        if (nextAre(T_IDENTIFIER, T_IN)) {
-            return pForLoopOnValueOrRange(withParen)
+        return if (nextAre(T_IDENTIFIER, T_IN)) {
+            pForLoopOnValueOrRange(withParen)
         } else {
-            return pForLoopThreeArg(withParen)
+            pForLoopThreeArg(withParen)
         }
     }
 
@@ -386,7 +388,7 @@ class Parser(inputTokens: List<Token>) {
     // We parse these together so they can be linearly chained.
     private fun pReference(): N_EXPR? {
 
-        fun pIndex(left: N_EXPR): N_EXPR? {
+        fun pIndex(left: N_EXPR): N_EXPR {
             consume(T_BRACKET_OPEN)
             var newLeft = left
             pExpression()?.also { index ->
@@ -402,7 +404,7 @@ class Parser(inputTokens: List<Token>) {
             return newLeft
         }
 
-        fun pDotref(left: N_EXPR): N_EXPR? {
+        fun pDotref(left: N_EXPR): N_EXPR {
             consume(T_DOT)
             var newLeft = left
             pStringSub()?.also { right ->
@@ -429,8 +431,8 @@ class Parser(inputTokens: List<Token>) {
         while (nextIs(T_BRACKET_OPEN, T_DOT)) {
             val operator = consume()
             when (operator.type) {
-                T_BRACKET_OPEN -> { left = pIndex(left) ?: left }
-                T_DOT -> { left = pDotref(left) ?: left }
+                T_BRACKET_OPEN -> { left = pIndex(left) }
+                T_DOT -> { left = pDotref(left) }
                 else -> { }
             }
         }
@@ -478,19 +480,19 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse a literal list or map: [<expr>, ...] or [<expr>:<expr>, ...]
     private fun pCollection(): N_EXPR? {
-        var next = this::pParens
+        val next = this::pParens
         consume(T_BRACKET_OPEN)?.also {
             var done = false
             var isMap: Boolean? = null
-            var listArgs = mutableListOf<N_EXPR>()
-            var mapArgs = mutableMapOf<N_EXPR, N_EXPR>()
+            val listArgs = mutableListOf<N_EXPR>()
+            val mapArgs = mutableMapOf<N_EXPR, N_EXPR>()
             while (!done) {
                 pExpression()?.also { arg ->
                     consume(T_COLON)?.also {
                         if (isMap == false) fail("colon in list element (was this supposed to be a map?)")
                         isMap = true
                         pExpression()?.also { value ->
-                            mapArgs.put(arg, value)
+                            mapArgs[arg] = value
                         } ?: fail("expression expected for map element value")
                     } ?: run {
                         if (isMap == true) fail("colon missing in map element")

@@ -3,7 +3,8 @@ package com.dlfsystems.vm
 import com.dlfsystems.Yegg
 import com.dlfsystems.world.World
 import com.dlfsystems.value.*
-import ulid.ULID
+import com.dlfsystems.world.ObjID
+import com.dlfsystems.world.trait.TraitID
 
 // Variables from the world which a VM uses to execute a func.
 // A persistent VM will own a context whose values are updated from outside it.
@@ -34,8 +35,8 @@ class Context(
         callStack.removeFirst()
 
     fun getTrait(name: String) = world.getTrait(name)
-    fun getTrait(id: ULID?) = id?.let { world.getTrait(id) }
-    fun getObj(id: ULID?) = id?.let { world.getObj(id) }
+    fun getTrait(id: TraitID?) = world.getTrait(id)
+    fun getObj(id: ObjID?) = world.getObj(id)
 
     fun stackDump() = callStack.joinToString(separator = "\n...", postfix = "\n")
 }
