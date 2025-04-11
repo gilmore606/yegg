@@ -162,8 +162,8 @@ class VM(
                         a1.callVerb(c, a2.v, args)?.also { push(it) }
                             ?: fail(E_VERBNF, "verb not found")
                         c.callsLeft++
+                        ticksLeft = c.ticksLeft
                     } else fail(E_VERBNF, "verb name must be string")
-                    ticksLeft = c.ticksLeft
                 }
 
                 // Variable ops
