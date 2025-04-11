@@ -1,6 +1,5 @@
 package com.dlfsystems.value
 
-import com.dlfsystems.vm.Context
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -22,7 +21,7 @@ data class VBool(val v: Boolean): Value() {
 
     override fun plus(a2: Value) = if (a2 is VString) VString(v.toString() + a2.v) else null
 
-    override fun getProp(c: Context, name: String): Value? {
+    override fun getProp(name: String): Value? {
         when (name) {
             "asInt" -> return propAsInt()
             "asString" -> return propAsString()

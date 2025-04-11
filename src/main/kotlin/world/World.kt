@@ -23,11 +23,10 @@ data class World(
     val objs: MutableMap<ObjID, Obj> = mutableMapOf()
 
     fun getUserLogin(name: String, password: String): Obj? {
-        val c = Context(this)
         getTrait("user")?.objects?.forEach { obj ->
-            objs[obj]?.getProp(c, "username")?.also {
+            objs[obj]?.getProp("username")?.also {
                 if (it == VString(name)) {
-                    objs[obj]?.getProp(c, "password")?.also {
+                    objs[obj]?.getProp("password")?.also {
                         if (it == VString(password)) {
                             return objs[obj]
                         }
@@ -42,7 +41,7 @@ data class World(
     fun getTrait(id: TraitID?) = id?.let { traits[it] }
     fun getObj(id: ObjID?) = id?.let { objs[it] }
 
-    fun getSysValue(c: Context, name: String): Value = getTrait("sys")!!.getProp(c, name)!!
+    fun getSysValue(name: String): Value = getTrait("sys")!!.getProp(name)!!
 
     fun addTrait(name: String): Trait {
         if (traits.values.none { it.name == name }) {

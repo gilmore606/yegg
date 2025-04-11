@@ -1,5 +1,6 @@
 package com.dlfsystems.value
 
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 import com.dlfsystems.world.ObjID
@@ -21,22 +22,22 @@ data class VObj(val v: ObjID?): Value() {
 
     override fun plus(a2: Value) = if (a2 is VString) VString(v.toString() + a2.v) else null
 
-    override fun getProp(c: Context, name: String): Value? {
-        c.getObj(v)?.also { obj ->
+    override fun getProp(name: String): Value? {
+        Yegg.world.getObj(v)?.also { obj ->
             when (name) {
                 "asString" -> return propAsString()
                 "traits" -> return propTraits(obj)
                 "location" -> return obj.location
                 "contents" -> return obj.contents
             }
-            return obj.getProp(c, name)
+            return obj.getProp(name)
         }
         throw IllegalArgumentException("Invalid obj")
     }
 
-    override fun setProp(c: Context, name: String, value: Value): Boolean {
-        c.getObj(v)?.also { obj ->
-            return obj.setProp(c, name, value)
+    override fun setProp(name: String, value: Value): Boolean {
+        Yegg.world.getObj(v)?.also { obj ->
+            return obj.setProp(name, value)
         }
         return false
     }

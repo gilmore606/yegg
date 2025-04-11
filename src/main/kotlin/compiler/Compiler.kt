@@ -44,7 +44,7 @@ object Compiler {
     fun eval(code: String, verbose: Boolean = false): String {
         Log.d("eval: $code")
         var cOut: Result? = null
-        val c = Context(Yegg.world).apply {
+        val c = Context().apply {
             push(Yegg.vNullObj, Yegg.vNullTrait, "(eval)", listOf(VString(code)))
         }
         try {

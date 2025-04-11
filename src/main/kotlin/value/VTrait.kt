@@ -1,5 +1,6 @@
 package com.dlfsystems.value
 
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.TraitID
 import kotlinx.serialization.SerialName
@@ -18,32 +19,29 @@ data class VTrait(val v: TraitID?): Value() {
 
     override fun cmpEq(a2: Value) = (a2 is VTrait) && (v == a2.v)
 
-    private fun getTrait(c: Context?) = v?.let { c?.world?.getTrait(it) }
+    private fun getTrait() = v?.let { Yegg.world.getTrait(it) }
 
-    override fun getProp(c: Context, name: String): Value? {
-        val trait = getTrait(c)
+    override fun getProp(name: String): Value? {
         when (name) {
-            "asString" -> return propAsString(c)
+            "asString" -> return propAsString()
         }
-        return trait?.getProp(c, name)
+        return getTrait()?.getProp(name)
     }
 
-    override fun setProp(c: Context, name: String, value: Value): Boolean {
-        val trait = getTrait(c)
-        return trait?.setProp(c, name, value) ?: false
+    override fun setProp(name: String, value: Value): Boolean {
+        return getTrait()?.setProp(name, value) ?: false
     }
 
 
     // Custom props
 
-    private fun propAsString(c: Context) = v?.let { v ->
-        VString("$" + c.world.getTrait(v)?.name)
+    private fun propAsString() = v?.let { v ->
+        VString("$" + Yegg.world.getTrait(v)?.name)
     } ?: VString(asString())
 
     // Custom verbs
 
     override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
-        val trait = getTrait(c)
-        return trait?.callVerb(c, name, args)
+        return getTrait()?.callVerb(c, name, args)
     }
 }

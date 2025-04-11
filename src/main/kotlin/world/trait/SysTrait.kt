@@ -15,61 +15,61 @@ class SysTrait : Trait("sys") {
         "callLimit" to VInt(50),
     )
 
-    override fun getProp(c: Context, propName: String): Value? {
+    override fun getProp(propName: String): Value? {
         when (propName) {
             "time" -> return VInt((System.currentTimeMillis() / 1000L).toInt())
         }
-        return super.getProp(c, propName)
+        return super.getProp(propName)
     }
 
     override fun callVerb(c: Context, verbName: String, args: List<Value>): Value? {
         when (verbName) {
-            "addTrait" -> return verbAddTrait(c, args)
-            "create" -> return verbCreate(c, args)
-            "destroy" -> return verbDestroy(c, args)
-            "move" -> return verbMove(c, args)
-            "dumpDatabase" -> return verbDumpDatabase(c, args)
+            "addTrait" -> return verbAddTrait(args)
+            "create" -> return verbCreate(args)
+            "destroy" -> return verbDestroy(args)
+            "move" -> return verbMove(args)
+            "dumpDatabase" -> return verbDumpDatabase(args)
         }
         return super.callVerb(c, verbName, args)
     }
 
-    private fun verbAddTrait(c: Context, args: List<Value>): Value {
+    private fun verbAddTrait(args: List<Value>): Value {
         if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for addTrait")
-        c.world.addTrait(args[0].asString())
+        Yegg.world.addTrait(args[0].asString())
         return VVoid()
     }
 
-    private fun verbCreate(c: Context, args: List<Value>): Value {
-        val obj = c.world.createObj()
+    private fun verbCreate(args: List<Value>): Value {
+        val obj = Yegg.world.createObj()
         try {
             args.forEach {
                 if (it !is VTrait) throw IllegalArgumentException("Non-trait passed to create")
-                c.world.applyTrait(it.v!!, obj.id)
+                Yegg.world.applyTrait(it.v!!, obj.id)
             }
             return VObj(obj.id)
         } catch (e: Exception) {
-            c.world.destroyObj(obj)
+            Yegg.world.destroyObj(obj)
             throw e
         }
     }
 
-    private fun verbDestroy(c: Context, args: List<Value>): Value {
+    private fun verbDestroy(args: List<Value>): Value {
         if (args.size != 1 || args[0] !is VObj) throw IllegalArgumentException("Bad args for destroy")
-        c.getObj((args[0] as VObj).v)?.also { subject ->
-            c.world.destroyObj(subject)
+        Yegg.world.getObj((args[0] as VObj).v)?.also { subject ->
+            Yegg.world.destroyObj(subject)
         } ?: throw IllegalArgumentException("Cannot destroy invalid obj")
         return VVoid()
     }
 
-    private fun verbMove(c: Context, args: List<Value>): Value {
+    private fun verbMove(args: List<Value>): Value {
         if (args.size != 2 || args[0] !is VObj || args[1] !is VObj) throw IllegalArgumentException("Bad args for move")
-        c.getObj((args[0] as VObj).v)?.also { subject ->
-            c.world.moveObj(subject, args[1] as VObj)
+        Yegg.world.getObj((args[0] as VObj).v)?.also { subject ->
+            Yegg.world.moveObj(subject, args[1] as VObj)
         } ?: throw IllegalArgumentException("Cannot move invalid obj")
         return VVoid()
     }
 
-    private fun verbDumpDatabase(c: Context, args: List<Value>): Value {
+    private fun verbDumpDatabase(args: List<Value>): Value {
         if (args.isNotEmpty()) throw IllegalArgumentException("Bad args for dumpDatabase")
         Yegg.dumpDatabase()?.also { return VString(it) }
         return VVoid()

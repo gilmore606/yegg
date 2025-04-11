@@ -35,27 +35,27 @@ class Obj {
         traits.remove(trait.id)
     }
 
-    fun getProp(c: Context, name: String): Value? {
+    fun getProp(name: String): Value? {
         props[name]?.also { return it }
 
         traits.forEach {
-            c.getTrait(it)?.getProp(c, name)?.also { return it }
+            Yegg.world.getTrait(it)?.getProp(name)?.also { return it }
         }
         return null
     }
 
-    fun setProp(c: Context, name: String, value: Value): Boolean {
-        if (hasProp(c, name)) {
+    fun setProp(name: String, value: Value): Boolean {
+        if (hasProp(name)) {
             props[name] = value
             return true
         }
         return false
     }
 
-    fun hasProp(c: Context, name: String): Boolean {
+    fun hasProp(name: String): Boolean {
         if (name in props.keys) return true
         traits.forEach { traitID ->
-            if (name in (c.getTrait(traitID)?.props?.keys ?: listOf())) return true
+            if (name in (Yegg.world.getTrait(traitID)?.props?.keys ?: listOf())) return true
         }
         return false
     }

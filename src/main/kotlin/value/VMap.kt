@@ -20,7 +20,7 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
         else -> null
     }
 
-    override fun getProp(c: Context, name: String): Value? {
+    override fun getProp(name: String): Value? {
         when (name) {
             "length" -> return propLength()
             "keys" -> return propKeys()
@@ -29,13 +29,13 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
         return null
     }
 
-    override fun getIndex(c: Context, i: Value): Value? {
+    override fun getIndex(i: Value): Value? {
         if (v.containsKey(i)) return v[i]
         else fail(E_RANGE, "no map entry $i")
         return null
     }
 
-    override fun setIndex(c: Context, i: Value, value: Value): Boolean {
+    override fun setIndex(i: Value, value: Value): Boolean {
         if (i.type !in keyTypes) fail(E_TYPE, "${i.type} cannot be map key")
         v[i] = value
         return true

@@ -2,6 +2,7 @@
 
 package com.dlfsystems.vm
 
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.value.*
@@ -72,12 +73,13 @@ class VM(
 
     private fun executeCode(c: Context): Value {
         pc = 0
-        val stackLimit = (c.world.getSysValue(c, "stackLimit") as VInt).v
+        val stackLimit = (Yegg.world.getSysValue("stackLimit") as VInt).v
         var ticksLeft = c.ticksLeft
         while (pc < code.size) {
 
             if (--ticksLeft < 0) fail(E_LIMIT, "tick limit exceeded")
             if (stack.size > stackLimit) fail(E_LIMIT, "stack depth exceeded")
+            if (c.callsLeft < 1) fail(E_MAXREC, "call depth exceeded")
 
             val word = next()
             when (word.opcode) {
@@ -105,21 +107,21 @@ class VM(
                 }
                 O_GETI -> {
                     val (a2, a1) = popTwo()
-                    a1.getIndex(c, a2)?.also { push(it) }
+                    a1.getIndex(a2)?.also { push(it) }
                         ?: fail(E_TYPE, "cannot index into ${a1.type} with ${a2.type}")
                 }
                 O_GETRANGE -> {
                     val (a3, a2, a1) = popThree()
-                    a1.getRange(c, a2, a3)?.also { push(it) }
+                    a1.getRange(a2, a3)?.also { push(it) }
                         ?: fail(E_TYPE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
                 }
                 O_SETI -> {
                     val (a3, a2, a1) = popThree()
-                    if (!a2.setIndex(c, a3, a1)) fail(E_RANGE, "cannot index into ${a2.type} with ${a3.type}")
+                    if (!a2.setIndex(a3, a1)) fail(E_RANGE, "cannot index into ${a2.type} with ${a3.type}")
                 }
                 O_SETRANGE -> {
                     val (a4, a3, a2, a1) = popFour()
-                    if (!a2.setRange(c, a3, a4, a1)) fail(E_RANGE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
+                    if (!a2.setRange(a3, a4, a1)) fail(E_RANGE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
                 }
 
                 // Control flow ops
@@ -155,10 +157,11 @@ class VM(
                     val args = mutableListOf<Value>()
                     repeat(argCount) { args.add(0, pop()) }
                     if (a2 is VString) {
-                        if (c.callStack.size >= c.callLimit) fail(E_MAXREC, "call limit exceeded")
                         c.ticksLeft = ticksLeft
+                        c.callsLeft--
                         a1.callVerb(c, a2.v, args)?.also { push(it) }
                             ?: fail(E_VERBNF, "verb not found")
+                        c.callsLeft++
                     } else fail(E_VERBNF, "verb name must be string")
                     ticksLeft = c.ticksLeft
                 }
@@ -198,7 +201,7 @@ class VM(
                 O_ITERPICK -> {
                     val sourceID = next().intFromV
                     val indexID = next().intFromV
-                    variables[sourceID]!!.getIndex(c, variables[indexID] as VInt)?.also { push(it) }
+                    variables[sourceID]!!.getIndex(variables[indexID] as VInt)?.also { push(it) }
                         ?: fail(E_TYPE, "cannot iterate")
                 }
 
@@ -207,19 +210,19 @@ class VM(
                 O_GETPROP -> {
                     val (a2, a1) = popTwo()
                     if (a2 is VString) {
-                        a1.getProp(c, a2.v)?.also { push(it) }
+                        a1.getProp(a2.v)?.also { push(it) }
                             ?: fail(E_PROPNF, "property not found")
                     } else fail(E_PROPNF, "property name must be string")
                 }
                 O_SETPROP -> {
                     val (a3, a2, a1) = popThree()
-                    if (!a2.setProp(c, (a3 as VString).v, a1))
+                    if (!a2.setProp((a3 as VString).v, a1))
                         fail(E_PROPNF, "property not found")
                 }
                 O_GETTRAIT -> {
                     val a1 = pop()
                     if (a1 is VString) {
-                        c.getTrait(a1.v)?.also { push(VTrait(it.id)) }
+                        Yegg.world.getTrait(a1.v)?.also { push(VTrait(it.id)) }
                             ?: fail (E_TRAITNF, "trait not found")
                     } else fail(E_TRAITNF, "trait name must be string")
                 }

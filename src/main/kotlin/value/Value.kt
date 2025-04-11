@@ -50,14 +50,14 @@ sealed class Value {
     open fun divide(a2: Value): Value? = null
 
     // Get or set a prop on this type.  Null raises E_PROPNF.
-    open fun getProp(c: Context, name: String): Value? = null
-    open fun setProp(c: Context, name: String, value: Value): Boolean = false
+    open fun getProp(name: String): Value? = null
+    open fun setProp(name: String, value: Value): Boolean = false
 
     // Get or set an index/range on this type.  Null raises E_TYPE.
-    open fun getIndex(c: Context, index: Value): Value? = null
-    open fun getRange(c: Context, from: Value, to: Value): Value? = null
-    open fun setIndex(c: Context, index: Value, value: Value): Boolean = false
-    open fun setRange(c: Context, from: Value, to: Value, value: Value): Boolean = false
+    open fun getIndex(index: Value): Value? = null
+    open fun getRange(from: Value, to: Value): Value? = null
+    open fun setIndex(index: Value, value: Value): Boolean = false
+    open fun setRange(from: Value, to: Value, value: Value): Boolean = false
 
     // Call a verb on this type and return its value.  Null raises E_VERBNF.
     open fun callVerb(c: Context, name: String, args: List<Value>): Value? = null

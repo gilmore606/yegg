@@ -23,7 +23,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         else -> null
     }
 
-    override fun getProp(c: Context, name: String): Value? {
+    override fun getProp(name: String): Value? {
         when (name) {
             "length" -> return propSize()
             "isEmpty" -> return propIsEmpty()
@@ -32,7 +32,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         return null
     }
 
-    override fun getIndex(c: Context, index: Value): Value? {
+    override fun getIndex(index: Value): Value? {
         if (index is VInt) {
             if (index.v < 0 || index.v >= v.size) fail(E_RANGE, "list index ${index.v} out of bounds")
             return v[index.v]
@@ -40,7 +40,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         return null
     }
 
-    override fun getRange(c: Context, from: Value, to: Value): Value? {
+    override fun getRange(from: Value, to: Value): Value? {
         if (from is VInt && to is VInt) {
             if (from.v < 0 || to.v >= v.size) fail(E_RANGE, "list range ${from.v}..${to.v} out of bounds")
             return VList(v.subList(from.v, to.v))
@@ -48,7 +48,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         return null
     }
 
-    override fun setIndex(c: Context, index: Value, value: Value): Boolean {
+    override fun setIndex(index: Value, value: Value): Boolean {
         if (index is VInt) {
             if (index.v < 0 || index.v >= v.size) fail(E_RANGE, "list index ${index.v} out of bounds")
             v[index.v] = value
@@ -57,7 +57,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         return false
     }
 
-    override fun setRange(c: Context, from: Value, to: Value, value: Value): Boolean {
+    override fun setRange(from: Value, to: Value, value: Value): Boolean {
         if (from is VInt && to is VInt) {
             if (from.v < 0 || to.v >= v.size) fail(E_RANGE, "list range ${from.v}..${to.v} out of bounds")
             if (from.v > to.v) fail(E_RANGE, "list range start after end")

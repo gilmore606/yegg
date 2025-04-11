@@ -1,6 +1,5 @@
 package com.dlfsystems.value
 
-import com.dlfsystems.vm.Context
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -15,7 +14,7 @@ data class VVoid(val v: Unit = Unit): Value() {
 
     override fun cmpEq(a2: Value): Boolean = a2 is VVoid
 
-    override fun getProp(c: Context, name: String): Value? {
+    override fun getProp(name: String): Value? {
         when (name) {
             "asString" -> return propAsString()
         }

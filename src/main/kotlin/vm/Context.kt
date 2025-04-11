@@ -6,12 +6,9 @@ import com.dlfsystems.value.*
 import com.dlfsystems.world.ObjID
 import com.dlfsystems.world.trait.TraitID
 
-// Variables from the world which a VM uses to execute a func.
-// A persistent VM will own a context whose values are updated from outside it.
+// Properties of a single command invocation as it passes from verb to verb.
 
-class Context(
-    val world: World = World()
-) {
+class Context {
     class Call(
         val vThis: VObj,
         val vTrait: VTrait,
@@ -24,8 +21,8 @@ class Context(
     var vThis: VObj = Yegg.vNullObj
     var vUser: VObj = Yegg.vNullObj
 
-    var ticksLeft: Int = (world.getSysValue(this, "tickLimit") as VInt).v
-    val callLimit: Int = (world.getSysValue(this, "callLimit") as VInt).v
+    var ticksLeft: Int = (Yegg.world.getSysValue("tickLimit") as VInt).v
+    var callsLeft: Int = (Yegg.world.getSysValue("callLimit") as VInt).v
     val callStack = ArrayDeque<Call>()
 
     // Push or pop the callstack.
@@ -33,10 +30,6 @@ class Context(
         callStack.addFirst(Call(vThis, vTrait, verb, args))
     fun pop(): Call =
         callStack.removeFirst()
-
-    fun getTrait(name: String) = world.getTrait(name)
-    fun getTrait(id: TraitID?) = world.getTrait(id)
-    fun getObj(id: ObjID?) = world.getObj(id)
 
     fun stackDump() = callStack.joinToString(separator = "\n...", postfix = "\n")
 }

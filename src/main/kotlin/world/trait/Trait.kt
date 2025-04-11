@@ -55,14 +55,14 @@ open class Trait(val name: String) {
         }
     }
 
-    open fun getProp(c: Context, propName: String): Value? {
+    open fun getProp(propName: String): Value? {
         return when (propName) {
             "objects" -> return VList(objects.map { VObj(it) }.toMutableList())
             else -> props.getOrDefault(propName, null)
         }
     }
 
-    open fun setProp(c: Context, propName: String, value: Value): Boolean {
+    open fun setProp(propName: String, value: Value): Boolean {
         props[propName] = value
         return true
     }
