@@ -25,6 +25,8 @@ fun Application.configureRouting() {
 
         webSocket("/ws") { // websocketSession
             val conn = Connection()
+            val banner = Yegg.world.getSysValue("loginBanner").asString()
+            outgoing.send(Frame.Text(banner))
             for (frame in incoming) {
                 if (frame is Frame.Text) {
                     val text = frame.readText()
@@ -58,4 +60,3 @@ fun Application.configureRouting() {
 
     }
 }
-

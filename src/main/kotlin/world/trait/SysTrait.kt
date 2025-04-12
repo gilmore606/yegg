@@ -111,6 +111,7 @@ class SysTrait : Trait("sys") {
         throw IllegalArgumentException("invalid trait")
     }
 
+    // $sys.dumpDatabase()
     private fun verbDumpDatabase(args: List<Value>): Value {
         if (args.isNotEmpty()) throw IllegalArgumentException("Bad args for dumpDatabase")
         Yegg.dumpDatabase()?.also { return VString(it) }

@@ -4,6 +4,7 @@ import com.dlfsystems.server.Yegg
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.VString
+import com.dlfsystems.value.VVoid
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.SysTrait
@@ -41,7 +42,7 @@ data class World(
     fun getTrait(id: TraitID?) = id?.let { traits[it] }
     fun getObj(id: ObjID?) = id?.let { objs[it] }
 
-    fun getSysValue(name: String): Value = getTrait("sys")!!.getProp(name)!!
+    fun getSysValue(name: String): Value = getTrait("sys")!!.getProp(name) ?: VVoid()
 
     fun addTrait(name: String): Trait {
         if (traits.values.none { it.name == name }) {
