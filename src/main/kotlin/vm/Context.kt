@@ -1,5 +1,6 @@
 package com.dlfsystems.vm
 
+import com.dlfsystems.server.Connection
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.world.World
 import com.dlfsystems.value.*
@@ -17,6 +18,8 @@ class Context {
     ) {
         override fun toString() = "$vThis $vTrait.$verb(${args.joinToString(",")})"
     }
+
+    var connection: Connection? = null
 
     var vThis: VObj = Yegg.vNullObj
     var vUser: VObj = Yegg.vNullObj

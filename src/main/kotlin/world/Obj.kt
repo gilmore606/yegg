@@ -1,5 +1,7 @@
 package com.dlfsystems.world
 
+import com.dlfsystems.server.Command
+import com.dlfsystems.server.CommandMatch
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
@@ -24,7 +26,11 @@ class Obj {
     val props: MutableMap<String, Value> = mutableMapOf()
 
     var location: VObj = Yegg.vNullObj
+    val locationObj: Obj?
+        get() = location.v?.let { Yegg.world.getObj(it) }
     var contents: VList = VList()
+    val contentsObjs: List<Obj>
+        get() = contents.v.mapNotNull { (it as VObj).v?.let { Yegg.world.getObj(it) }}
 
     fun acquireTrait(trait: Trait) {
         traits.add(trait.id)
@@ -60,4 +66,10 @@ class Obj {
         return false
     }
 
+    fun matchCommand(words: List<String>): CommandMatch? {
+        traits.mapNotNull { Yegg.world.getTrait(it) }.forEach { trait ->
+            trait.matchCommand(words)?.also { return it.withObj(this) }
+        }
+        return null
+    }
 }

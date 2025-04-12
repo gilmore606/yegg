@@ -3,6 +3,9 @@ package com.dlfsystems.world.trait
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.server.Command
+import com.dlfsystems.server.CommandMatch
+import com.dlfsystems.util.matchesWildcard
 import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.VTrait
@@ -25,6 +28,7 @@ open class Trait(val name: String) {
 
     val traits: MutableList<TraitID> = mutableListOf()
 
+    val commands: MutableSet<Command> = mutableSetOf()
     val verbs: MutableMap<String, Verb> = mutableMapOf()
     open val props: MutableMap<String, Value> = mutableMapOf()
 
@@ -46,6 +50,11 @@ open class Trait(val name: String) {
 
     fun hasTrait(trait: TraitID): Boolean = (trait in traits) ||
             (traits.firstOrNull { Yegg.world.getTrait(it)?.hasTrait(trait) ?: false } != null)
+
+    fun setCommand(command: Command) {
+        commands.removeIf { it.verb == command.verb }
+        commands.add(command)
+    }
 
     fun programVerb(verbName: String, cOut: Compiler.Result) {
         verbs[verbName]?.also {
@@ -75,4 +84,18 @@ open class Trait(val name: String) {
         return null
     }
 
+    fun matchCommand(words: List<String>): CommandMatch? {
+        val cmd = words[0]
+        commands.forEach { command ->
+            command.names.forEach { name ->
+                if (cmd.matchesWildcard(name)) {
+                    return CommandMatch(command.verb, this, null, listOf())
+                }
+            }
+        }
+        traits.mapNotNull { Yegg.world.getTrait(it) }.forEach { parent ->
+            parent.matchCommand(words)?.also { return it }
+        }
+        return null
+    }
 }
