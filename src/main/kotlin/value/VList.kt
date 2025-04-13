@@ -105,7 +105,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
     private fun verbPush(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         v.add(0, args[0])
-        return VVoid()
+        return VVoid
     }
 
     private fun verbPop(args: List<Value>): Value {

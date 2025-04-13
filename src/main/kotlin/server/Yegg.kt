@@ -4,6 +4,7 @@ import com.dlfsystems.app.Log
 import com.dlfsystems.world.World
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.VTrait
+import com.dlfsystems.world.Obj
 import io.viascom.nanoid.NanoId
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -11,12 +12,20 @@ import kotlin.system.exitProcess
 
 object Yegg {
 
+    var logLevel = Log.Level.DEBUG
+    var worldName = "world"
+
+    private const val CONNECT_MSG = "** Connected **"
+    private const val DISCONNECT_MSG = "** Disconnected **"
+    const val HUH_MSG = "I don't understand that."
+
     val vNullObj = VObj(null)
     val vNullTrait = VTrait(null)
 
-    var logLevel = Log.Level.DEBUG
-    var worldName = "world"
     lateinit var world: World
+
+    private val connections = mutableSetOf<Connection>()
+    val connectedUsers = mutableMapOf<Obj, Connection>()
 
     fun newID() = NanoId.generateOptimized(8, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 61, 16)
 
@@ -39,6 +48,29 @@ object Yegg {
                 addTrait("user")
             }
         }
+    }
+
+    fun addConnection(conn: Connection) {
+        connections.add(conn)
+        conn.sendText(world.getSysValue("loginBanner").asString())
+    }
+
+    fun connectUser(user: Obj, conn: Connection) {
+        conn.user = user
+        connectedUsers[user] = conn
+        conn.sendText(CONNECT_MSG)
+        Log.i("User $user connected")
+    }
+
+    fun removeConnection(conn: Connection) {
+        conn.sendText(DISCONNECT_MSG)
+        connections.remove(conn)
+        connectedUsers.remove(conn.user)
+        Log.i("User ${conn.user} disconnected")
+    }
+
+    fun notifyUser(user: Obj?, text: String) {
+        connectedUsers[user]?.sendText(text)
     }
 
     fun dumpDatabase(): String? {

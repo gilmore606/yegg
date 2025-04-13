@@ -1,14 +1,10 @@
 package com.dlfsystems.server
 
 import com.dlfsystems.compiler.Compiler
-import com.dlfsystems.server.Yegg.world
-import com.dlfsystems.value.VObj
-import com.dlfsystems.value.Value
+import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
-import com.dlfsystems.world.ObjID
-import com.dlfsystems.world.trait.Trait
 
-class Connection {
+class Connection(private val sendText: (String) -> Unit) {
 
     var buffer = mutableListOf<String>()
     var programming: Pair<String, String>? = null
@@ -16,111 +12,118 @@ class Connection {
 
     var user: Obj? = null
 
-    fun receiveText(text: String): String {
+    fun sendText(text: String) = sendText.invoke(text)
+
+    fun receiveText(text: String) {
+        // TODO: rework program-buffer in-DB with actual suspend/readLines
         programming?.also { verb ->
             if (text == ".") {
-                val result = world.programVerb(verb.first, verb.second, buffer.joinToString("\n"))
+                val result = Yegg.world.programVerb(verb.first, verb.second, buffer.joinToString("\n"))
                 buffer.clear()
                 programming = null
-                return result
+                sendText(result)
             } else buffer.add(text)
         } ?: run {
-            return if (text.startsWith(";")) {
-                Compiler.eval(text.substringAfter(";"), connection = this)
+            if (text.startsWith(";")) {
+                // TODO: move this to post-login processing when more convenient
+                sendText(Compiler.eval(text.substringAfter(";"), connection = this))
             } else if (text.startsWith("@")) {
+                // TODO: get rid of these hardcoded @meta commands
                 parseMeta(text)
-            } else {
-                parseCommand(text)
+            } else if (text.isNotBlank()) {
+                // parseCommand(text)
             }
         }
-        return ""
     }
 
-    private fun parseCommand(text: String): String {
-        val words = text.split("\\s+".toRegex())
-
-        // send: ["put", "blue cube", "in", "this"]
-        // send: ["put", #OBJ1, "in", #OBJ2]
-        // receive: "put", $trait, #OBJ2, [#OBJ1]
-
-        // send: ["con", "gilmore", "bluguuru"]
-        // send: ["con", "gilmore", "bluguuru"]
-        // receive: "connect", $sys, #-1, ["gilmore", "bluguuru"]
-
-        // send: ["l"]
-        // send: ["l"]
-        // receive: "look", $trait, #OBJ, []
-
-        // TODO: pre-parse for prep, objs
-        user?.also { user ->
-            buildList {
-                add(user)
-                addAll(user.contentsObjs)
-                user.locationObj?.also { loc ->
-                    add(loc)
-                    addAll(loc.contentsObjs)
-                }
-            }.forEach { target ->
-                target.matchCommand(words)?.also {
-                    return runCommand(it)
-                }
-            }
-            return "I don't understand that."
-        }
-
-        world.getTrait("sys")!!.matchCommand(words)?.also {
-            return runCommand(it)
-        }
-
-        return "I don't understand that."
-    }
-
-    private fun runCommand(match: CommandMatch): String {
-
-        return "SHIT!"
-    }
+    // TODO: this is all currently speculative/non-working, ignore
+//    private fun parseCommand(text: String) {
+//        // Split command into string parts
+//        val splits = text.split("\\s+".toRegex(), 2)
+//        val cmdstr = splits[0]
+//        val argstr = if (splits.size < 2) "" else splits[1]
+//        var dobjstr = argstr
+//        var iobjstr = ""
+//        var prep: Preposition? = null
+//        Preposition.entries.forEach { p ->
+//            p.strings.firstOrNull { argstr.contains(it) }?.also { prepstr ->
+//                if (prep == null) {
+//                    prep = p
+//                    dobjstr = argstr.substringBefore(prepstr).trimEnd(' ')
+//                    iobjstr = argstr.substringAfter(prepstr).trimStart(' ')
+//                }
+//            }
+//        }
+//
+//        user?.also { user ->
+//            // If logged in, match against all objs in scope
+//            val scope = buildList {
+//                add(user)
+//                addAll(user.contentsObjs)
+//                user.locationObj?.also { loc ->
+//                    add(loc)
+//                    addAll(loc.contentsObjs)
+//                }
+//            }
+//            val dobj = matchObj(dobjstr, user, scope)
+//            val iobj = matchObj(iobjstr, user, scope)
+//            scope.forEach { target ->
+//                target.matchCommand(cmdstr, dobjstr, dobj, prep, iobjstr, iobj)?.also {
+//                    runCommand(it)
+//                    return
+//                }
+//            }
+//        } ?: run {
+//            // If not logged in, match against $sys
+//            Yegg.world.sys.matchCommand(cmdstr, dobjstr, null, prep, iobjstr, null)?.also {
+//                runCommand(it)
+//                return
+//            }
+//        }
+//
+//        sendText(Yegg.HUH_MSG)
+//    }
+//
+//    private fun matchObj(s: String, objMe: Obj?, scope: List<Obj>): Obj? {
+//        if (s == "me") return objMe
+//        if (s == "here") return objMe?.locationObj
+//        // TODO: match against scope when objs actually have names/aliases
+//        return null
+//    }
+//
+//    private fun runCommand(match: CommandMatch) {
+//        val c = Context().apply {
+//            this.connection = this@Connection
+//            this.vThis = match.obj?.vThis ?: Yegg.vNullObj
+//            this.vUser = this@Connection.user?.vThis ?: Yegg.vNullObj
+//        }
+//        match.trait.callVerb(c, match.verb, match.args)
+//    }
 
     // Respond to meta commands.
-    // TODO: this should all go away and be replaced by in-DB verbs (probably).  Leaving in for expedience.
-    private fun parseMeta(text: String): String {
-        if (text == "@") return ""
+    private fun parseMeta(text: String) {
+        if (text == "@") return
         val words = text.split(" ")
-        return when (words[0].substring(1, words[0].length)) {
-            "connect" -> parseConnect(words)
+        when (words[0].substring(1, words[0].length)) {
             "program" -> parseProgram(words)
             "list" -> parseList(words)
-            "quit" -> parseQuit(words)
-            else -> "I don't understand that."
+            else -> sendText(Yegg.HUH_MSG)
         }
     }
 
-    private fun parseConnect(words: List<String>): String {
-        if (words.size != 3) return "Usage: @connect <name> <password>"
-        world.getUserLogin(words[1], words[2])?.also { user ->
-            this.user = user
-            return "** Connected **"
-        }
-        return "Bad credentials."
-    }
-
-    private fun parseProgram(words: List<String>): String {
-        if (words.size < 2) return "@program what?"
+    private fun parseProgram(words: List<String>) {
+        if (words.size < 2) { sendText("@program what?") ; return }
         val terms = words[1].split(".")
-        if (terms.size != 2) return "@program what?"
+        if (terms.size != 2) { sendText("@program what?") ; return }
         programming = Pair(terms[0], terms[1])
-        return "Enter verbcode.  Terminate with '.' on a line by itself."
+        sendText("Enter verbcode.  Terminate with '.' on a line by itself.")
     }
 
-    private fun parseList(words: List<String>): String {
-        if (words.size < 2) return "@list what?"
+    private fun parseList(words: List<String>) {
+        if (words.size < 2) { sendText("@list what?") ; return }
         val terms = words[1].split(".")
-        if (terms.size != 2) return "@list what?"
-        return world.listVerb(terms[0], terms[1])
-    }
-
-    private fun parseQuit(words: List<String>): String {
-        quitRequested = true
-        return "Goodbye!"
+        if (terms.size != 2) { sendText("@list what?") ; return }
+        sendText(Yegg.world.listVerb(terms[0], terms[1]))
     }
 
 }

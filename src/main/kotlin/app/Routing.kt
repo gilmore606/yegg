@@ -3,13 +3,14 @@ package com.dlfsystems.app
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.server.Connection
-import io.ktor.network.sockets.*
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
 fun Application.configureRouting() {
@@ -23,22 +24,24 @@ fun Application.configureRouting() {
 
     routing {
 
-        webSocket("/ws") { // websocketSession
-            val conn = Connection()
-            val banner = Yegg.world.getSysValue("loginBanner").asString()
-            outgoing.send(Frame.Text(banner))
+        webSocket("/ws") {
+            val conn = Connection { launch { outgoing.send(Frame.Text(it)) } }
+            Yegg.addConnection(conn)
             for (frame in incoming) {
                 if (frame is Frame.Text) {
                     val text = frame.readText()
-                    outgoing.send(
-                        Frame.Text(
-                        conn.receiveText(text)
-                    ))
+                    conn.receiveText(text)
                     if (conn.quitRequested) {
+                        Yegg.removeConnection(conn)
                         close(CloseReason(CloseReason.Codes.NORMAL, "Client requested close"))
                     }
                 }
             }
+            Yegg.removeConnection(conn)
+        }
+
+        get("/status") {
+            call.respond(HttpStatusCode.OK)
         }
 
         post("/eval") {

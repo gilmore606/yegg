@@ -42,7 +42,9 @@ data class World(
     fun getTrait(id: TraitID?) = id?.let { traits[it] }
     fun getObj(id: ObjID?) = id?.let { objs[it] }
 
-    fun getSysValue(name: String): Value = getTrait("sys")!!.getProp(name) ?: VVoid()
+    val sys: Trait
+        get() = getTrait("sys")!!
+    fun getSysValue(name: String): Value = sys.getProp(null, name) ?: VVoid
 
     fun addTrait(name: String): Trait {
         if (traits.values.none { it.name == name }) {

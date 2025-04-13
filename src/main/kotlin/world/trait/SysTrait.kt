@@ -5,6 +5,7 @@ import com.dlfsystems.server.Command
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
+import com.dlfsystems.world.Obj
 
 // A special trait which exists in every world.
 // Provides access to system environment properties, metadata about the world, and server control.
@@ -17,16 +18,19 @@ class SysTrait : Trait("sys") {
         "callLimit" to VInt(50),
     )
 
-    override fun getProp(propName: String): Value? {
+    override fun getProp(obj: Obj?, propName: String): Value? {
         when (propName) {
             "time" -> return VInt((System.currentTimeMillis() / 1000L).toInt())
         }
-        return super.getProp(propName)
+        return super.getProp(obj, propName)
     }
 
     override fun callVerb(c: Context, verbName: String, args: List<Value>): Value? {
         when (verbName) {
             "connectUser" -> return verbConnectUser(c, args)
+            "disconnectUser" -> return verbDisconnectUser(c, args)
+            "connectedUsers" -> return verbConnectedUsers(args)
+            "notify" -> return verbNotify(args)
             "addTrait" -> return verbAddTrait(args)
             "create" -> return verbCreate(args)
             "destroy" -> return verbDestroy(args)
@@ -41,19 +45,41 @@ class SysTrait : Trait("sys") {
     // $sys.connectUser("username", "password") -> #user
     private fun verbConnectUser(c: Context, args: List<Value>): Value {
         if (args.size!= 2 || args[0] !is VString || args[1] !is VString) throw IllegalArgumentException("Bad args for connectUser")
-        Yegg.world.getUserLogin((args[0] as VString).v, (args[1] as VString).v)?.also {
-            c.connection?.user = it
-            c.vUser = it.vThis
-            return it.vThis
+        Yegg.world.getUserLogin((args[0] as VString).v, (args[1] as VString).v)?.also { user ->
+            c.connection?.also {
+                Yegg.connectUser(user, it)
+                c.vUser = user.vThis
+            }
+            return user.vThis
         }
         throw IllegalArgumentException("Invalid credentials")
+    }
+
+    // $sys.disconnectUser()
+    private fun verbDisconnectUser(c: Context, args: List<Value>): Value {
+        if (args.isNotEmpty()) throw IllegalArgumentException("Bad args for disconnectUser")
+        c.connection?.quitRequested = true
+        return VVoid
+    }
+
+    // $sys.connectedUsers() -> [#obj, #obj...]
+    private fun verbConnectedUsers(args: List<Value>): Value {
+        if (args.isNotEmpty()) throw IllegalArgumentException("Bad args for connectedUsers")
+        return VList(Yegg.connectedUsers.keys.map { VObj(it.id) }.toMutableList())
+    }
+
+    // $sys.notify(#obj, "text")
+    private fun verbNotify(args: List<Value>): Value {
+        if (args.size != 2 || args[0] !is VObj || args[1] !is VString) throw IllegalArgumentException("Bad args for notify")
+        Yegg.notifyUser(Yegg.world.getObj((args[0] as VObj).v), (args[1] as VString).v)
+        return VVoid
     }
 
     // $sys.addTrait("newTrait")
     private fun verbAddTrait(args: List<Value>): Value {
         if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for addTrait")
         Yegg.world.addTrait(args[0].asString())
-        return VVoid()
+        return VVoid
     }
 
     // $sys.create($trait1, $trait2...) -> #obj
@@ -77,7 +103,7 @@ class SysTrait : Trait("sys") {
         Yegg.world.getObj((args[0] as VObj).v)?.also { subject ->
             Yegg.world.destroyObj(subject)
         } ?: throw IllegalArgumentException("invalid obj")
-        return VVoid()
+        return VVoid
     }
 
     // $sys.move(#obj, #loc)
@@ -86,7 +112,7 @@ class SysTrait : Trait("sys") {
         Yegg.world.getObj((args[0] as VObj).v)?.also { subject ->
             Yegg.world.moveObj(subject, args[1] as VObj)
         } ?: throw IllegalArgumentException("invalid obj")
-        return VVoid()
+        return VVoid
     }
 
     // $sys.setCommand($trait, "co*mmand/cmd arg prep arg") -> "cmdVerb"
@@ -99,7 +125,7 @@ class SysTrait : Trait("sys") {
                 return VString(command.verb)
             } ?: throw IllegalArgumentException("invalid command pattern")
         } ?: throw IllegalArgumentException("invalid trait")
-        return VVoid()
+        return VVoid
     }
 
     // $sys.getCommands($trait) -> ["co*mmand arg...", ...]
@@ -115,7 +141,7 @@ class SysTrait : Trait("sys") {
     private fun verbDumpDatabase(args: List<Value>): Value {
         if (args.isNotEmpty()) throw IllegalArgumentException("Bad args for dumpDatabase")
         Yegg.dumpDatabase()?.also { return VString(it) }
-        return VVoid()
+        return VVoid
     }
 
 }

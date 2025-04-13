@@ -45,7 +45,7 @@ class Obj {
         props[name]?.also { return it }
 
         traits.forEach {
-            Yegg.world.getTrait(it)?.getProp(name)?.also { return it }
+            Yegg.world.getTrait(it)?.getProp(this, name)?.also { return it }
         }
         return null
     }

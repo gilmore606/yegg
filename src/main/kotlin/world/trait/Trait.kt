@@ -64,7 +64,7 @@ open class Trait(val name: String) {
         }
     }
 
-    open fun getProp(propName: String): Value? {
+    open fun getProp(obj: Obj?, propName: String): Value? {
         return when (propName) {
             "objects" -> return VList(objects.map { VObj(it) }.toMutableList())
             else -> props.getOrDefault(propName, null)

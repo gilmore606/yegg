@@ -142,7 +142,7 @@ class VM(
                 }
                 O_RETURNNULL -> {
                     if (stack.isNotEmpty()) fail(E_SYS, "stack polluted on return!")
-                    return VVoid()
+                    return VVoid
                 }
                 O_FAIL -> {
                     val a = pop()
@@ -288,7 +288,7 @@ class VM(
                 else -> fail(E_SYS, "unknown opcode $word")
             }
         }
-        return if (stack.isEmpty()) VVoid() else pop()
+        return if (stack.isEmpty()) VVoid else pop()
     }
 
 }
