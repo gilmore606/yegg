@@ -1,12 +1,11 @@
 package com.dlfsystems.world
 
-import com.dlfsystems.server.Command
 import com.dlfsystems.server.CommandMatch
+import com.dlfsystems.server.Preposition
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
-import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.Trait
 import com.dlfsystems.world.trait.TraitID
 import kotlinx.serialization.Serializable
@@ -66,9 +65,11 @@ class Obj {
         return false
     }
 
-    fun matchCommand(words: List<String>): CommandMatch? {
+    fun matchCommand(cmdstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
         traits.mapNotNull { Yegg.world.getTrait(it) }.forEach { trait ->
-            trait.matchCommand(words)?.also { return it.withObj(this) }
+            trait.matchCommand(cmdstr, dobjstr, dobj, prep, iobjstr, iobj)?.also {
+                return it.withObj(this)
+            }
         }
         return null
     }

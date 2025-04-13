@@ -40,10 +40,6 @@ fun Application.configureRouting() {
             Yegg.removeConnection(conn)
         }
 
-        get("/status") {
-            call.respond(HttpStatusCode.OK)
-        }
-
         post("/eval") {
             val code = call.receiveText()
             call.respondText(

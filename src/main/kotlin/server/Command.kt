@@ -24,8 +24,12 @@ class Command(
     override fun toString() = names.joinToString("/") + if(args.isEmpty()) "" else args.joinToString(" ", " ")
 
     companion object {
-        // "get/take contents from this"
-        // "co*nnect text text"
+
+        private val ARG_TYPES = listOf(Text, This, Any, Contents, Inventory)
+
+        // Generate a Command from a string representation.
+        // "get/take contents from this" (verb = cmdGet)
+        // "co*nnect text text" (verb = cmdConnect)
         fun fromString(s: String): Command? {
             val namesAndArgs = s.split(" ", limit = 2)
             val names = namesAndArgs[0].split("/")
@@ -35,20 +39,16 @@ class Command(
             var argstr = namesAndArgs[1]
             while (argstr.isNotBlank()) {
                 var found = false
-                listOf(Text, This, Any, Contents, Inventory).forEach { type ->
-                    if (argstr.startsWith(type.s)) {
-                        args.add(type)
-                        argstr = argstr.substringAfter(" ", "")
-                        found = true
-                    }
+                ARG_TYPES.firstOrNull { argstr.startsWith(it.s) }?.also { type ->
+                    args.add(type)
+                    argstr = argstr.substringAfter(" ", "")
+                    found = true
                 }
                 Preposition.entries.forEach { prep ->
-                    prep.strings.forEach { prepStr ->
-                        if (argstr.startsWith("$prepStr ")) {
-                            args.add(Prep(prep))
-                            argstr = argstr.substringAfter("$prepStr ", "")
-                            found = true
-                        }
+                    prep.strings.firstOrNull { argstr.startsWith("$it ") }?.also { prepStr ->
+                        args.add(Prep(prep))
+                        argstr = argstr.substringAfter("$prepStr ", "")
+                        found = true
                     }
                 }
                 if (!found) return null

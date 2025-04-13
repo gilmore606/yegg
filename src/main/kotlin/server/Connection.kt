@@ -31,74 +31,74 @@ class Connection(private val sendText: (String) -> Unit) {
                 // TODO: get rid of these hardcoded @meta commands
                 parseMeta(text)
             } else if (text.isNotBlank()) {
-                // parseCommand(text)
+                parseCommand(text)
             }
         }
     }
 
     // TODO: this is all currently speculative/non-working, ignore
-//    private fun parseCommand(text: String) {
-//        // Split command into string parts
-//        val splits = text.split("\\s+".toRegex(), 2)
-//        val cmdstr = splits[0]
-//        val argstr = if (splits.size < 2) "" else splits[1]
-//        var dobjstr = argstr
-//        var iobjstr = ""
-//        var prep: Preposition? = null
-//        Preposition.entries.forEach { p ->
-//            p.strings.firstOrNull { argstr.contains(it) }?.also { prepstr ->
-//                if (prep == null) {
-//                    prep = p
-//                    dobjstr = argstr.substringBefore(prepstr).trimEnd(' ')
-//                    iobjstr = argstr.substringAfter(prepstr).trimStart(' ')
-//                }
-//            }
-//        }
-//
-//        user?.also { user ->
-//            // If logged in, match against all objs in scope
-//            val scope = buildList {
-//                add(user)
-//                addAll(user.contentsObjs)
-//                user.locationObj?.also { loc ->
-//                    add(loc)
-//                    addAll(loc.contentsObjs)
-//                }
-//            }
-//            val dobj = matchObj(dobjstr, user, scope)
-//            val iobj = matchObj(iobjstr, user, scope)
-//            scope.forEach { target ->
-//                target.matchCommand(cmdstr, dobjstr, dobj, prep, iobjstr, iobj)?.also {
-//                    runCommand(it)
-//                    return
-//                }
-//            }
-//        } ?: run {
-//            // If not logged in, match against $sys
-//            Yegg.world.sys.matchCommand(cmdstr, dobjstr, null, prep, iobjstr, null)?.also {
-//                runCommand(it)
-//                return
-//            }
-//        }
-//
-//        sendText(Yegg.HUH_MSG)
-//    }
-//
-//    private fun matchObj(s: String, objMe: Obj?, scope: List<Obj>): Obj? {
-//        if (s == "me") return objMe
-//        if (s == "here") return objMe?.locationObj
-//        // TODO: match against scope when objs actually have names/aliases
-//        return null
-//    }
-//
-//    private fun runCommand(match: CommandMatch) {
-//        val c = Context().apply {
-//            this.connection = this@Connection
-//            this.vThis = match.obj?.vThis ?: Yegg.vNullObj
-//            this.vUser = this@Connection.user?.vThis ?: Yegg.vNullObj
-//        }
-//        match.trait.callVerb(c, match.verb, match.args)
-//    }
+    private fun parseCommand(text: String) {
+        // Split command into string parts
+        val splits = text.split("\\s+".toRegex(), 2)
+        val cmdstr = splits[0]
+        val argstr = if (splits.size < 2) "" else splits[1]
+        var dobjstr = argstr
+        var iobjstr = ""
+        var prep: Preposition? = null
+        Preposition.entries.forEach { p ->
+            p.strings.firstOrNull { argstr.contains(it) }?.also { prepstr ->
+                if (prep == null) {
+                    prep = p
+                    dobjstr = argstr.substringBefore(prepstr).trimEnd(' ')
+                    iobjstr = argstr.substringAfter(prepstr).trimStart(' ')
+                }
+            }
+        }
+
+        user?.also { user ->
+            // If logged in, match against all objs in scope
+            val scope = buildList {
+                add(user)
+                addAll(user.contentsObjs)
+                user.locationObj?.also { loc ->
+                    add(loc)
+                    addAll(loc.contentsObjs)
+                }
+            }
+            val dobj = matchObj(dobjstr, user, scope)
+            val iobj = matchObj(iobjstr, user, scope)
+            scope.forEach { target ->
+                target.matchCommand(cmdstr, dobjstr, dobj, prep, iobjstr, iobj)?.also {
+                    runCommand(it)
+                    return
+                }
+            }
+        } ?: run {
+            // If not logged in, match against $sys
+            Yegg.world.sys.matchCommand(cmdstr, dobjstr, null, prep, iobjstr, null)?.also {
+                runCommand(it)
+                return
+            }
+        }
+
+        sendText(Yegg.HUH_MSG)
+    }
+
+    private fun matchObj(s: String, objMe: Obj?, scope: List<Obj>): Obj? {
+        if (s == "me") return objMe
+        if (s == "here") return objMe?.locationObj
+        // TODO: match against scope when objs actually have names/aliases
+        return null
+    }
+
+    private fun runCommand(match: CommandMatch) {
+        val c = Context().apply {
+            this.connection = this@Connection
+            this.vThis = match.obj?.vThis ?: Yegg.vNullObj
+            this.vUser = this@Connection.user?.vThis ?: Yegg.vNullObj
+        }
+        match.trait.callVerb(c, match.verb, match.args)
+    }
 
     // Respond to meta commands.
     private fun parseMeta(text: String) {

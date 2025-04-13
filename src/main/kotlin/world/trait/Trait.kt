@@ -5,6 +5,7 @@ import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.server.Command
 import com.dlfsystems.server.CommandMatch
+import com.dlfsystems.server.Preposition
 import com.dlfsystems.util.matchesWildcard
 import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
@@ -84,17 +85,16 @@ open class Trait(val name: String) {
         return null
     }
 
-    fun matchCommand(words: List<String>): CommandMatch? {
-        val cmd = words[0]
+    fun matchCommand(cmdstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
         commands.forEach { command ->
-            command.names.forEach { name ->
-                if (cmd.matchesWildcard(name)) {
-                    return CommandMatch(command.verb, this, null, listOf())
-                }
+            command.names.firstOrNull { cmdstr.matchesWildcard(it) }?.also {
+                if (command.args.isEmpty() && dobjstr.isBlank()) return CommandMatch(command.verb, this, null, listOf())
+                // TODO: match args
+
             }
         }
         traits.mapNotNull { Yegg.world.getTrait(it) }.forEach { parent ->
-            parent.matchCommand(words)?.also { return it }
+            parent.matchCommand(cmdstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
         }
         return null
     }
