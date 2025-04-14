@@ -1,9 +1,7 @@
 package com.dlfsystems.app
 
 import com.dlfsystems.server.Yegg
-import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.server.Connection
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*

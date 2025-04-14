@@ -22,7 +22,8 @@ class SysTrait : Trait("sys") {
 
     override fun getProp(obj: Obj?, propName: String): Value? {
         when (propName) {
-            "time" -> return VInt((System.currentTimeMillis() / 1000L).toInt())
+            "time" -> return propTime()
+            "connectedUsers" -> return propConnectedUsers()
         }
         return super.getProp(obj, propName)
     }
@@ -31,7 +32,6 @@ class SysTrait : Trait("sys") {
         when (verbName) {
             "connectUser" -> return verbConnectUser(c, args)
             "disconnectUser" -> return verbDisconnectUser(c, args)
-            "connectedUsers" -> return verbConnectedUsers(args)
             "notify" -> return verbNotify(args)
             "addTrait" -> return verbAddTrait(args)
             "create" -> return verbCreate(args)
@@ -43,6 +43,12 @@ class SysTrait : Trait("sys") {
         }
         return super.callVerb(c, verbName, args)
     }
+
+    // $sys.time -> n
+    private fun propTime() = VInt((System.currentTimeMillis() / 1000L).toInt())
+
+    // $sys.connectedUsers -> [#obj, #obj...]
+    private fun propConnectedUsers() = VList(Yegg.connectedUsers.keys.map { VObj(it.id) }.toMutableList())
 
     // $sys.connectUser("username", "password") -> #user
     private fun verbConnectUser(c: Context, args: List<Value>): Value {
@@ -62,12 +68,6 @@ class SysTrait : Trait("sys") {
         if (args.isNotEmpty()) throw IllegalArgumentException("Bad args for disconnectUser")
         c.connection?.quitRequested = true
         return VVoid
-    }
-
-    // $sys.connectedUsers() -> [#obj, #obj...]
-    private fun verbConnectedUsers(args: List<Value>): Value {
-        if (args.isNotEmpty()) throw IllegalArgumentException("Bad args for connectedUsers")
-        return VList(Yegg.connectedUsers.keys.map { VObj(it.id) }.toMutableList())
     }
 
     // $sys.notify(#obj, "text")

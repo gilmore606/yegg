@@ -27,11 +27,7 @@ class Connection(private val sendText: (String) -> Unit) {
         } ?: run {
             if (text.startsWith(";")) {
                 val code = text.substringAfter(";")
-                val c = Context().apply {
-                    connection = this@Connection
-                    push(Yegg.vNullObj, Yegg.vNullTrait, "(eval)", listOf(VString(code)))
-                }
-                sendText(Compiler.eval(c, code))
+                sendText(Compiler.eval(Context(this), code))
             } else if (text.startsWith("@")) {
                 // TODO: get rid of these hardcoded @meta commands
                 parseMeta(text)
@@ -96,10 +92,9 @@ class Connection(private val sendText: (String) -> Unit) {
     }
 
     private fun runCommand(match: CommandMatch) {
-        val c = Context().apply {
-            this.connection = this@Connection
-            this.vThis = match.obj?.vThis ?: Yegg.vNullObj
-            this.vUser = this@Connection.user?.vThis ?: Yegg.vNullObj
+        val c = Context(this).apply {
+            vThis = match.obj?.vThis ?: Yegg.vNullObj
+            vUser = connection?.user?.vThis ?: Yegg.vNullObj
         }
         match.trait.callVerb(c, match.verb, match.args)
     }

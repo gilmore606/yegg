@@ -9,7 +9,7 @@ import com.dlfsystems.world.trait.TraitID
 
 // Properties of a single command invocation as it passes from verb to verb.
 
-class Context {
+class Context(val connection: Connection? = null) {
     class Call(
         val vThis: VObj,
         val vTrait: VTrait,
@@ -18,8 +18,6 @@ class Context {
     ) {
         override fun toString() = "$vThis $vTrait.$verb(${args.joinToString(",")})"
     }
-
-    var connection: Connection? = null
 
     var vThis: VObj = Yegg.vNullObj
     var vUser: VObj = Yegg.vNullObj

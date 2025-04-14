@@ -14,8 +14,9 @@ import kotlin.system.exitProcess
 
 object Yegg {
 
-    var logLevel = Log.Level.DEBUG
     var worldName = "Minimal"
+    var logLevel = Log.Level.DEBUG
+    private val JSON = Json { allowStructuredMapKeys = true }
 
     private const val CONNECT_MSG = "** Connected **"
     private const val DISCONNECT_MSG = "** Disconnected **"
@@ -37,7 +38,7 @@ object Yegg {
             Log.i("Loading database from ${file.path}...")
             try {
                 // Deserialize the world
-                world = Json.decodeFromString<World>(file.readText())
+                world = JSON.decodeFromString<World>(file.readText())
                 Log.i("Loaded ${world.name}.")
             } catch (e: Exception) {
                 Log.e("FATAL: Failed to load from ${file.path} !")
@@ -79,7 +80,7 @@ object Yegg {
         val file = File("${world.name}.yegg")
         Log.i("Dumping database...")
         try {
-            file.writeText(Json.encodeToString(world))
+            file.writeText(JSON.encodeToString(world))
         } catch (e: Exception) {
             return "ERROR: ${e.message}"
         }

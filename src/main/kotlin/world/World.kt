@@ -18,18 +18,18 @@ data class World(
     val name: String = "world"
 ) {
 
-    private val traits: MutableMap<String, Trait> = mutableMapOf()
-    private val traitIDs: MutableMap<String, String> = mutableMapOf()
+    private val traits: MutableMap<TraitID, Trait> = mutableMapOf()
+    private val traitIDs: MutableMap<String, TraitID> = mutableMapOf()
 
-    private val objs: MutableMap<String, Obj> = mutableMapOf()
+    private val objs: MutableMap<ObjID, Obj> = mutableMapOf()
 
     fun getUserLogin(name: String, password: String): Obj? {
         getTrait("user")?.objects?.forEach { obj ->
-            objs[obj.id]?.getProp("username")?.also {
+            objs[obj]?.getProp("username")?.also {
                 if (it == VString(name)) {
-                    objs[obj.id]?.getProp("password")?.also {
+                    objs[obj]?.getProp("password")?.also {
                         if (it == VString(password)) {
-                            return objs[obj.id]
+                            return objs[obj]
                         }
                     }
                 }
@@ -39,8 +39,8 @@ data class World(
     }
 
     fun getTrait(named: String) = traits[traitIDs[named]]
-    fun getTrait(id: TraitID?) = id?.let { traits[it.id] }
-    fun getObj(id: ObjID?) = id?.let { objs[it.id] }
+    fun getTrait(id: TraitID?) = id?.let { traits[it] }
+    fun getObj(id: ObjID?) = id?.let { objs[it] }
 
     val sys: Trait
         get() = getTrait("sys")!!
@@ -53,14 +53,14 @@ data class World(
                 "user" -> UserTrait()
                 else -> Trait(name)
             }.also {
-                traits[it.id.id] = it
-                traitIDs[it.name] = it.id.id
+                traits[it.id] = it
+                traitIDs[it.name] = it.id
             }
         }
         throw IllegalArgumentException("Trait with id $name already exists")
     }
 
-    fun createObj() = Obj().also { objs[it.id.id] = it }
+    fun createObj() = Obj().also { objs[it.id] = it }
 
     fun destroyObj(obj: Obj) {
         obj.traits.forEach { getTrait(it)?.removeFrom(obj) }
@@ -68,7 +68,7 @@ data class World(
             moveObj(getObj((it as VObj).v)!!, obj.location)
         }
         moveObj(obj, Yegg.vNullObj)
-        objs.remove(obj.id.id)
+        objs.remove(obj.id)
     }
 
     fun moveObj(obj: Obj, newLocV: VObj) {
@@ -89,11 +89,11 @@ data class World(
     }
 
     fun applyTrait(traitID: TraitID, objID: ObjID) {
-        traits[traitID.id]?.applyTo(objs[objID.id]!!)
+        traits[traitID]?.applyTo(objs[objID]!!)
     }
 
     fun dispelTrait(traitID: TraitID, objID: ObjID) {
-        traits[traitID.id]?.removeFrom(objs[objID.id]!!)
+        traits[traitID]?.removeFrom(objs[objID]!!)
     }
 
     fun programVerb(traitName: String, name: String, code: String): String {
