@@ -1,6 +1,7 @@
 package com.dlfsystems.server
 
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.value.VString
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 
@@ -25,8 +26,12 @@ class Connection(private val sendText: (String) -> Unit) {
             } else buffer.add(text)
         } ?: run {
             if (text.startsWith(";")) {
-                // TODO: move this to post-login processing when more convenient
-                sendText(Compiler.eval(text.substringAfter(";"), connection = this))
+                val code = text.substringAfter(";")
+                val c = Context().apply {
+                    connection = this@Connection
+                    push(Yegg.vNullObj, Yegg.vNullTrait, "(eval)", listOf(VString(code)))
+                }
+                sendText(Compiler.eval(c, code))
             } else if (text.startsWith("@")) {
                 // TODO: get rid of these hardcoded @meta commands
                 parseMeta(text)
@@ -36,7 +41,6 @@ class Connection(private val sendText: (String) -> Unit) {
         }
     }
 
-    // TODO: this is all currently speculative/non-working, ignore
     private fun parseCommand(text: String) {
         // Split command into string parts
         val splits = text.split("\\s+".toRegex(), 2)

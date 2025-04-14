@@ -40,12 +40,6 @@ fun Application.configureRouting() {
             Yegg.removeConnection(conn)
         }
 
-        post("/eval") {
-            val code = call.receiveText()
-            call.respondText(
-                Compiler.eval(code, verbose = true)
-            )
-        }
         post("/program/{traitName}/{verbName}")  {
             val code = call.receiveText()
             var result = ""
