@@ -6,12 +6,14 @@ import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // A special trait which exists in every world.
-// Provides access to system environment properties, metadata about the world, and server control.
+// Provides environment properties, server control, and primitive functions.
 
 @Serializable
+@SerialName("SysTrait")
 class SysTrait : Trait("sys") {
 
     override fun getProp(obj: Obj?, propName: String): Value? {

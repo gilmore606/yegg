@@ -11,15 +11,17 @@ import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 import com.dlfsystems.world.ObjID
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // A collection of verbs and props, which can apply to an Obj.
 
 @Serializable
+@SerialName("TraitID")
 data class TraitID(val id: String) { override fun toString() = id }
 
 @Serializable
-open class Trait(val name: String) {
+sealed class Trait(val name: String) {
 
     val id = TraitID(Yegg.newID())
     val vTrait = VTrait(id)
@@ -106,3 +108,8 @@ open class Trait(val name: String) {
         return null
     }
 }
+
+@Serializable
+@SerialName("NTrait")
+// A "normal" dynamically defined trait.  We need this subclass for serialization.
+class NTrait(private val n: String) : Trait(n)

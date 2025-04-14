@@ -8,14 +8,17 @@ import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
 import com.dlfsystems.world.trait.Trait
 import com.dlfsystems.world.trait.TraitID
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // An instance in the world.
 
 @Serializable
+@SerialName("ObjID")
 data class ObjID(val id: String) { override fun toString() = id }
 
 @Serializable
+@SerialName("Obj")
 class Obj {
     val id = ObjID(Yegg.newID())
     val vThis = VObj(id)

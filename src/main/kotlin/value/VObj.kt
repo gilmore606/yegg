@@ -7,6 +7,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+@SerialName("VObj")
 data class VObj(val v: ObjID?): Value() {
 
     @SerialName("yType")

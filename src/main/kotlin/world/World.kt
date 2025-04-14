@@ -7,16 +7,11 @@ import com.dlfsystems.value.VString
 import com.dlfsystems.value.VVoid
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
-import com.dlfsystems.world.trait.SysTrait
-import com.dlfsystems.world.trait.Trait
-import com.dlfsystems.world.trait.TraitID
-import com.dlfsystems.world.trait.UserTrait
+import com.dlfsystems.world.trait.*
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class World(
-    val name: String = "world"
-) {
+data class World(val name: String) {
 
     private val traits: MutableMap<TraitID, Trait> = mutableMapOf()
     private val traitIDs: MutableMap<String, TraitID> = mutableMapOf()
@@ -51,7 +46,7 @@ data class World(
             return when (name) {
                 "sys" -> SysTrait()
                 "user" -> UserTrait()
-                else -> Trait(name)
+                else -> NTrait(name)
             }.also {
                 traits[it.id] = it
                 traitIDs[it.name] = it.id

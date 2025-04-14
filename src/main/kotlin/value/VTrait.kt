@@ -7,6 +7,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+@SerialName("VTrait")
 data class VTrait(val v: TraitID?): Value() {
 
     @SerialName("yType")

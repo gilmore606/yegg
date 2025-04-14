@@ -6,6 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+@SerialName("VList")
 data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
 
     @SerialName("yType")
