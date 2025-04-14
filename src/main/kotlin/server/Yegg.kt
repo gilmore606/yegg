@@ -1,8 +1,10 @@
 package com.dlfsystems.server
 
 import com.dlfsystems.app.Log
+import com.dlfsystems.value.VInt
 import com.dlfsystems.world.World
 import com.dlfsystems.value.VObj
+import com.dlfsystems.value.VString
 import com.dlfsystems.value.VTrait
 import com.dlfsystems.world.Obj
 import com.dlfsystems.world.trait.SysTrait
@@ -47,8 +49,15 @@ object Yegg {
         } else {
             Log.i("No database $worldName found, initializing new world.")
             world = World(worldName).apply {
-                (addTrait("sys") as SysTrait).setDefaults()
-                (addTrait("user") as UserTrait).setDefaults()
+                (addTrait("sys") as SysTrait).apply {
+                    props["tickLimit"] = VInt(100000)
+                    props["stackLimit"] = VInt(100)
+                    props["callLimit"] = VInt(50)
+                }
+                (addTrait("user") as UserTrait).apply {
+                    props["username"] = VString("")
+                    props["password"] = VString("")
+                }
             }
         }
     }

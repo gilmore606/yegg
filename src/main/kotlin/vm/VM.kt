@@ -222,7 +222,7 @@ class VM(
                 O_GETTRAIT -> {
                     val a1 = pop()
                     if (a1 is VString) {
-                        Yegg.world.getTrait(a1.v)?.also { push(VTrait(it.id)) }
+                        Yegg.world.getTrait(a1.v)?.also { push(it.vTrait) }
                             ?: fail (E_TRAITNF, "trait not found")
                     } else fail(E_TRAITNF, "trait name must be string")
                 }

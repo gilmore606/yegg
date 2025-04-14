@@ -22,7 +22,7 @@ data class TraitID(val id: String) { override fun toString() = id }
 open class Trait(val name: String) {
 
     val id = TraitID(Yegg.newID())
-    private val vTrait = VTrait(id)
+    val vTrait = VTrait(id)
 
     val traits: MutableList<TraitID> = mutableListOf()
 
@@ -64,7 +64,7 @@ open class Trait(val name: String) {
 
     open fun getProp(obj: Obj?, propName: String): Value? {
         return when (propName) {
-            "objects" -> return VList(objects.map { VObj(it) }.toMutableList())
+            "objects" -> return VList(objects.mapNotNull { Yegg.world.getObj(it)?.vThis }.toMutableList())
             else -> props.getOrDefault(propName, null)
         }
     }
@@ -90,13 +90,13 @@ open class Trait(val name: String) {
                 null -> { if (dobjstr.isNotBlank()) return null }
                 is Command.Arg.This -> { if (dobj != obj) return null }
                 is Command.Arg.Text -> { args.add(VString(dobjstr)) }
-                is Command.Arg.Any -> { if (dobj == null) return null else args.add(VObj(dobj.id)) }
+                is Command.Arg.Any -> { if (dobj == null) return null else args.add(dobj.vThis) }
             }
             when (command.iobj) {
                 null -> { if (iobjstr.isNotBlank()) return null }
                 is Command.Arg.This -> { if (iobj != obj) return null }
                 is Command.Arg.Text -> { args.add(VString(iobjstr)) }
-                is Command.Arg.Any -> { if (iobj == null) return null else args.add(VObj(iobj.id)) }
+                is Command.Arg.Any -> { if (iobj == null) return null else args.add(iobj.vThis) }
             }
             return CommandMatch(command.verb, this, obj, args)
         }

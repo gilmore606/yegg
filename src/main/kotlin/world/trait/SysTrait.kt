@@ -14,12 +14,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 class SysTrait : Trait("sys") {
 
-    fun setDefaults() {
-        props["tickLimit"] = VInt(100000)
-        props["stackLimit"] = VInt(100)
-        props["callLimit"] = VInt(50)
-    }
-
     override fun getProp(obj: Obj?, propName: String): Value? {
         when (propName) {
             "time" -> return propTime()
@@ -48,7 +42,7 @@ class SysTrait : Trait("sys") {
     private fun propTime() = VInt((System.currentTimeMillis() / 1000L).toInt())
 
     // $sys.connectedUsers -> [#obj, #obj...]
-    private fun propConnectedUsers() = VList(Yegg.connectedUsers.keys.map { VObj(it.id) }.toMutableList())
+    private fun propConnectedUsers() = VList(Yegg.connectedUsers.keys.map { it.vThis }.toMutableList())
 
     // $sys.connectUser("username", "password") -> #user
     private fun verbConnectUser(c: Context, args: List<Value>): Value {
@@ -92,7 +86,7 @@ class SysTrait : Trait("sys") {
                 if (it !is VTrait) throw IllegalArgumentException("Non-trait passed to create")
                 Yegg.world.applyTrait(it.v!!, obj.id)
             }
-            return VObj(obj.id)
+            return obj.vThis
         } catch (e: Exception) {
             Yegg.world.destroyObj(obj)
             throw e
