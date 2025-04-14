@@ -7,10 +7,7 @@ import com.dlfsystems.server.Command
 import com.dlfsystems.server.CommandMatch
 import com.dlfsystems.server.Preposition
 import com.dlfsystems.util.matchesWildcard
-import com.dlfsystems.value.VList
-import com.dlfsystems.value.VObj
-import com.dlfsystems.value.VTrait
-import com.dlfsystems.value.Value
+import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 import com.dlfsystems.world.ObjID
@@ -31,7 +28,7 @@ open class Trait(val name: String) {
 
     val commands: MutableSet<Command> = mutableSetOf()
     val verbs: MutableMap<String, Verb> = mutableMapOf()
-    open val props: MutableMap<String, Value> = mutableMapOf()
+    val props: MutableMap<String, Value> = mutableMapOf()
 
     val objects: MutableSet<ObjID> = mutableSetOf()
 
@@ -85,16 +82,26 @@ open class Trait(val name: String) {
         return null
     }
 
-    fun matchCommand(cmdstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
-        commands.forEach { command ->
-            command.names.firstOrNull { cmdstr.matchesWildcard(it) }?.also {
-                if (command.args.isEmpty() && dobjstr.isBlank()) return CommandMatch(command.verb, this, null, listOf())
-                // TODO: match args
-
+    fun matchCommand(obj: Obj?, cmdstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
+        commands.firstOrNull { it.names.any { cmdstr.matchesWildcard(it) } }?.also { command ->
+            if (command.prep != prep) return null
+            val args = mutableListOf<Value>()
+            when (command.dobj) {
+                null -> { if (dobjstr.isNotBlank()) return null }
+                is Command.Arg.This -> { if (dobj != obj) return null }
+                is Command.Arg.Text -> { args.add(VString(dobjstr)) }
+                is Command.Arg.Any -> { if (dobj == null) return null else args.add(VObj(dobj.id)) }
             }
+            when (command.iobj) {
+                null -> { if (iobjstr.isNotBlank()) return null }
+                is Command.Arg.This -> { if (iobj != obj) return null }
+                is Command.Arg.Text -> { args.add(VString(iobjstr)) }
+                is Command.Arg.Any -> { if (iobj == null) return null else args.add(VObj(iobj.id)) }
+            }
+            return CommandMatch(command.verb, this, obj, args)
         }
         traits.mapNotNull { Yegg.world.getTrait(it) }.forEach { parent ->
-            parent.matchCommand(cmdstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
+            parent.matchCommand(obj, cmdstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
         }
         return null
     }

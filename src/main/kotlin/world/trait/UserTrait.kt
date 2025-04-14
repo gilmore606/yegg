@@ -5,13 +5,15 @@ import com.dlfsystems.value.VBool
 import com.dlfsystems.value.VString
 import com.dlfsystems.value.Value
 import com.dlfsystems.world.Obj
+import kotlinx.serialization.Serializable
 
+@Serializable
 class UserTrait : Trait("user") {
 
-    override val props = mutableMapOf<String, Value>(
-        "username" to VString(""),
-        "password" to VString(""),
-    )
+    fun setDefaults() {
+        props["username"] = VString("")
+        props["password"] = VString("")
+    }
 
     override fun getProp(obj: Obj?, propName: String): Value? {
         when (propName) {

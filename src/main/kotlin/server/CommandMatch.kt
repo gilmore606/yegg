@@ -9,9 +9,4 @@ class CommandMatch(
     val trait: Trait,
     var obj: Obj?,
     val args: List<Value>,
-) {
-    fun withObj(newObj: Obj?): CommandMatch {
-        obj = newObj
-        return this
-    }
-}
+)

@@ -6,17 +6,19 @@ import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
+import kotlinx.serialization.Serializable
 
 // A special trait which exists in every world.
 // Provides access to system environment properties, metadata about the world, and server control.
 
+@Serializable
 class SysTrait : Trait("sys") {
 
-    override val props = mutableMapOf<String, Value>(
-        "tickLimit" to VInt(100000),
-        "stackLimit" to VInt(100),
-        "callLimit" to VInt(50),
-    )
+    fun setDefaults() {
+        props["tickLimit"] = VInt(100000)
+        props["stackLimit"] = VInt(100)
+        props["callLimit"] = VInt(50)
+    }
 
     override fun getProp(obj: Obj?, propName: String): Value? {
         when (propName) {

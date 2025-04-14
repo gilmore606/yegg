@@ -5,6 +5,8 @@ import com.dlfsystems.world.World
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.VTrait
 import com.dlfsystems.world.Obj
+import com.dlfsystems.world.trait.SysTrait
+import com.dlfsystems.world.trait.UserTrait
 import io.viascom.nanoid.NanoId
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -13,7 +15,7 @@ import kotlin.system.exitProcess
 object Yegg {
 
     var logLevel = Log.Level.DEBUG
-    var worldName = "world"
+    var worldName = "Minimal"
 
     private const val CONNECT_MSG = "** Connected **"
     private const val DISCONNECT_MSG = "** Disconnected **"
@@ -36,7 +38,7 @@ object Yegg {
             try {
                 // Deserialize the world
                 world = Json.decodeFromString<World>(file.readText())
-                Log.i("Loaded ${world.name} with ${world.traits.size} traits and ${world.objs.size} objs.")
+                Log.i("Loaded ${world.name}.")
             } catch (e: Exception) {
                 Log.e("FATAL: Failed to load from ${file.path} !")
                 exitProcess(1)
@@ -44,8 +46,8 @@ object Yegg {
         } else {
             Log.i("No database $worldName found, initializing new world.")
             world = World(worldName).apply {
-                addTrait("sys")
-                addTrait("user")
+                (addTrait("sys") as SysTrait).setDefaults()
+                (addTrait("user") as UserTrait).setDefaults()
             }
         }
     }

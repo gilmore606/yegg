@@ -79,7 +79,7 @@ class Connection(private val sendText: (String) -> Unit) {
             }
         } ?: run {
             // If not logged in, match against $sys
-            Yegg.world.sys.matchCommand(cmdstr, dobjstr, null, prep, iobjstr, null)?.also {
+            Yegg.world.sys.matchCommand(null, cmdstr, dobjstr, null, prep, iobjstr, null)?.also {
                 runCommand(it)
                 return
             }
