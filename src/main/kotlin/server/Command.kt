@@ -1,23 +1,19 @@
 package com.dlfsystems.server
 
 import kotlinx.serialization.Serializable
-import com.dlfsystems.server.Command.Arg.*
 
 @Serializable
-class Command(
+data class Command(
     val names: List<String>,
     val dobj: Arg? = null,
     val prep: Preposition? = null,
     val iobj: Arg? = null,
     val verb: String,
 ) {
-
-    @Serializable
-    sealed class Arg(val s: String) {
-        override fun toString() = s
-        @Serializable data object Text: Arg("text")
-        @Serializable data object This: Arg("this")
-        @Serializable data object Any: Arg("any")
+    enum class Arg(val s: String) {
+        STRING("string"),   // Literal text
+        THIS("this"),       // The object this command is on
+        ANY("any"),         // Any object in matching scope
     }
 
     override fun toString() = names.joinToString("/") + " " +
@@ -27,34 +23,32 @@ class Command(
 
     companion object {
         // Generate a Command from a string representation.
-        // "who = cmdWho"
-        // "get/take contents from this = cmdGetFrom"
-        // "switch/turn on this = cmdSwitchOn"
-        // "co*nnect text = cmdConnect"
+        // "co*mmand/alias [arg] [prep] [arg] = verbName"
         fun fromString(s: String): Command? {
-            val specAndVerb = s.split(" = ")
-            if (specAndVerb.size != 2) return null
-            val verb = specAndVerb[1]
-            val namesAndArgs = specAndVerb[0].split(" ", limit = 2)
-            val names = namesAndArgs[0].split("/")
-            if (namesAndArgs.size == 1) return Command(names, verb = verb)
-            val args = namesAndArgs[1].split(" ")
+            val SandV = s.split(" = ")
+            if (SandV.size != 2) return null
+            val verb = SandV[1]
+            val NandA = SandV[0].split(" ", limit = 2)
+            val names = NandA[0].split("/")
+            if (NandA.size == 1) return Command(names, verb = verb)
+            val args = NandA[1].split(" ")
             if (args.size > 3) return null
+
             var dobj: Arg? = null
             var prep: Preposition? = null
             var iobj: Arg? = null
-            args.forEach { arg ->
-                listOf(Text, This, Any).firstOrNull { it.s == arg }?.also { argType ->
-                    if (dobj == null && prep == null) dobj = argType else iobj = argType
-                } ?: run {
-                    Preposition.entries.firstOrNull { it.strings.contains(arg) }?.also { prepType ->
-                        prep = prepType
-                    } ?: run {
-                        return null
-                    }
-                }
+            args.forEach { argstr ->
+                Arg.entries.firstOrNull { it.s == argstr }?.also { arg ->
+                    if (dobj == null && prep == null)
+                        dobj = arg
+                    else iobj = arg
+                } ?: Preposition.entries.firstOrNull { it.strings.contains(argstr) }?.also {
+                    prep = it
+                } ?: return null
             }
+
             return Command(names, dobj, prep, iobj, verb)
         }
     }
+
 }

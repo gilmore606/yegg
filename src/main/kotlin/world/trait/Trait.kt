@@ -4,6 +4,7 @@ import com.dlfsystems.server.Yegg
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.server.Command
+import com.dlfsystems.server.Command.Arg
 import com.dlfsystems.server.CommandMatch
 import com.dlfsystems.server.Preposition
 import com.dlfsystems.util.matchesWildcard
@@ -85,28 +86,34 @@ sealed class Trait(val name: String) {
     }
 
     fun matchCommand(obj: Obj?, cmdstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
-        commands.firstOrNull { it.names.any { cmdstr.matchesWildcard(it) } }?.also { command ->
-            if (command.prep != prep) return null
-            val args = mutableListOf<Value>()
-            when (command.dobj) {
-                null -> { if (dobjstr.isNotBlank()) return null }
-                is Command.Arg.This -> { if (dobj != obj) return null }
-                is Command.Arg.Text -> { args.add(VString(dobjstr)) }
-                is Command.Arg.Any -> { if (dobj == null) return null else args.add(dobj.vThis) }
+        fun matchArg(t: Obj?, arg: Arg?, s: String, o: Obj?): Value? =
+            when (arg) {
+                Arg.THIS -> if (t != o) null else VVoid
+                Arg.STRING -> VString(s)
+                Arg.ANY -> o?.vThis
+                null -> if (s.isNotBlank()) null else VVoid
             }
-            when (command.iobj) {
-                null -> { if (iobjstr.isNotBlank()) return null }
-                is Command.Arg.This -> { if (iobj != obj) return null }
-                is Command.Arg.Text -> { args.add(VString(iobjstr)) }
-                is Command.Arg.Any -> { if (iobj == null) return null else args.add(iobj.vThis) }
+
+        for (cmd in commands) {
+            if (cmd.names.any { cmdstr.matchesWildcard(it) }) {
+                if (cmd.prep == prep) {
+                    val a1 = matchArg(obj, cmd.dobj, dobjstr, dobj) ?: continue
+                    val a2 = matchArg(obj, cmd.iobj, iobjstr, iobj) ?: continue
+                    return CommandMatch(cmd.verb, this, obj, buildList {
+                        if (a1 != VVoid) add(a1)
+                        if (a2 != VVoid) add(a2)
+                    })
+                }
             }
-            return CommandMatch(command.verb, this, obj, args)
         }
+
         traits.mapNotNull { Yegg.world.getTrait(it) }.forEach { parent ->
             parent.matchCommand(obj, cmdstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
         }
+
         return null
     }
+
 }
 
 @Serializable

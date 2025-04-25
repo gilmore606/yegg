@@ -55,7 +55,6 @@ class VM(
             initVar("args", VList.make(args))
             initVar("this", c.vThis)
             initVar("user", c.vUser)
-            initVar("conn", c.vConn)
             returnValue = executeCode(c)
         } catch (e: Exception) {
             exception = e as? VMException ?: VMException(E_SYS, e.message ?: "???", lineNum, charNum)

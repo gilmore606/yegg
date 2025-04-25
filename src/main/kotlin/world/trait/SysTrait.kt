@@ -29,7 +29,7 @@ class SysTrait : Trait("sys") {
             "connectUser" -> return verbConnectUser(c, args)
             "disconnectUser" -> return verbDisconnectUser(c, args)
             "notify" -> return verbNotify(args)
-            "notifyConn" -> return verbNotifyConn(args)
+            "notifyConn" -> return verbNotifyConn(c, args)
             "addTrait" -> return verbAddTrait(args)
             "create" -> return verbCreate(args)
             "destroy" -> return verbDestroy(args)
@@ -76,9 +76,9 @@ class SysTrait : Trait("sys") {
     }
 
     // $sys.notifyConn("connID", "text")
-    private fun verbNotifyConn(args: List<Value>): VVoid {
-        if (args.size != 2 || args[0] !is VString || args[1] !is VString) throw IllegalArgumentException("Bad args for notify")
-        Yegg.notifyConn((args[0] as VString).v, (args[1] as VString).v)
+    private fun verbNotifyConn(c: Context, args: List<Value>): VVoid {
+        if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for notifyConn")
+        c.connection?.id?.id?.also { Yegg.notifyConn(it, (args[0] as VString).v) }
         return VVoid
     }
 

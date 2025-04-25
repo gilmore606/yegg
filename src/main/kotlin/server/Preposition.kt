@@ -17,6 +17,7 @@ enum class Preposition(val strings: List<String>) {
     BESIDE(listOf("beside")),
     FOR(listOf("for", "about")),
     IS(listOf("is")),
+    EQUALS(listOf("=")),
     AS(listOf("as")),
     OFF(listOf("off of", "off")),
 }
