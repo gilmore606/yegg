@@ -7,6 +7,7 @@ import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -54,6 +55,7 @@ class VM(
             initVar("args", VList.make(args))
             initVar("this", c.vThis)
             initVar("user", c.vUser)
+            initVar("conn", c.vConn)
             returnValue = executeCode(c)
         } catch (e: Exception) {
             exception = e as? VMException ?: VMException(E_SYS, e.message ?: "???", lineNum, charNum)
@@ -295,11 +297,13 @@ class VM(
 
 // An atom of VM opcode memory.
 // Can hold an Opcode, a Value, or an int representing a memory address (for jumps).
-// TODO: rework this as a sealed class like Value
 @Serializable
 data class VMWord(
-    val lineNum: Int, val charNum: Int,
-    val opcode: Opcode? = null, val value: Value? = null, var address: Int? = null
+    @SerialName("l") val lineNum: Int,
+    @SerialName("c") val charNum: Int,
+    @SerialName("o") val opcode: Opcode? = null,
+    @SerialName("v") val value: Value? = null,
+    @SerialName("a") var address: Int? = null,
 ) {
     // In compilation, an address word may be written before the address it points to is known.
     // fillAddress is called to set it once calculated.

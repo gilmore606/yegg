@@ -6,7 +6,6 @@ import com.dlfsystems.value.VObj
 import com.dlfsystems.value.VString
 import com.dlfsystems.value.VVoid
 import com.dlfsystems.value.Value
-import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.*
 import kotlinx.serialization.Serializable
 

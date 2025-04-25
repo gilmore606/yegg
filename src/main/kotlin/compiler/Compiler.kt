@@ -3,7 +3,6 @@ package com.dlfsystems.compiler
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.ast.Node
-import com.dlfsystems.server.Connection
 import com.dlfsystems.value.VString
 import com.dlfsystems.vm.*
 

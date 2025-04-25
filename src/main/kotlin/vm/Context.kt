@@ -1,11 +1,9 @@
 package com.dlfsystems.vm
 
 import com.dlfsystems.server.Connection
+import com.dlfsystems.server.ConnectionID
 import com.dlfsystems.server.Yegg
-import com.dlfsystems.world.World
 import com.dlfsystems.value.*
-import com.dlfsystems.world.ObjID
-import com.dlfsystems.world.trait.TraitID
 
 // Properties of a single command invocation as it passes from verb to verb.
 
@@ -21,6 +19,7 @@ class Context(val connection: Connection? = null) {
 
     var vThis: VObj = Yegg.vNullObj
     var vUser: VObj = Yegg.vNullObj
+    var vConn: VString = Yegg.vNullStr
 
     var ticksLeft: Int = (Yegg.world.getSysValue("tickLimit") as VInt).v
     var callsLeft: Int = (Yegg.world.getSysValue("callLimit") as VInt).v

@@ -1,14 +1,9 @@
 package com.dlfsystems.server
 
 import com.dlfsystems.app.Log
-import com.dlfsystems.value.VInt
+import com.dlfsystems.value.*
 import com.dlfsystems.world.World
-import com.dlfsystems.value.VObj
-import com.dlfsystems.value.VString
-import com.dlfsystems.value.VTrait
 import com.dlfsystems.world.Obj
-import com.dlfsystems.world.trait.SysTrait
-import com.dlfsystems.world.trait.UserTrait
 import io.viascom.nanoid.NanoId
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -24,8 +19,12 @@ object Yegg {
     private const val DISCONNECT_MSG = "** Disconnected **"
     const val HUH_MSG = "I don't understand that."
 
+    val vTrue = VBool(true)
+    val vFalse = VBool(false)
     val vNullObj = VObj(null)
     val vNullTrait = VTrait(null)
+    val vZero = VInt(0)
+    val vNullStr = VString("")
 
     lateinit var world: World
 
@@ -49,12 +48,12 @@ object Yegg {
         } else {
             Log.i("No database $worldName found, initializing new world.")
             world = World(worldName).apply {
-                (addTrait("sys") as SysTrait).apply {
+                addTrait("sys").apply {
                     props["tickLimit"] = VInt(100000)
                     props["stackLimit"] = VInt(100)
                     props["callLimit"] = VInt(50)
                 }
-                (addTrait("user") as UserTrait).apply {
+                addTrait("user").apply {
                     props["username"] = VString("")
                     props["password"] = VString("")
                 }
@@ -85,7 +84,11 @@ object Yegg {
         connectedUsers[user]?.sendText(text)
     }
 
-    fun dumpDatabase(): String? {
+    fun notifyConn(connID: String, text: String) {
+        connections.firstOrNull { it.id.id == connID }?.sendText(text)
+    }
+
+    fun dumpDatabase(): String {
         val file = File("${world.name}.yegg")
         Log.i("Dumping database...")
         try {
@@ -93,7 +96,10 @@ object Yegg {
         } catch (e: Exception) {
             return "ERROR: ${e.message}"
         }
-        return null
+        return ""
     }
 
+    fun shutdownServer() {
+        exitProcess(0)
+    }
 }

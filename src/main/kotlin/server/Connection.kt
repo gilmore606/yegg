@@ -5,7 +5,12 @@ import com.dlfsystems.value.VString
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 
+data class ConnectionID(val id: String) { override fun toString() = id }
+
 class Connection(private val sendText: (String) -> Unit) {
+
+    val id = ConnectionID(Yegg.newID())
+    val vID = VString(id.toString())
 
     var buffer = mutableListOf<String>()
     var programming: Pair<String, String>? = null
@@ -95,6 +100,7 @@ class Connection(private val sendText: (String) -> Unit) {
         val c = Context(this).apply {
             vThis = match.obj?.vThis ?: Yegg.vNullObj
             vUser = connection?.user?.vThis ?: Yegg.vNullObj
+            vConn = connection?.vID ?: Yegg.vNullStr
         }
         match.trait.callVerb(c, match.verb, match.args)
     }
