@@ -30,5 +30,5 @@ class Context(val connection: Connection? = null) {
     fun pop(): Call =
         callStack.removeFirst()
 
-    fun stackDump() = callStack.joinToString(separator = "\n...", postfix = "\n")
+    fun stackDump() = callStack.joinToString(prefix = "...", separator = "\n...", postfix = "\n")
 }

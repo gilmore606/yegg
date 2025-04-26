@@ -134,7 +134,7 @@ class VM(
                 }
                 O_JUMP -> {
                     val addr = next().address!!
-                    pc = addr
+                    if (addr >= 0) pc = addr else return VVoid
                 }
                 O_RETURN -> {
                     if (stack.isEmpty()) fail(E_SYS, "no return value on stack!")

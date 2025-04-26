@@ -99,7 +99,12 @@ class Connection(private val sendText: (String) -> Unit) {
             vThis = match.obj?.vThis ?: Yegg.vNullObj
             vUser = connection?.user?.vThis ?: Yegg.vNullObj
         }
-        match.trait.callVerb(c, match.verb, match.args)
+        try {
+            match.trait.callVerb(c, match.verb, match.args)
+        } catch (e: Exception) {
+            sendText(e.toString())
+            sendText(c.stackDump())
+        }
     }
 
     // Respond to meta commands.
