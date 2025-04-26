@@ -134,7 +134,7 @@ class VM(
                 }
                 O_JUMP -> {
                     val addr = next().address!!
-                    if (addr >= 0) pc = addr else return VVoid
+                    if (addr >= 0) pc = addr else return VVoid  // Unresolved jump dest means end-of-code
                 }
                 O_RETURN -> {
                     if (stack.isEmpty()) fail(E_SYS, "no return value on stack!")

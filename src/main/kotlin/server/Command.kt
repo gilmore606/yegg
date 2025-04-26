@@ -2,13 +2,18 @@ package com.dlfsystems.server
 
 import kotlinx.serialization.Serializable
 
+// A user-typeable command on a trait.
 @Serializable
 data class Command(
+    // The original string representation used to create this command.
     val spec: String,
+    // All aliases of the command, with wil*dcard matching.
     val names: List<String>,
+    // The dobj/prep/iobj types which match this command.
     val dobj: Arg? = null,
     val prep: Preposition? = null,
     val iobj: Arg? = null,
+    // The verb to call to execute this command.
     val verb: String,
 ) {
     enum class Arg(val s: String) {
