@@ -57,12 +57,20 @@ sealed class Trait(val name: String) {
         commands.add(command)
     }
 
+    fun removeCommand(spec: String) {
+        commands.removeIf { it.spec == spec }
+    }
+
     fun programVerb(verbName: String, cOut: Compiler.Result) {
         verbs[verbName]?.also {
             it.program(cOut)
         } ?: run {
             verbs[verbName] = Verb(verbName).apply { program(cOut) }
         }
+    }
+
+    fun removeVerb(verbName: String) {
+        verbs.remove(verbName)
     }
 
     open fun getProp(obj: Obj?, propName: String): Value? {

@@ -35,7 +35,9 @@ class SysTrait : Trait("sys") {
             "destroy" -> return verbDestroy(args)
             "move" -> return verbMove(args)
             "setCommand" -> return verbSetCommand(args)
+            "removeCommand" -> return verbRemoveCommand(args)
             "getCommands" -> return verbGetCommands(args)
+            "removeVerb" -> return verbRemoveVerb(args)
             "dumpDatabase" -> return verbDumpDatabase(args)
             "shutdownServer" -> return verbShutdownServer(args)
         }
@@ -122,15 +124,26 @@ class SysTrait : Trait("sys") {
         return VVoid
     }
 
-    // $sys.setCommand($trait, "co*mmand/cmd arg prep arg") -> "cmdVerb"
-    private fun verbSetCommand(args: List<Value>): VString {
+    // $sys.setCommand($trait, "co*mmand/cmd arg prep arg = cmdVerb") -> "cmdVerb"
+    private fun verbSetCommand(args: List<Value>): VVoid {
         if (args.size != 2 || args[0] !is VTrait || args[1] !is VString) throw IllegalArgumentException("Bad args for setCommand")
         Yegg.world.getTrait((args[0] as VTrait).v)?.also { trait ->
             Command.fromString((args[1] as VString).v)?.also { command ->
                 trait.setCommand(command)
                 Log.d("setCommand($trait, $command)")
-                return VString(command.verb)
+                return VVoid
             } ?: throw IllegalArgumentException("invalid command pattern")
+        }
+        throw IllegalArgumentException("invalid trait")
+    }
+
+    // $sys.removeCommand($trait, "co*mmand/cmd arg prep arg")
+    private fun verbRemoveCommand(args: List<Value>): VVoid {
+        if (args.size != 2 || args[0] !is VTrait || args[1] !is VString) throw IllegalArgumentException("Bad args for removeCommand")
+        Yegg.world.getTrait((args[0] as VTrait).v)?.also { trait ->
+            trait.removeCommand((args[1] as VString).v)
+            Log.d("removeCommand($trait, ${args[1]}")
+            return VVoid
         }
         throw IllegalArgumentException("invalid trait")
     }
@@ -140,6 +153,17 @@ class SysTrait : Trait("sys") {
         if (args.size != 1 || args[0] !is VTrait) throw IllegalArgumentException("Bad args for getCommands")
         Yegg.world.getTrait((args[0] as VTrait).v)?.also { trait ->
             return VList(trait.commands.map { VString(it.toString()) }.toMutableList())
+        }
+        throw IllegalArgumentException("invalid trait")
+    }
+
+    // $sys.removeVerb($trait, "verb")
+    private fun verbRemoveVerb(args: List<Value>): VVoid {
+        if (args.size != 2 || args[0] !is VTrait || args[1] !is VString) throw IllegalArgumentException("Bad args for removeVerb")
+        Yegg.world.getTrait((args[0] as VTrait).v)?.also { trait ->
+            trait.removeVerb((args[1] as VString).v)
+            Log.d("removeVerb($trait, ${args[1]}")
+            return VVoid
         }
         throw IllegalArgumentException("invalid trait")
     }

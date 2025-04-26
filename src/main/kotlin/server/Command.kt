@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Command(
+    val spec: String,
     val names: List<String>,
     val dobj: Arg? = null,
     val prep: Preposition? = null,
@@ -30,7 +31,7 @@ data class Command(
             val verb = SandV[1]
             val NandA = SandV[0].split(" ", limit = 2)
             val names = NandA[0].split("/")
-            if (NandA.size == 1) return Command(names, verb = verb)
+            if (NandA.size == 1) return Command(s, names, verb = verb)
             val args = NandA[1].split(" ")
             if (args.size > 3) return null
 
@@ -50,7 +51,7 @@ data class Command(
             // Forbid 'command this any' and other unparseable no-prep formats
             if (prep == null && iobj != null) return null
 
-            return Command(names, dobj, prep, iobj, verb)
+            return Command(s, names, dobj, prep, iobj, verb)
         }
     }
 
