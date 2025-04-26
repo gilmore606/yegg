@@ -68,9 +68,9 @@ class Obj {
         return false
     }
 
-    fun matchCommand(cmdstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
+    fun matchCommand(cmdstr: String, argstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
         traits.mapNotNull { Yegg.world.getTrait(it) }.forEach { trait ->
-            trait.matchCommand(this, cmdstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
+            trait.matchCommand(this, cmdstr, argstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
         }
         return null
     }

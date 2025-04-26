@@ -85,7 +85,7 @@ sealed class Trait(val name: String) {
         return null
     }
 
-    fun matchCommand(obj: Obj?, cmdstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
+    fun matchCommand(obj: Obj?, cmdstr: String, argstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
         fun matchArg(t: Obj?, arg: Arg?, s: String, o: Obj?): Value? =
             when (arg) {
                 Arg.THIS -> if (t != o) null else VVoid
@@ -96,19 +96,23 @@ sealed class Trait(val name: String) {
 
         for (cmd in commands) {
             if (cmd.names.any { cmdstr.matchesWildcard(it) }) {
-                if (cmd.prep == prep) {
-                    val a1 = matchArg(obj, cmd.dobj, dobjstr, dobj) ?: continue
-                    val a2 = matchArg(obj, cmd.iobj, iobjstr, iobj) ?: continue
-                    return CommandMatch(cmd.verb, this, obj, buildList {
-                        if (a1 != VVoid) add(a1)
-                        if (a2 != VVoid) add(a2)
-                    })
+                var a1: Value = VVoid
+                var a2: Value = VVoid
+                if (cmd.prep == null) {
+                    a1 = matchArg(obj, cmd.dobj, argstr, dobj) ?: continue
+                } else if (cmd.prep == prep) {
+                    a1 = matchArg(obj, cmd.dobj, dobjstr, dobj) ?: continue
+                    a2 = matchArg(obj, cmd.iobj, iobjstr, iobj) ?: continue
                 }
+                return CommandMatch(cmd.verb, this, obj, buildList {
+                    if (a1 != VVoid) add(a1)
+                    if (a2 != VVoid) add(a2)
+                })
             }
         }
 
         traits.mapNotNull { Yegg.world.getTrait(it) }.forEach { parent ->
-            parent.matchCommand(obj, cmdstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
+            parent.matchCommand(obj, cmdstr, argstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
         }
 
         return null

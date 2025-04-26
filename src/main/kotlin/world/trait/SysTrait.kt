@@ -48,7 +48,7 @@ class SysTrait : Trait("sys") {
     // $sys.connectedUsers -> [#obj, #obj...]
     private fun propConnectedUsers() = VList(Yegg.connectedUsers.keys.map { it.vThis }.toMutableList())
 
-    // $sys.connectUser("username", "password") -> #user
+    // $sys.connectUser("username", "password") -> true if connected
     private fun verbConnectUser(c: Context, args: List<Value>): VBool {
         if (args.size != 2 || args[0] !is VString || args[1] !is VString) throw IllegalArgumentException("Bad args for connectUser")
         Yegg.world.getUserLogin((args[0] as VString).v, (args[1] as VString).v)?.also { user ->
@@ -75,7 +75,7 @@ class SysTrait : Trait("sys") {
         return VVoid
     }
 
-    // $sys.notifyConn("connID", "text")
+    // $sys.notifyConn("text")
     private fun verbNotifyConn(c: Context, args: List<Value>): VVoid {
         if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for notifyConn")
         c.connection?.id?.id?.also { Yegg.notifyConn(it, (args[0] as VString).v) }
@@ -144,7 +144,7 @@ class SysTrait : Trait("sys") {
         throw IllegalArgumentException("invalid trait")
     }
 
-    // $sys.dumpDatabase()
+    // $sys.dumpDatabase() -> "err"
     private fun verbDumpDatabase(args: List<Value>): VString {
         if (args.isNotEmpty()) throw IllegalArgumentException("Bad args for dumpDatabase")
         return VString(Yegg.dumpDatabase())

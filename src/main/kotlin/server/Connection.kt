@@ -71,14 +71,14 @@ class Connection(private val sendText: (String) -> Unit) {
             val dobj = matchObj(dobjstr, user, scope)
             val iobj = matchObj(iobjstr, user, scope)
             scope.forEach { target ->
-                target.matchCommand(cmdstr, dobjstr, dobj, prep, iobjstr, iobj)?.also {
+                target.matchCommand(cmdstr, argstr, dobjstr, dobj, prep, iobjstr, iobj)?.also {
                     runCommand(it)
                     return
                 }
             }
         } ?: run {
             // If not logged in, match against $sys
-            Yegg.world.sys.matchCommand(null, cmdstr, dobjstr, null, prep, iobjstr, null)?.also {
+            Yegg.world.sys.matchCommand(null, cmdstr, argstr, dobjstr, null, prep, iobjstr, null)?.also {
                 runCommand(it)
                 return
             }

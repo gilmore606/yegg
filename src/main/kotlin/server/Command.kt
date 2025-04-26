@@ -47,6 +47,9 @@ data class Command(
                 } ?: return null
             }
 
+            // Forbid 'command this any' and other unparseable no-prep formats
+            if (prep == null && iobj != null) return null
+
             return Command(names, dobj, prep, iobj, verb)
         }
     }
