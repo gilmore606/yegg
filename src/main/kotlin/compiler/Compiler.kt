@@ -43,10 +43,11 @@ object Compiler {
 
     fun eval(c: Context, code: String, verbose: Boolean = false): String {
         Log.d("eval: $code")
-        c.push(Yegg.vNullObj, Yegg.vNullTrait, "(eval)", listOf(VString(code)))
         var cOut: Result? = null
         try {
             cOut = compile(code)
+            val vm = VM(cOut.code, cOut.symbols)
+            c.push(Yegg.vNullObj, Yegg.vNullTrait, "(eval)", listOf(VString(code)), vm)
             Log.d("  opcodes: \n${cOut.code.dumpText()}")
             val vmOut = VM(cOut.code, cOut.symbols).execute(c).toString()
             return if (verbose) dumpText(cOut.tokens, cOut.ast, cOut.code, vmOut) else vmOut

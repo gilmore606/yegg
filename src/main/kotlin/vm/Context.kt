@@ -13,6 +13,7 @@ class Context(val connection: Connection? = null) {
         val vTrait: VTrait,
         val verb: String,
         val args: List<Value>,
+        val vm: VM,
     ) {
         override fun toString() = "$vThis $vTrait.$verb(${args.joinToString(",")})"
     }
@@ -25,8 +26,8 @@ class Context(val connection: Connection? = null) {
     val callStack = ArrayDeque<Call>()
 
     // Push or pop the callstack.
-    fun push(vThis: VObj, vTrait: VTrait, verb: String, args: List<Value>) =
-        callStack.addFirst(Call(vThis, vTrait, verb, args))
+    fun push(vThis: VObj, vTrait: VTrait, verb: String, args: List<Value>, vm: VM) =
+        callStack.addFirst(Call(vThis, vTrait, verb, args, vm))
     fun pop(): Call =
         callStack.removeFirst()
 
