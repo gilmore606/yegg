@@ -13,8 +13,8 @@ data class VTrait(val v: TraitID?): Value() {
     @SerialName("yType")
     override val type = Type.TRAIT
 
-    override fun toString() = "\$$v"
-    override fun asString() = "\$TRAIT" // TODO: get from context
+    override fun toString() = "$" + (v?.let { Yegg.world.getTrait(it)?.name } ?: "null")
+    override fun asString() = toString()
 
     override fun isTrue() = v != null
 
