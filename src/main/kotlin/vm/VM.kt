@@ -30,11 +30,9 @@ class VM(
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
     // Preserve error position.
-    private val lineNum: Int
-        get() = code.getOrNull(pc)?.lineNum ?: 0
-    private val charNum: Int
-        get() = code.getOrNull(pc)?.charNum ?: 0
-    private fun fail(type: VMException.Type, m: String) { throw VMException(type, m, lineNum, charNum) }
+    private var lineNum: Int = 0
+    private var charNum: Int = 0
+    private fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
 
     private inline fun push(v: Value) = stack.addFirst(v)
     private inline fun peek() = stack.first()
@@ -57,7 +55,7 @@ class VM(
             initVar("user", c.vUser)
             returnValue = executeCode(c)
         } catch (e: Exception) {
-            exception = e as? VMException ?: VMException(E_SYS, e.message ?: "???", lineNum, charNum)
+            exception = (e as? VMException ?: VMException(E_SYS, e.message ?: "???")).withLocation(lineNum, charNum)
         }
         // Win or lose, we clean up after.
         stack.clear()
@@ -83,6 +81,9 @@ class VM(
             if (c.callsLeft < 1) fail(E_MAXREC, "call depth exceeded")
 
             val word = next()
+            lineNum = word.lineNum
+            charNum = word.charNum
+
             when (word.opcode) {
 
                 O_DISCARD -> {
