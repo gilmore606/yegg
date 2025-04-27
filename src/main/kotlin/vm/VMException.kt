@@ -51,5 +51,4 @@ class VMException(val type: Type, val m: String): Exception() {
         E_USER,
     }
 
-
 }

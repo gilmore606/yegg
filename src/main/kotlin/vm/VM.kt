@@ -19,8 +19,6 @@ class VM(
     private val symbols: Map<String, Int> = mapOf()
 ) {
 
-    fun dumpText() = code.dumpText()
-
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
     // The local stack.
@@ -46,23 +44,18 @@ class VM(
     // Mutate the stack and variables as we go.
     // Return back a Value (VVoid if no explicit return).
     fun execute(c: Context, args: List<Value> = listOf()): Value {
-        // Intercept success or failure, so we get to clean up either way.
-        var returnValue: Value? = null
-        var exception: Exception? = null
-        try {
-            initVar("args", VList.make(args))
-            initVar("this", c.vThis)
-            initVar("user", c.vUser)
-            returnValue = executeCode(c)
-        } catch (e: Exception) {
-            exception = (e as? VMException ?: VMException(E_SYS, e.message ?: "???")).withLocation(lineNum, charNum)
-        }
-        // Win or lose, we clean up after.
         stack.clear()
         variables.clear()
-        // Then we succeed or fail.
-        exception?.also { throw it }
-        return returnValue!!
+
+        initVar("args", VList.make(args))
+        initVar("this", c.vThis)
+        initVar("user", c.vUser)
+
+        try {
+            return executeCode(c)
+        } catch (e: Exception) {
+            throw (e as? VMException ?: VMException(E_SYS, e.message ?: "???")).withLocation(lineNum, charNum)
+        }
     }
 
     // Initialize a variable to a value before execution.
