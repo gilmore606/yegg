@@ -49,7 +49,7 @@ object Compiler {
             val vm = VM(cOut.code, cOut.symbols)
             c.push(Yegg.vNullObj, Yegg.vNullTrait, "(eval)", listOf(VString(code)), vm)
             Log.d("  opcodes: \n${cOut.code.dumpText()}")
-            val vmOut = VM(cOut.code, cOut.symbols).execute(c).toString()
+            val vmOut = vm.execute(c).toString()
             return if (verbose) dumpText(cOut.tokens, cOut.ast, cOut.code, vmOut) else vmOut
         } catch (e: CompileException) {
             return if (verbose) dumpText(e.tokens, e.ast, e.code, "") else e.toString()
