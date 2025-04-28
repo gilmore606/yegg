@@ -15,7 +15,7 @@ class Context(val connection: Connection? = null) {
         val args: List<Value>,
         val vm: VM,
     ) {
-        override fun toString() = "$vThis $vTrait.$verb(${args.joinToString(",")})"
+        override fun toString() = "$vThis $vTrait.$verb(${args.joinToString(",")})  (line ${vm.lineNum})"
     }
 
     var vThis: VObj = Yegg.vNullObj

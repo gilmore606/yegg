@@ -9,11 +9,9 @@ import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 // A stack machine for executing a verb.
 
-@Serializable
 class VM(
     private val code: List<VMWord> = listOf(),
     private val symbols: Map<String, Int> = mapOf()
@@ -22,14 +20,13 @@ class VM(
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
     // The local stack.
-    @Transient
     private val stack = ArrayDeque<Value>()
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
     // Preserve error position.
-    private var lineNum: Int = 0
-    private var charNum: Int = 0
+    var lineNum: Int = 0
+    var charNum: Int = 0
     private fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
 
     private inline fun push(v: Value) = stack.addFirst(v)
