@@ -6,10 +6,8 @@ class VMException(val type: Type, val m: String): Exception() {
     private var charNum: Int = -1
 
     fun withLocation(l: Int, c: Int): VMException {
-        if (lineNum == -1) {
-            lineNum = l
-            charNum = c
-        }
+        lineNum = l
+        charNum = c
         return this
     }
 
