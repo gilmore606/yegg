@@ -94,12 +94,12 @@ sealed class Trait(val name: String) {
     }
 
     fun matchCommand(obj: Obj?, cmdstr: String, argstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
-        fun matchArg(t: Obj?, arg: Arg?, s: String, o: Obj?): Value? =
-            when (arg) {
-                Arg.THIS -> if (t != o) null else VVoid
-                Arg.STRING -> VString(s)
-                Arg.ANY -> o?.vThis
-                null -> if (s.isNotBlank()) null else VVoid
+        fun matchArg(argType: Arg?, argString: String, matchedObj: Obj?): Value? =
+            when (argType) {
+                Arg.THIS -> if (obj != matchedObj) null else VVoid
+                Arg.STRING -> VString(argString)
+                Arg.ANY -> matchedObj?.vThis
+                null -> if (argString.isNotBlank()) null else VVoid
             }
 
         for (cmd in commands) {
@@ -107,10 +107,10 @@ sealed class Trait(val name: String) {
                 var a1: Value = VVoid
                 var a2: Value = VVoid
                 if (cmd.prep == null) {
-                    a1 = matchArg(obj, cmd.dobj, argstr, dobj) ?: continue
+                    a1 = matchArg(cmd.dobj, argstr, dobj) ?: continue
                 } else if (cmd.prep == prep) {
-                    a1 = matchArg(obj, cmd.dobj, dobjstr, dobj) ?: continue
-                    a2 = matchArg(obj, cmd.iobj, iobjstr, iobj) ?: continue
+                    a1 = matchArg(cmd.dobj, dobjstr, dobj) ?: continue
+                    a2 = matchArg(cmd.iobj, iobjstr, iobj) ?: continue
                 }
                 return CommandMatch(cmd.verb, this, obj, buildList {
                     if (a1 != VVoid) add(a1)
