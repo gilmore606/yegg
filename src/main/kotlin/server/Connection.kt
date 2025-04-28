@@ -47,15 +47,11 @@ class Connection(private val sendText: (String) -> Unit) {
         val argstr = if (splits.size < 2) "" else splits[1]
         var dobjstr = argstr
         var iobjstr = ""
-        var prep: Preposition? = null
-        Preposition.entries.forEach { p ->
+        val prep = Preposition.entries.firstOrNull { p ->
             p.strings.firstOrNull { argstr.contains(it) }?.also { prepstr ->
-                if (prep == null) {
-                    prep = p
-                    dobjstr = argstr.substringBefore(prepstr).trimEnd(' ')
-                    iobjstr = argstr.substringAfter(prepstr).trimStart(' ')
-                }
-            }
+                dobjstr = argstr.substringBefore(prepstr).trimEnd(' ')
+                iobjstr = argstr.substringAfter(prepstr).trimStart(' ')
+            } != null
         }
 
         user?.also { user ->
@@ -70,7 +66,7 @@ class Connection(private val sendText: (String) -> Unit) {
             }
             val dobj = matchObj(dobjstr, user, scope)
             val iobj = matchObj(iobjstr, user, scope)
-            scope.forEach { target ->
+            for (target in scope) {
                 target.matchCommand(cmdstr, argstr, dobjstr, dobj, prep, iobjstr, iobj)?.also {
                     runCommand(it)
                     return
