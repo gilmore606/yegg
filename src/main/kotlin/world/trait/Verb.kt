@@ -34,6 +34,6 @@ class Verb(
         return r
     }
 
-    fun getListing() = code.dumpText()
+    fun getListing() = source
 
 }
