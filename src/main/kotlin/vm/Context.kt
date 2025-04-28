@@ -1,14 +1,13 @@
 package com.dlfsystems.vm
 
+import com.dlfsystems.server.Connection
+import com.dlfsystems.server.ConnectionID
 import com.dlfsystems.server.Yegg
-import com.dlfsystems.world.World
 import com.dlfsystems.value.*
-import com.dlfsystems.world.ObjID
-import com.dlfsystems.world.trait.TraitID
 
 // Properties of a single command invocation as it passes from verb to verb.
 
-class Context {
+class Context(val connection: Connection? = null) {
     class Call(
         val vThis: VObj,
         val vTrait: VTrait,
@@ -19,7 +18,7 @@ class Context {
     }
 
     var vThis: VObj = Yegg.vNullObj
-    var vUser: VObj = Yegg.vNullObj
+    var vUser: VObj = connection?.user?.vThis ?: Yegg.vNullObj
 
     var ticksLeft: Int = (Yegg.world.getSysValue("tickLimit") as VInt).v
     var callsLeft: Int = (Yegg.world.getSysValue("callLimit") as VInt).v
@@ -31,5 +30,5 @@ class Context {
     fun pop(): Call =
         callStack.removeFirst()
 
-    fun stackDump() = callStack.joinToString(separator = "\n...", postfix = "\n")
+    fun stackDump() = callStack.joinToString(prefix = "...", separator = "\n...", postfix = "\n")
 }

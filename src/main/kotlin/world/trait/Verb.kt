@@ -10,6 +10,12 @@ import com.dlfsystems.vm.VM
 import com.dlfsystems.vm.dumpText
 import kotlinx.serialization.Serializable
 
+// TODO:
+//   Refactor so compiled code is stored here, and
+//   vm is instanced in context.callstack with pointer to code.
+//   This will be needed when tasks are suspend-able and execution
+//   context needs to be preserved.
+
 @Serializable
 class Verb(
     val name: String,

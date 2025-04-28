@@ -7,6 +7,7 @@ import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -133,7 +134,7 @@ class VM(
                 }
                 O_JUMP -> {
                     val addr = next().address!!
-                    pc = addr
+                    if (addr >= 0) pc = addr else return VVoid  // Unresolved jump dest means end-of-code
                 }
                 O_RETURN -> {
                     if (stack.isEmpty()) fail(E_SYS, "no return value on stack!")
@@ -142,7 +143,7 @@ class VM(
                 }
                 O_RETURNNULL -> {
                     if (stack.isNotEmpty()) fail(E_SYS, "stack polluted on return!")
-                    return VVoid()
+                    return VVoid
                 }
                 O_FAIL -> {
                     val a = pop()
@@ -162,8 +163,8 @@ class VM(
                         a1.callVerb(c, a2.v, args)?.also { push(it) }
                             ?: fail(E_VERBNF, "verb not found")
                         c.callsLeft++
+                        ticksLeft = c.ticksLeft
                     } else fail(E_VERBNF, "verb name must be string")
-                    ticksLeft = c.ticksLeft
                 }
 
                 // Variable ops
@@ -222,7 +223,7 @@ class VM(
                 O_GETTRAIT -> {
                     val a1 = pop()
                     if (a1 is VString) {
-                        Yegg.world.getTrait(a1.v)?.also { push(VTrait(it.id)) }
+                        Yegg.world.getTrait(a1.v)?.also { push(it.vTrait) }
                             ?: fail (E_TRAITNF, "trait not found")
                     } else fail(E_TRAITNF, "trait name must be string")
                 }
@@ -288,18 +289,20 @@ class VM(
                 else -> fail(E_SYS, "unknown opcode $word")
             }
         }
-        return if (stack.isEmpty()) VVoid() else pop()
+        return if (stack.isEmpty()) VVoid else pop()
     }
 
 }
 
 // An atom of VM opcode memory.
 // Can hold an Opcode, a Value, or an int representing a memory address (for jumps).
-// TODO: rework this as a sealed class like Value
 @Serializable
 data class VMWord(
-    val lineNum: Int, val charNum: Int,
-    val opcode: Opcode? = null, val value: Value? = null, var address: Int? = null
+    @SerialName("l") val lineNum: Int,
+    @SerialName("c") val charNum: Int,
+    @SerialName("o") val opcode: Opcode? = null,
+    @SerialName("v") val value: Value? = null,
+    @SerialName("a") var address: Int? = null,
 ) {
     // In compilation, an address word may be written before the address it points to is known.
     // fillAddress is called to set it once calculated.
