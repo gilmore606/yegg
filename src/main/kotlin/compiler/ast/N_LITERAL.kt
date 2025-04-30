@@ -35,6 +35,7 @@ class N_LITERAL_STRING(val value: String): N_LITERAL() {
 }
 
 class N_LITERAL_LIST(val value: List<N_EXPR>): N_LITERAL() {
+    override fun kids() = value
     override fun toText() = value.joinToString(", ", "LIST[", "]")
     override fun code(coder: Coder) {
         value.forEach { it.code(coder) }
@@ -44,6 +45,7 @@ class N_LITERAL_LIST(val value: List<N_EXPR>): N_LITERAL() {
 }
 
 class N_LITERAL_MAP(val value: Map<N_EXPR, N_EXPR>): N_LITERAL() {
+    override fun kids() = (value.keys + value.values).toList()
     override fun toText() = value.keys.joinToString(", ", "MAP[", "]") { "$it: ${value[it]}" }
     override fun code(coder: Coder) {
         value.keys.forEach { key ->
