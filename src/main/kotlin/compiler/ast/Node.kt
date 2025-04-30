@@ -32,7 +32,7 @@ abstract class Node {
     open fun identify() { }
 
     // Generate opcodes for this node.
-    open fun code(code: Coder) { }
+    open fun code(coder: Coder) { }
 
     companion object {
         fun makeID() = NodeID(Yegg.newID())
