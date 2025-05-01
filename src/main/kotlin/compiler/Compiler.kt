@@ -53,6 +53,7 @@ object Compiler {
             val verb = Verb("eval", Yegg.world.sys.id).apply {
                 code = cOut.code
                 symbols = cOut.symbols
+                entryPoints = cOut.entryPoints
             }
             val vmOut = verb.call(c, Yegg.vNullObj, Yegg.world.sys.vTrait, listOf()).toString()
             return if (verbose) dumpText(cOut.tokens, cOut.ast, cOut.code, vmOut) else vmOut

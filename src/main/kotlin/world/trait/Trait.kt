@@ -60,11 +60,11 @@ sealed class Trait(val name: String) {
         commands.removeIf { it.spec == spec }
     }
 
-    fun programVerb(verbName: String, cOut: Compiler.Result) {
+    fun programVerb(verbName: String, source: String) {
         verbs[verbName]?.also {
-            it.program(cOut)
+            it.program(source)
         } ?: run {
-            verbs[verbName] = Verb(verbName, id).apply { program(cOut) }
+            verbs[verbName] = Verb(verbName, id).apply { program(source) }
         }
     }
 

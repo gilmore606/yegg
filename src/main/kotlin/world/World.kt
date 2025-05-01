@@ -91,9 +91,8 @@ data class World(val name: String) {
     fun programVerb(traitName: String, name: String, code: String): String {
         getTrait(traitName)?.also { trait ->
             try {
-                val cOut = Compiler.compile(code)
-                trait.programVerb(name, cOut)
-                return "programmed \$${traitName}.${name} (${cOut.code.size} words)"
+                trait.programVerb(name, code)
+                return "programmed \$${traitName}.${name}"
             } catch (e: Exception) {
                 return "compile error: $e"
             }

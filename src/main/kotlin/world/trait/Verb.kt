@@ -22,11 +22,9 @@ class Verb(
     @Transient var symbols: Map<String, Int> = mapOf()
     @Transient var entryPoints: List<Int> = listOf()
 
-    fun program(cOut: Compiler.Result) {
-        source = cOut.source
-        code = cOut.code
-        symbols = cOut.symbols
-        entryPoints = cOut.entryPoints
+    fun program(source: String) {
+        this.source = source
+        recompile()
         Log.i("programmed $name with code ${code.dumpText()}")
     }
 
@@ -45,6 +43,7 @@ class Verb(
         Compiler.compile(source).also {
             code = it.code
             symbols = it.symbols
+            entryPoints = it.entryPoints
         }
     }
 
