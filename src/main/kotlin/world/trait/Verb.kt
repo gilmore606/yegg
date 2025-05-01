@@ -17,7 +17,7 @@ class Verb(
     val name: String,
     val traitID: TraitID,
 ) {
-    private var source = ""
+    var source = ""
     @Transient var code: List<VMWord> = listOf()
     @Transient var symbols: Map<String, Int> = mapOf()
     @Transient var entryPoints: List<Int> = listOf()
@@ -29,15 +29,13 @@ class Verb(
     }
 
     fun call(c: Context, vThis: VObj, vTrait: VTrait, args: List<Value>): Value {
-        if (source.isNotEmpty() && code.isEmpty()) recompile()
+        if (code.isEmpty()) recompile()
         val vm = VM(this)
         c.push(vThis, vTrait, name, args, vm)
         val r = vm.execute(c, args)
         c.pop()
         return r
     }
-
-    fun getListing() = source
 
     private fun recompile() {
         Compiler.compile(source).also {

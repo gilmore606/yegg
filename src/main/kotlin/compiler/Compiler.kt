@@ -47,24 +47,19 @@ object Compiler {
 
     fun eval(c: Context, source: String, verbose: Boolean = false): String {
         Log.d("eval: $source")
-        var cOut: Result? = null
+        var verb: Verb? = null
         try {
-            cOut = compile(source)
-            val verb = Verb("eval", Yegg.world.sys.id).apply {
-                code = cOut.code
-                symbols = cOut.symbols
-                entryPoints = cOut.entryPoints
-            }
+            verb = Verb("eval", Yegg.world.sys.id).apply { program(source) }
             val vmOut = verb.call(c, Yegg.vNullObj, Yegg.world.sys.vTrait, listOf()).toString()
-            return if (verbose) dumpText(cOut.tokens, cOut.ast, cOut.code, vmOut) else vmOut
+            return if (verbose) dumpText(verb.code, vmOut) else vmOut
         } catch (e: CompileException) {
-            return if (verbose) dumpText(e.tokens, e.ast, e.code, "") else e.toString()
+            return if (verbose) dumpText(verb?.code, "") else e.toString()
         } catch (e: Exception) {
-            return if (verbose) dumpText(cOut?.tokens, cOut?.ast, cOut?.code, "") else "$e\n${c.stackDump()}"
+            return if (verbose) dumpText(verb?.code, "") else "$e\n${c.stackDump()}"
         }
     }
 
-    private fun dumpText(tokens: List<Token>?, ast: Node?, code: List<VMWord>?, result: String?): String =
-        "TOKENS:\n${tokens}\n\nNODES:\n${ast}\n\nCODE:\n${code?.dumpText()}\nRESULT:\n$result\n"
+    private fun dumpText(code: List<VMWord>?, result: String?): String =
+        "CODE:\n${code?.dumpText()}\nRESULT:\n$result\n"
 
 }

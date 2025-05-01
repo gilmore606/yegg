@@ -1,5 +1,6 @@
 package com.dlfsystems.value
 
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.TraitID
 import kotlinx.serialization.SerialName
@@ -16,7 +17,7 @@ data class VFun(
 
     @SerialName("yType")
     override val type = Type.FUN
-    override fun toString() = "VFUN"
+    override fun toString() = "\$${Yegg.world.getTrait(traitID)?.name ?: "INVALID"}.$name#$entryPoint()"
     override fun asString() = toString()
 
     override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
@@ -27,6 +28,7 @@ data class VFun(
     }
 
     private fun verbInvoke(args: List<Value>): Value {
+        // TODO: invoke that shit
         return VVoid
     }
 

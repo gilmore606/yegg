@@ -1,7 +1,6 @@
 package com.dlfsystems.world
 
 import com.dlfsystems.server.Yegg
-import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.value.*
 import com.dlfsystems.world.trait.*
 import kotlinx.serialization.Serializable
@@ -102,7 +101,7 @@ data class World(val name: String) {
 
     fun listVerb(traitName: String, name: String): String {
         getTrait(traitName)?.also { trait ->
-            trait.verbs[name]?.also { return it.getListing() }
+            trait.verbs[name]?.also { return it.source }
                 ?: return "ERR: verb not found $name"
         }
         return "ERR: unknown trait $traitName"
