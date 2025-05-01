@@ -516,11 +516,34 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse: (<expr>)
     private fun pParens(): N_EXPR? {
+        val next = this::pLambdaFun
         consume(T_PAREN_OPEN)?.also {
             pExpression()?.also { expr ->
                 expectCloseParen()
                 return node(N_PARENS(expr))
             } ?: fail("non-expressions in parens")
+        }
+        return next()
+    }
+
+    // Parse lambda: { var, var -> ... } or { ... }
+    private fun pLambdaFun(): N_EXPR? {
+        consume(T_BRACE_OPEN)?.also {
+            var done = false
+            val args = mutableListOf<N_IDENTIFIER>()
+            while (!done) {
+                done = true
+                consume(T_IDENTIFIER)?.also { args.add(N_IDENTIFIER(it.string)) }
+                consume(T_COMMA)?.also { done = false }
+            }
+            if (args.isNotEmpty()) consume(T_ARROW) ?: fail("missing arrow after function literal var declaration")
+            val code = mutableListOf<N_STATEMENT>()
+            while (!nextIs(T_BRACE_CLOSE)) {
+                pStatement()?.also { code.add(it) } ?: fail("non-statement in braces")
+            }
+            consume(T_BRACE_CLOSE)?.also {
+                return node(N_LITERAL_FUN(args, N_BLOCK(code)))
+            } ?: fail("missing close brace on function literal")
         }
         return null
     }

@@ -64,7 +64,7 @@ sealed class Trait(val name: String) {
         verbs[verbName]?.also {
             it.program(cOut)
         } ?: run {
-            verbs[verbName] = Verb(verbName).apply { program(cOut) }
+            verbs[verbName] = Verb(verbName, id).apply { program(cOut) }
         }
     }
 

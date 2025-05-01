@@ -3,8 +3,8 @@ package com.dlfsystems.compiler
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.ast.Node
-import com.dlfsystems.value.VString
 import com.dlfsystems.vm.*
+import com.dlfsystems.world.trait.Verb
 
 object Compiler {
 
@@ -14,6 +14,7 @@ object Compiler {
         val symbols: Map<String, Int>,
         val tokens: List<Token>,
         val ast: Node,
+        val entryPoints: List<Int>,
     )
 
     fun compile(source: String): Result {
@@ -21,6 +22,7 @@ object Compiler {
         var code: List<VMWord>? = null
         var ast: Node? = null
         var symbols: Map<String, Int>? = null
+        var entryPoints: List<Int>? = null
         try {
             // Stage 1: Lex source into tokens.
             tokens = Lexer(source).lex()
@@ -31,8 +33,10 @@ object Compiler {
             ast = shaker.shake()
             symbols = shaker.symbols
             // Stage 4: Generate VM opcodes.
-            code = Coder(ast).generate()
-            return Result(source, code, symbols, tokens, ast)
+            val coder = Coder(ast).apply { generate() }
+            code = coder.mem
+            entryPoints = coder.entryPoints
+            return Result(source, code, symbols, tokens, ast, entryPoints)
         } catch (e: CompileException) {
             throw e.withInfo(code, symbols, tokens, ast)
         } catch (e: Exception) {
@@ -41,15 +45,16 @@ object Compiler {
         }
     }
 
-    fun eval(c: Context, code: String, verbose: Boolean = false): String {
-        Log.d("eval: $code")
+    fun eval(c: Context, source: String, verbose: Boolean = false): String {
+        Log.d("eval: $source")
         var cOut: Result? = null
         try {
-            cOut = compile(code)
-            val vm = VM(cOut.code, cOut.symbols)
-            c.push(Yegg.vNullObj, Yegg.vNullTrait, "(eval)", listOf(VString(code)), vm)
-            Log.d("  opcodes: \n${cOut.code.dumpText()}")
-            val vmOut = vm.execute(c).toString()
+            cOut = compile(source)
+            val verb = Verb("eval", Yegg.world.sys.id).apply {
+                code = cOut.code
+                symbols = cOut.symbols
+            }
+            val vmOut = verb.call(c, Yegg.vNullObj, Yegg.world.sys.vTrait, listOf()).toString()
             return if (verbose) dumpText(cOut.tokens, cOut.ast, cOut.code, vmOut) else vmOut
         } catch (e: CompileException) {
             return if (verbose) dumpText(e.tokens, e.ast, e.code, "") else e.toString()
