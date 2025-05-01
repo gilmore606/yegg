@@ -31,8 +31,6 @@ object Yegg {
     private val connections = mutableSetOf<Connection>()
     val connectedUsers = mutableMapOf<Obj, Connection>()
 
-    var serializeWithCode = true
-
     fun newID() = NanoId.generateOptimized(8, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 61, 16)
 
     fun start() {
@@ -90,10 +88,9 @@ object Yegg {
         connections.firstOrNull { it.id.id == connID }?.sendText(text)
     }
 
-    fun dumpDatabase(withCode: Boolean = true): String {
-        serializeWithCode = withCode
+    fun dumpDatabase(): String {
         val file = File("${world.name}.yegg")
-        Log.i(if (withCode) "Dumping database..." else "Dumping database (without compiled code)...")
+        Log.i("Dumping database...")
         try {
             file.writeText(JSON.encodeToString(world))
         } catch (e: Exception) {
