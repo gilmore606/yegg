@@ -38,7 +38,9 @@ class VM(val verb: Verb) {
     // Given a Context and args, execute each word of the input code starting from pc=0.
     // Mutate the stack and variables as we go.
     // Return back a Value (VVoid if no explicit return).
-    fun execute(c: Context, args: List<Value> = listOf()): Value {
+    fun execute(c: Context, args: List<Value> = listOf(), entryPoint: Int? = null): Value {
+        pc = entryPoint?.let { verb.entryPoints[it] } ?: 0
+
         initVar("args", VList.make(args))
         initVar("this", c.vThis)
         initVar("user", c.vUser)
@@ -53,7 +55,6 @@ class VM(val verb: Verb) {
     private fun initVar(name: String, value: Value) { verb.symbols[name]?.also { variables[it] = value } }
 
     private fun executeCode(c: Context): Value {
-        pc = 0
         val stackLimit = Yegg.world.getSysInt("stackLimit")
         var ticksLeft = c.ticksLeft
         while (pc < verb.code.size) {
@@ -95,7 +96,7 @@ class VM(val verb: Verb) {
                     val args = mutableListOf<String>()
                     repeat (count) { args.add((pop() as VString).v) }
                     // TODO: capture referenced variables from our scope
-                    push(VFun(verb.name, verb.traitID, entryPointIndex, args))
+                    push(VFun(verb.name, verb.traitID, c.vThis, entryPointIndex, args))
                 }
 
                 // Index/range ops

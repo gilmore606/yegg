@@ -2,8 +2,8 @@ package com.dlfsystems.world.trait
 
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.VObj
-import com.dlfsystems.value.VTrait
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VM
@@ -28,11 +28,11 @@ class Verb(
         Log.i("programmed $name with code ${code.dumpText()}")
     }
 
-    fun call(c: Context, vThis: VObj, vTrait: VTrait, args: List<Value>): Value {
+    fun call(c: Context, vThis: VObj, args: List<Value>, entryPoint: Int? = null): Value {
         if (code.isEmpty()) recompile()
         val vm = VM(this)
-        c.push(vThis, vTrait, name, args, vm)
-        val r = vm.execute(c, args)
+        c.push(vThis, Yegg.world.getTrait(traitID)!!.vTrait, name, args, vm)
+        val r = vm.execute(c, args, entryPoint)
         c.pop()
         return r
     }

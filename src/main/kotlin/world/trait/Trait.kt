@@ -86,7 +86,7 @@ sealed class Trait(val name: String) {
 
     open fun callVerb(c: Context, verbName: String, args: List<Value>): Value? {
         verbs[verbName]?.also {
-            return it.call(c, c.vThis, vTrait, args)
+            return it.call(c, c.vThis, args)
         }
         return null
     }

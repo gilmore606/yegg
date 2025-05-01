@@ -50,7 +50,7 @@ object Compiler {
         var verb: Verb? = null
         try {
             verb = Verb("eval", Yegg.world.sys.id).apply { program(source) }
-            val vmOut = verb.call(c, Yegg.vNullObj, Yegg.world.sys.vTrait, listOf()).toString()
+            val vmOut = verb.call(c, Yegg.vNullObj, listOf()).toString()
             return if (verbose) dumpText(verb.code, vmOut) else vmOut
         } catch (e: CompileException) {
             return if (verbose) dumpText(verb?.code, "") else e.toString()
