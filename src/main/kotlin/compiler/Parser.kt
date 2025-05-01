@@ -13,14 +13,19 @@ class Parser(inputTokens: List<Token>) {
     private val tokens = inputTokens.toMutableList()
 
     // Track line and char position as we go, to tag nodes for tracebacks.
-    private inline fun lineNum() = if (tokens.isEmpty()) 0 else tokens[0].lineNum
-    private inline fun charNum() = if (tokens.isEmpty()) 0 else tokens[0].charNum
-    private inline fun EOF() = Token(T_EOF, "", lineNum(), charNum())
-    private inline fun fail(m: String) { throw CompileException(m, lineNum(), charNum()) }
+    private var lineNum: Int = 0
+    private var charNum: Int = 0
+
+    private inline fun EOF() = Token(T_EOF, "", lineNum, charNum)
+    private inline fun fail(m: String) { throw CompileException(m, lineNum, charNum) }
     private inline fun expectCloseParen() { consume(T_PAREN_CLOSE) ?: fail("unclosed parentheses") }
 
     // Pull the next token from the input stream.
-    private inline fun consume() = if (tokens.isEmpty()) EOF() else tokens.removeAt(0)
+    private inline fun consume() = (if (tokens.isEmpty()) EOF() else tokens.removeAt(0)).also {
+        lineNum = it.lineNum
+        charNum = it.charNum
+    }
+
     // Pull the next token if of the given type, else return null.
     private inline fun consume(vararg types: TokenType) = if (nextIs(types.toList())) consume() else null
 
@@ -40,8 +45,8 @@ class Parser(inputTokens: List<Token>) {
 
     // Tag returned nodes with the current lineNum and charNum for tracebacks.
     private inline fun <T: Node>node(n: T): T = n.apply {
-        lineNum = lineNum()
-        charNum = charNum()
+        lineNum = this@Parser.lineNum
+        charNum = this@Parser.charNum
     }
 
     //

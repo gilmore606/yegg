@@ -15,7 +15,7 @@ sealed class Value {
     abstract val type: Type
 
     // utility func for throwing a runtime exception
-    fun fail(type: VMException.Type, m: String) { throw VMException(type, m, 0, 0) } // TODO: get line+char here somehow
+    fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
     // utility func for throwing E_RANGE on incorrect arg count
     fun requireArgCount(args: List<Value>, min: Int, max: Int) {
         if (args.size < min || args.size > max) fail(VMException.Type.E_RANGE, "incorrect number of args")

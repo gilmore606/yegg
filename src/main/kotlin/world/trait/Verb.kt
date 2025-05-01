@@ -7,35 +7,42 @@ import com.dlfsystems.value.VTrait
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VM
+import com.dlfsystems.vm.VMWord
 import com.dlfsystems.vm.dumpText
 import kotlinx.serialization.Serializable
-
-// TODO:
-//   Refactor so compiled code is stored here, and
-//   vm is instanced in context.callstack with pointer to code.
-//   This will be needed when tasks are suspend-able and execution
-//   context needs to be preserved.
+import kotlinx.serialization.Transient
 
 @Serializable
 class Verb(
     val name: String,
 ) {
-    private var vm = VM()
     private var source = ""
+    @Transient private var code: List<VMWord> = listOf()
+    @Transient private var symbols: Map<String, Int> = mapOf()
 
     fun program(cOut: Compiler.Result) {
         source = cOut.source
-        vm = VM(cOut.code, cOut.symbols)
-        Log.d("programmed $name with code ${vm.dumpText()}")
+        code = cOut.code
+        symbols = cOut.symbols
+        Log.i("programmed $name with code ${code.dumpText()}")
     }
 
     fun call(c: Context, vThis: VObj, vTrait: VTrait, args: List<Value>): Value {
-        c.push(vThis, vTrait, name, args)
+        if (source.isNotEmpty() && code.isEmpty()) recompile()
+        val vm = VM(code, symbols)
+        c.push(vThis, vTrait, name, args, vm)
         val r = vm.execute(c, args)
         c.pop()
         return r
     }
 
-    fun getListing() = vm.dumpText()
+    fun getListing() = source
+
+    private fun recompile() {
+        Compiler.compile(source).also {
+            code = it.code
+            symbols = it.symbols
+        }
+    }
 
 }

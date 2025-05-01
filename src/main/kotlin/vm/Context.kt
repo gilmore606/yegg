@@ -13,20 +13,21 @@ class Context(val connection: Connection? = null) {
         val vTrait: VTrait,
         val verb: String,
         val args: List<Value>,
+        val vm: VM,
     ) {
-        override fun toString() = "$vThis $vTrait.$verb(${args.joinToString(",")})"
+        override fun toString() = "$vThis $vTrait.$verb(${args.joinToString(",")})  (line ${vm.lineNum})"
     }
 
     var vThis: VObj = Yegg.vNullObj
     var vUser: VObj = connection?.user?.vThis ?: Yegg.vNullObj
 
-    var ticksLeft: Int = (Yegg.world.getSysValue("tickLimit") as VInt).v
-    var callsLeft: Int = (Yegg.world.getSysValue("callLimit") as VInt).v
+    var ticksLeft: Int = Yegg.world.getSysInt("tickLimit")
+    var callsLeft: Int = Yegg.world.getSysInt("callLimit")
     val callStack = ArrayDeque<Call>()
 
     // Push or pop the callstack.
-    fun push(vThis: VObj, vTrait: VTrait, verb: String, args: List<Value>) =
-        callStack.addFirst(Call(vThis, vTrait, verb, args))
+    fun push(vThis: VObj, vTrait: VTrait, verb: String, args: List<Value>, vm: VM) =
+        callStack.addFirst(Call(vThis, vTrait, verb, args, vm))
     fun pop(): Call =
         callStack.removeFirst()
 

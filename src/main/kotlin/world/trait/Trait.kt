@@ -1,7 +1,6 @@
 package com.dlfsystems.world.trait
 
 import com.dlfsystems.server.Yegg
-import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.server.Command
 import com.dlfsystems.server.Command.Arg
@@ -87,7 +86,6 @@ sealed class Trait(val name: String) {
 
     open fun callVerb(c: Context, verbName: String, args: List<Value>): Value? {
         verbs[verbName]?.also {
-            Log.i("static verb call: \$$name.$verbName($args)")
             return it.call(c, c.vThis, vTrait, args)
         }
         return null

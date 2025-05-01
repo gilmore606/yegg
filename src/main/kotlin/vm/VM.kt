@@ -9,32 +9,25 @@ import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 // A stack machine for executing a verb.
 
-@Serializable
 class VM(
     private val code: List<VMWord> = listOf(),
     private val symbols: Map<String, Int> = mapOf()
 ) {
 
-    fun dumpText() = code.dumpText()
-
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
     // The local stack.
-    @Transient
     private val stack = ArrayDeque<Value>()
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
     // Preserve error position.
-    private val lineNum: Int
-        get() = code.getOrNull(pc)?.lineNum ?: 0
-    private val charNum: Int
-        get() = code.getOrNull(pc)?.charNum ?: 0
-    private fun fail(type: VMException.Type, m: String) { throw VMException(type, m, lineNum, charNum) }
+    var lineNum: Int = 0
+    var charNum: Int = 0
+    private fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
 
     private inline fun push(v: Value) = stack.addFirst(v)
     private inline fun peek() = stack.first()
@@ -48,33 +41,22 @@ class VM(
     // Mutate the stack and variables as we go.
     // Return back a Value (VVoid if no explicit return).
     fun execute(c: Context, args: List<Value> = listOf()): Value {
-        // Intercept success or failure, so we get to clean up either way.
-        var returnValue: Value? = null
-        var exception: Exception? = null
+        initVar("args", VList.make(args))
+        initVar("this", c.vThis)
+        initVar("user", c.vUser)
+
         try {
-            initVar("args", VList.make(args))
-            initVar("this", c.vThis)
-            initVar("user", c.vUser)
-            returnValue = executeCode(c)
+            return executeCode(c)
         } catch (e: Exception) {
-            exception = e as? VMException ?: VMException(E_SYS, e.message ?: "???", lineNum, charNum)
+            throw (e as? VMException ?: VMException(E_SYS, e.message ?: e.stackTraceToString())).withLocation(lineNum, charNum)
         }
-        // Win or lose, we clean up after.
-        stack.clear()
-        variables.clear()
-        // Then we succeed or fail.
-        exception?.also { throw it }
-        return returnValue!!
     }
 
-    // Initialize a variable to a value before execution.
-    private fun initVar(name: String, value: Value) {
-        symbols[name]?.also { variables[it] = value }
-    }
+    private fun initVar(name: String, value: Value) { symbols[name]?.also { variables[it] = value } }
 
     private fun executeCode(c: Context): Value {
         pc = 0
-        val stackLimit = (Yegg.world.getSysValue("stackLimit") as VInt).v
+        val stackLimit = Yegg.world.getSysInt("stackLimit")
         var ticksLeft = c.ticksLeft
         while (pc < code.size) {
 
@@ -83,6 +65,9 @@ class VM(
             if (c.callsLeft < 1) fail(E_MAXREC, "call depth exceeded")
 
             val word = next()
+            lineNum = word.lineNum
+            charNum = word.charNum
+
             when (word.opcode) {
 
                 O_DISCARD -> {
