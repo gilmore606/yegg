@@ -10,6 +10,7 @@ import com.dlfsystems.vm.VM
 import com.dlfsystems.vm.VMWord
 import com.dlfsystems.vm.dumpText
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 class Verb(
