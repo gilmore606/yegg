@@ -35,29 +35,37 @@ class VM(val verb: Verb) {
     private inline fun popFour() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
     private inline fun next() = verb.code[pc++]
 
-    // Given a Context and args, execute each word of the input code starting from pc=0.
-    // Mutate the stack and variables as we go.
-    // Return back a Value (VVoid if no explicit return).
-    fun execute(c: Context, args: List<Value> = listOf(), entryPoint: Int? = null, withVars: Map<String, Value>? = null): Value {
+    fun execute(
+        c: Context,
+        args: List<Value> = listOf(),
+        entryPoint: Int? = null,
+        withVars: Map<String, Value>? = null
+    ): Value {
+
         pc = entryPoint?.let { verb.entryPoints[it] } ?: 0
 
+        withVars?.forEach { (name, value) -> initVar(name, value) }
         initVar("args", VList.make(args))
         initVar("this", c.vThis)
         initVar("user", c.vUser)
-        withVars?.onEach { (name, value) -> initVar(name, value) }
 
         try {
             return executeCode(c)
         } catch (e: Exception) {
-            throw (e as? VMException ?: VMException(E_SYS, e.message ?: e.stackTraceToString())).withLocation(lineNum, charNum)
+            throw (e as? VMException ?: VMException(E_SYS, e.message ?: e.stackTraceToString()))
+                .withLocation(lineNum, charNum)
         }
     }
 
-    private fun initVar(name: String, value: Value) { verb.symbols[name]?.also { variables[it] = value } }
+    private fun initVar(name: String, value: Value) {
+        verb.symbols[name]?.also { variables[it] = value }
+    }
 
     private fun executeCode(c: Context): Value {
+
         val stackLimit = Yegg.world.getSysInt("stackLimit")
         var ticksLeft = c.ticksLeft
+
         while (pc < verb.code.size) {
 
             if (--ticksLeft < 0) fail(E_LIMIT, "tick limit exceeded")
@@ -92,12 +100,23 @@ class VM(val verb: Verb) {
                     push(VMap(entries))
                 }
                 O_FUNVAL -> {
-                    val count = next().intFromV
+                    val argCount = next().intFromV
+                    val varCount = next().intFromV
                     val entryPointIndex = next().intFromV
+                    val vars = mutableMapOf<String, Value>()
+                    repeat (varCount) {
+                        val varName = (pop() as VString).v
+                        verb.symbols[varName]?.also {
+                            variables[it]?.also {
+                                vars[varName] = it
+                            }
+                        }
+                    }
                     val args = mutableListOf<String>()
-                    repeat (count) { args.add((pop() as VString).v) }
-                    // TODO: capture referenced variables from our scope
-                    push(VFun(verb.name, verb.traitID, c.vThis, entryPointIndex, args))
+                    repeat (argCount) {
+                        args.add(0, (pop() as VString).v)
+                    }
+                    push(VFun(verb.name, verb.traitID, c.vThis, entryPointIndex, args, vars))
                 }
 
                 // Index/range ops

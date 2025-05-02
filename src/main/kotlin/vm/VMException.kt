@@ -11,7 +11,7 @@ class VMException(val type: Type, val m: String): Exception() {
         return this
     }
 
-    override fun toString() = "$type: $m (at line $lineNum c$charNum)"
+    override fun toString() = "$type: $m\n" + ".".repeat(charNum) + "^\n"
 
     enum class Type {
 

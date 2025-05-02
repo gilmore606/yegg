@@ -31,6 +31,15 @@ abstract class Node {
     // Identify the type of any identifiers we point to.
     open fun identify() { }
 
+    // Collect all variable names under this node.
+    fun collectVars(): List<String> = buildList {
+        kids().forEach { addAll(it.collectVars()) }
+        variableName()?.also { add(it) }
+    }
+
+    // Return our name if we're an identifier for a variable.
+    open fun variableName(): String? = null
+
     // Generate opcodes for this node.
     open fun code(coder: Coder) { }
 

@@ -57,19 +57,25 @@ class N_LITERAL_MAP(val value: Map<N_EXPR, N_EXPR>): N_LITERAL() {
     }
 }
 
-class N_LITERAL_FUN(val args: List<N_IDENTIFIER>, val code: N_BLOCK): N_LITERAL() {
-    override fun kids() = listOf(code)
+class N_LITERAL_FUN(val args: List<N_IDENTIFIER>, val block: N_BLOCK): N_LITERAL() {
+    override fun kids() = listOf(block)
     override fun code(coder: Coder) {
         args.forEach {
             coder.code(this, O_VAL)
             coder.value(this, it.name)
         }
+        val vars = block.collectVars()
+        vars.forEach {
+            coder.code(this, O_VAL)
+            coder.value(this, it)
+        }
         coder.code(this, O_FUNVAL)
         coder.value(this, args.size)
+        coder.value(this, vars.size)
         coder.codeEntryPoint(this)
         coder.code(this, O_JUMP)
         coder.jumpForward(this, "skipFun$id")
-        code.code(coder)
+        block.code(coder)
         coder.code(this, O_RETURN)
         coder.setForwardJump(this, "skipFun$id")
     }

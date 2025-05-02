@@ -28,7 +28,11 @@ class Verb(
         Log.i("programmed $name with code ${code.dumpText()}")
     }
 
-    fun call(c: Context, vThis: VObj, args: List<Value>, entryPoint: Int? = null, withVars: Map<String, Value>? = null): Value {
+    fun call(
+        c: Context, vThis: VObj,
+        args: List<Value>, entryPoint: Int? = null,
+        withVars: Map<String, Value>? = null
+    ): Value {
         if (code.isEmpty()) recompile()
         val vm = VM(this)
         c.push(vThis, Yegg.world.getTrait(traitID)!!.vTrait, name, args, vm)
