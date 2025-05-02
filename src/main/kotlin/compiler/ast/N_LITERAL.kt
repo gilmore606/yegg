@@ -58,7 +58,7 @@ class N_LITERAL_MAP(val value: Map<N_EXPR, N_EXPR>): N_LITERAL() {
 }
 
 class N_LITERAL_FUN(val args: List<N_IDENTIFIER>, val block: N_BLOCK): N_LITERAL() {
-    override fun kids() = listOf(block)
+    override fun kids() = args + listOf(block)
     override fun code(coder: Coder) {
         args.forEach {
             coder.code(this, O_VAL)

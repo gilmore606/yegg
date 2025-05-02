@@ -1,7 +1,6 @@
 package com.dlfsystems.compiler
 
 import com.dlfsystems.server.Yegg
-import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.ast.Node
 import com.dlfsystems.vm.*
 import com.dlfsystems.world.trait.Verb
@@ -46,7 +45,6 @@ object Compiler {
     }
 
     fun eval(c: Context, source: String, verbose: Boolean = false): String {
-        Log.d("eval: $source")
         var verb: Verb? = null
         try {
             verb = Verb("eval", Yegg.world.sys.id).apply { program(source) }
