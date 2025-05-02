@@ -181,6 +181,18 @@ class VM(val verb: Verb) {
                         ticksLeft = c.ticksLeft
                     } else fail(E_VERBNF, "verb name must be string")
                 }
+                O_FUNCALL -> {
+                    val name = (next().value as VString).v
+                    val argCount = next().intFromV
+                    val args = mutableListOf<Value>()
+                    repeat (argCount) { args.add(0, pop()) }
+                    verb.symbols[name]?.also { variableID ->
+                        val subject = variables[variableID]
+                        if (subject is VFun) {
+                            push(subject.verbInvoke(c, args))
+                        } else fail(E_TYPE, "cannot invoke non-fun as fun")
+                    } ?: fail(E_VARNF, "no such fun or variable")
+                }
 
                 // Variable ops
 

@@ -34,7 +34,7 @@ data class VFun(
         return null
     }
 
-    private fun verbInvoke(c: Context, args: List<Value>): Value {
+    fun verbInvoke(c: Context, args: List<Value>): Value {
         getVerb()?.also { verb ->
             if ((args.size < argNames.size) || (args.size > argNames.size && args.size > 1))
                 fail(E_RANGE, "lambda wants ${argNames.size} args but got ${args.size}")

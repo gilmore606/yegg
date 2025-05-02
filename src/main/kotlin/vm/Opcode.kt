@@ -44,6 +44,9 @@ enum class Opcode(val argCount: Int = 0) {
     // Call verb with arg1 stack args.
     O_CALL(1),
 
+    // Call fun with arg1 name and arg2 stack args.
+    O_FUNCALL(2),
+
     // Push variable with ID arg1.
     O_GETVAR(1), // variable ID to fetch
 
