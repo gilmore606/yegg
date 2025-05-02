@@ -16,11 +16,11 @@ enum class Opcode(val argCount: Int = 0) {
     // Pop arg1 (as intval) pairs of stack values, and push a map of argX:argX+1.
     O_MAPVAL(1),
 
-    // Pop arg1 (as intval) strings as function arg names.
-    // Pop arg2 (as intval) strings as scope var names.
-    // arg3 contains the entryPoint index.
+    // Pop VList of string arg names.
+    // Pop VList of string scope var names.
+    // arg1 contains the entryPoint index.
     // Push VFun.
-    O_FUNVAL(3),
+    O_FUNVAL(1),
 
     // Push index result of pop0[pop1].
     O_GETI,

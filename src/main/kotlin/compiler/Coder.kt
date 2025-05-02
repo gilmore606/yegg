@@ -41,6 +41,8 @@ class Coder(val ast: Node) {
     fun value(from: Node, floatValue: Float) { value(from, VFloat(floatValue)) }
     fun value(from: Node, stringValue: String) { value(from, VString(stringValue)) }
     fun value(from: Node, objValue: ObjID) { value(from, VObj(objValue)) }
+    fun value(from: Node, listValue: List<Value>) { value(from, VList(listValue.toMutableList())) }
+    fun value(from: Node, mapValue: Map<Value, Value>) { value(from, VMap(mapValue.toMutableMap())) }
 
     // Record the entryPoint of a literal VFun.
     fun codeEntryPoint(from: Node) {

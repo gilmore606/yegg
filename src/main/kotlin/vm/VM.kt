@@ -100,23 +100,17 @@ class VM(val verb: Verb) {
                     push(VMap(entries))
                 }
                 O_FUNVAL -> {
-                    val argCount = next().intFromV
-                    val varCount = next().intFromV
                     val entryPointIndex = next().intFromV
-                    val vars = mutableMapOf<String, Value>()
-                    repeat (varCount) {
-                        val varName = (pop() as VString).v
-                        verb.symbols[varName]?.also {
-                            variables[it]?.also {
-                                vars[varName] = it
+                    // Capture variables from scope
+                    val withVars = buildMap {
+                        (pop() as VList).v.map { (it as VString).v }.forEach { varName ->
+                            verb.symbols[varName]?.also {
+                                variables[it]?.also { put(varName, it) }
                             }
                         }
                     }
-                    val args = mutableListOf<String>()
-                    repeat (argCount) {
-                        args.add(0, (pop() as VString).v)
-                    }
-                    push(VFun(verb.name, verb.traitID, c.vThis, entryPointIndex, args, vars))
+                    val args = (pop() as VList).v.map { (it as VString).v }
+                    push(VFun(verb.name, verb.traitID, c.vThis, entryPointIndex, args, withVars))
                 }
 
                 // Index/range ops
