@@ -38,12 +38,13 @@ class VM(val verb: Verb) {
     // Given a Context and args, execute each word of the input code starting from pc=0.
     // Mutate the stack and variables as we go.
     // Return back a Value (VVoid if no explicit return).
-    fun execute(c: Context, args: List<Value> = listOf(), entryPoint: Int? = null): Value {
+    fun execute(c: Context, args: List<Value> = listOf(), entryPoint: Int? = null, withVars: Map<String, Value>? = null): Value {
         pc = entryPoint?.let { verb.entryPoints[it] } ?: 0
 
         initVar("args", VList.make(args))
         initVar("this", c.vThis)
         initVar("user", c.vUser)
+        withVars?.onEach { (name, value) -> initVar(name, value) }
 
         try {
             return executeCode(c)

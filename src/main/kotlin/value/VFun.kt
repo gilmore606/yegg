@@ -15,7 +15,7 @@ data class VFun(
     val traitID: TraitID,
     val vThis: VObj,
     val entryPoint: Int,
-    val args: List<String>,
+    val argNames: List<String>,
 ): Value() {
 
     @SerialName("yType")
@@ -34,8 +34,12 @@ data class VFun(
 
     private fun verbInvoke(c: Context, args: List<Value>): Value {
         getVerb()?.also { verb ->
-            // TODO: pass args somehow
-            return verb.call(c, vThis, listOf(), entryPoint)
+            if ((args.size < argNames.size) || (args.size > argNames.size && args.size > 1))
+                fail(VMException.Type.E_RANGE, "lambda wants ${argNames.size} args but got ${args.size}")
+            val withVars = mutableMapOf<String, Value>()
+            argNames.forEachIndexed { n, name -> withVars[name] = args[n] }
+            if (argNames.isEmpty() && args.size == 1) withVars["it"] = args[0]
+            return verb.call(c, vThis, listOf(), entryPoint, withVars)
         } ?: fail(VMException.Type.E_SYS, "missing verb for VFun ($traitID.$name)")
         return VVoid
     }

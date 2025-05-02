@@ -28,11 +28,11 @@ class Verb(
         Log.i("programmed $name with code ${code.dumpText()}")
     }
 
-    fun call(c: Context, vThis: VObj, args: List<Value>, entryPoint: Int? = null): Value {
+    fun call(c: Context, vThis: VObj, args: List<Value>, entryPoint: Int? = null, withVars: Map<String, Value>? = null): Value {
         if (code.isEmpty()) recompile()
         val vm = VM(this)
         c.push(vThis, Yegg.world.getTrait(traitID)!!.vTrait, name, args, vm)
-        val r = vm.execute(c, args, entryPoint)
+        val r = vm.execute(c, args, entryPoint, withVars)
         c.pop()
         return r
     }
