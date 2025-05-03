@@ -4,6 +4,7 @@ package com.dlfsystems.compiler
 
 import com.dlfsystems.compiler.TokenType.*
 import com.dlfsystems.compiler.ast.*
+import com.dlfsystems.world.ObjID
 
 // Take a stream of input tokens from Lexer and produce a tree of syntax nodes.
 
@@ -525,6 +526,7 @@ class Parser(inputTokens: List<Token>) {
         consume(T_STRING)?.also { return node(N_LITERAL_STRING(it.string)) }
         consume(T_INTEGER)?.also { return node(N_LITERAL_INTEGER(it.string.toInt())) }
         consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }
+        consume(T_OBJREF)?.also { return node(N_LITERAL_OBJ(ObjID(it.string))) }
         consume(T_IDENTIFIER)?.also { return node(N_IDENTIFIER(it.string)) }
         consume(T_TRUE, T_FALSE)?.also { return node(N_LITERAL_BOOLEAN(it.type == T_TRUE)) }
         return next()
