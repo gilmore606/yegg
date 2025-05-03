@@ -73,3 +73,14 @@ class N_CONDITIONAL(val condition: N_EXPR, val eTrue: N_EXPR, val eFalse: N_EXPR
         coder.setForwardJump(this, "condFalse$id")
     }
 }
+
+// A function call: ident([arg, arg...])
+class N_FUNCALL(val name: N_IDENTIFIER, val args: List<N_EXPR>): N_EXPR() {
+    override fun kids() = listOf(name) + args
+    override fun code(coder: Coder) {
+        args.forEach { it.code(coder) }
+        coder.code(this, O_FUNCALL)
+        coder.value(this, name.name)
+        coder.value(this, args.size)
+    }
+}

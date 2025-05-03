@@ -19,6 +19,8 @@ class N_IDENTIFIER(val name: String): N_EXPR() {
 
     override fun toText() = "$name"
 
+    override fun variableName() = if (isVariable()) name else null
+
     override fun code(coder: Coder) {
         when (type) {
             Type.VARIABLE -> {

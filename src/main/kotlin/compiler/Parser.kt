@@ -374,7 +374,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse (as expression): if <expr> <expr> else <expr>
     private fun pIfElse(): N_EXPR? {
-        val next = this::pReference
+        val next = this::pFuncall
         consume(T_IF)?.also {
             pExpression()?.also { condition ->
                 pExpression()?.also { eThen ->
@@ -385,6 +385,18 @@ class Parser(inputTokens: List<Token>) {
                     } ?: fail("expected else in if expression")
                 } ?: fail("missing expression")
             } ?: fail("missing condition")
+        }
+        return next()
+    }
+
+    // Parse a bare function call: ident([arg, arg...])
+    private fun pFuncall(): N_EXPR? {
+        val next = this::pReference
+        if (nextAre(T_IDENTIFIER, T_PAREN_OPEN)) {
+            consume(T_IDENTIFIER)?.also {
+                consume(T_PAREN_OPEN)
+                return node(N_FUNCALL(node(N_IDENTIFIER(it.string)), pArglist()))
+            }
         }
         return next()
     }
@@ -414,16 +426,7 @@ class Parser(inputTokens: List<Token>) {
             var newLeft = left
             pStringSub()?.also { right ->
                 consume(T_PAREN_OPEN)?.also {
-                    val args = mutableListOf<N_EXPR>()
-                    var moreArgs = true
-                    while (moreArgs) {
-                        pExpression()?.also { arg ->
-                            args.add(arg)
-                            consume(T_COMMA) ?: run { moreArgs = false }
-                        } ?: run { moreArgs = false }
-                    }
-                    expectCloseParen()
-                    newLeft = node(N_VERBREF(left, right, args))
+                    newLeft = node(N_VERBREF(left, right, pArglist()))
                 } ?: run {
                     newLeft = node(N_PROPREF(left, right))
                 }
@@ -442,6 +445,18 @@ class Parser(inputTokens: List<Token>) {
             }
         }
         return left
+    }
+
+    // Parse a list of comma-separated arg expressions, including close (but not initial open) paren.
+    private fun pArglist(): List<N_EXPR> = buildList {
+        var moreArgs = true
+        while (moreArgs) {
+            pExpression()?.also { arg ->
+                add(arg)
+                consume(T_COMMA) ?: run { moreArgs = false }
+            } ?: run { moreArgs = false }
+        }
+        expectCloseParen()
     }
 
     // Parse a trait reference: $<expr>
@@ -516,11 +531,34 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse: (<expr>)
     private fun pParens(): N_EXPR? {
+        val next = this::pLambdaFun
         consume(T_PAREN_OPEN)?.also {
             pExpression()?.also { expr ->
                 expectCloseParen()
                 return node(N_PARENS(expr))
             } ?: fail("non-expressions in parens")
+        }
+        return next()
+    }
+
+    // Parse lambda: { var, var -> ... } or { ... }
+    private fun pLambdaFun(): N_EXPR? {
+        consume(T_BRACE_OPEN)?.also {
+            var done = false
+            val args = mutableListOf<N_IDENTIFIER>()
+            while (!done) {
+                done = true
+                consume(T_IDENTIFIER)?.also { args.add(N_IDENTIFIER(it.string)) }
+                consume(T_COMMA)?.also { done = false }
+            }
+            if (args.isNotEmpty()) consume(T_ARROW) ?: fail("missing arrow after function literal var declaration")
+            val code = mutableListOf<N_STATEMENT>()
+            while (!nextIs(T_BRACE_CLOSE)) {
+                pStatement()?.also { code.add(it) } ?: fail("non-statement in braces")
+            }
+            consume(T_BRACE_CLOSE)?.also {
+                return node(N_LITERAL_FUN(args, N_BLOCK(code)))
+            } ?: fail("missing close brace on function literal")
         }
         return null
     }

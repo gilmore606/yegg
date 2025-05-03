@@ -1,6 +1,7 @@
 package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
+import com.dlfsystems.value.VString
 import com.dlfsystems.vm.Opcode.*
 
 // A literal value appearing in code.
@@ -35,6 +36,7 @@ class N_LITERAL_STRING(val value: String): N_LITERAL() {
 }
 
 class N_LITERAL_LIST(val value: List<N_EXPR>): N_LITERAL() {
+    override fun kids() = value
     override fun toText() = value.joinToString(", ", "LIST[", "]")
     override fun code(coder: Coder) {
         value.forEach { it.code(coder) }
@@ -44,6 +46,7 @@ class N_LITERAL_LIST(val value: List<N_EXPR>): N_LITERAL() {
 }
 
 class N_LITERAL_MAP(val value: Map<N_EXPR, N_EXPR>): N_LITERAL() {
+    override fun kids() = (value.keys + value.values).toList()
     override fun toText() = value.keys.joinToString(", ", "MAP[", "]") { "$it: ${value[it]}" }
     override fun code(coder: Coder) {
         value.keys.forEach { key ->
@@ -52,5 +55,22 @@ class N_LITERAL_MAP(val value: Map<N_EXPR, N_EXPR>): N_LITERAL() {
         }
         coder.code(this, O_MAPVAL)
         coder.value(this, value.size)
+    }
+}
+
+class N_LITERAL_FUN(val args: List<N_IDENTIFIER>, val block: N_BLOCK): N_LITERAL() {
+    override fun kids() = args + listOf(block)
+    override fun code(coder: Coder) {
+        coder.code(this, O_VAL)
+        coder.value(this, args.map { VString(it.name) })
+        coder.code(this, O_VAL)
+        coder.value(this, block.collectVars().map { VString(it) })
+        coder.code(this, O_FUNVAL)
+        coder.codeEntryPoint(this)
+        coder.code(this, O_JUMP)
+        coder.jumpForward(this, "skipFun$id")
+        block.code(coder)
+        coder.code(this, O_RETURN)
+        coder.setForwardJump(this, "skipFun$id")
     }
 }

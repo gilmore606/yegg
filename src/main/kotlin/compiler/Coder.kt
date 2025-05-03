@@ -9,20 +9,22 @@ import com.dlfsystems.world.ObjID
 
 class Coder(val ast: Node) {
 
-    private val mem = ArrayList<VMWord>()
+    var mem = mutableListOf<VMWord>()
 
     // Addresses to be filled in with a named jump point once coded.
-    private val forwardJumps = HashMap<String, MutableSet<Int>>()
+    val forwardJumps = HashMap<String, MutableSet<Int>>()
     // Addresses stored to be used as future jump destinations.
-    private val backJumps = HashMap<String, Int>()
+    val backJumps = HashMap<String, Int>()
+    // Entry points to literal VFuns.
+    val entryPoints = mutableListOf<Int>()
 
     fun last() = if (mem.isEmpty()) null else mem[mem.size - 1]
 
     // Compile the AST into a list of opcodes, by recursively asking the nodes to code themselves.
     // Nodes will then call Coder.code() and Coder.value() to output their compiled code.
-    fun generate(): List<VMWord> {
+    fun generate() {
         ast.code(this)
-        return Optimizer(mem).optimize()
+        Optimizer(this).optimize()
     }
 
     // Write an opcode into memory.
@@ -39,6 +41,14 @@ class Coder(val ast: Node) {
     fun value(from: Node, floatValue: Float) { value(from, VFloat(floatValue)) }
     fun value(from: Node, stringValue: String) { value(from, VString(stringValue)) }
     fun value(from: Node, objValue: ObjID) { value(from, VObj(objValue)) }
+    fun value(from: Node, listValue: List<Value>) { value(from, VList(listValue.toMutableList())) }
+    fun value(from: Node, mapValue: Map<Value, Value>) { value(from, VMap(mapValue.toMutableMap())) }
+
+    // Record the entryPoint of a literal VFun.
+    fun codeEntryPoint(from: Node) {
+        value(from, entryPoints.size)
+        entryPoints.add(mem.size + 2) // +2 to skip the O_JUMP<addr> which will follow
+    }
 
     // Write a placeholder address for a jump we'll locate in the future.
     // Nodes call this to jump to a named future address.
@@ -77,26 +87,32 @@ class Coder(val ast: Node) {
     }
 
 
-    class Optimizer(private val source: List<VMWord>) {
-        private val mem = ArrayList<VMWord>()
-        private val jumpMap = HashMap<Int, Int>()
+    class Optimizer(private val coder: Coder) {
+        private val mem = coder.mem
+        private val outMem = mutableListOf<VMWord>()
+        private val jumpMap = mutableMapOf<Int, Int>()
+        private val entryMap = mutableListOf<Int>()
         private var pc = 0
         private var lastMatchSize = 0
 
-        fun optimize(): List<VMWord> {
+        fun optimize() {
 
             // Find all jump destinations in source
-            source.forEach { word ->
+            mem.forEach { word ->
                 word.address?.also { address ->
                     jumpMap[address] = -1
                 }
             }
+            entryMap.addAll(coder.entryPoints)
 
             pc = 0
-            while (pc < source.size) {
+            while (pc < mem.size) {
                 // If we've reached a jump dest, record its new address
-                if (jumpMap.containsKey(pc)) jumpMap[pc] = mem.size
-
+                if (jumpMap.containsKey(pc)) jumpMap[pc] = outMem.size
+                // If we've reached an entry point, record its new address
+                if (coder.entryPoints.contains(pc)) {
+                    entryMap[coder.entryPoints.indexOf(pc)] = outMem.size
+                }
 
                 // NEGATE NEGATE => ()
                 consume(O_NEGATE, O_NEGATE)?.also { }
@@ -119,29 +135,31 @@ class Coder(val ast: Node) {
 
                 // If nothing matched, copy and continue
                 ?: run {
-                    mem.add(source[pc++])
+                    outMem.add(mem[pc++])
                 }
             }
 
             // Replace all jump dests
             jumpMap.keys.forEach { old ->
-                mem.forEach { word ->
+                outMem.forEach { word ->
                     if (word.address == old) word.address = jumpMap[old]
                 }
             }
-
-            return mem
+            // Replace all entry points
+            coder.entryPoints.addAll(entryMap)
+            // Replace compiled code
+            coder.mem = outMem
         }
 
         // Match and consume a series of opcodes (or null for any non-opcode word).
         private fun consume(vararg opcodes: Opcode?, check: ((List<VMWord>)->Boolean)? = null): List<VMWord>? {
-            if (opcodes.size > (source.size - pc)) return null
+            if (opcodes.size > (mem.size - pc)) return null
             var hit = true
             val nulls = mutableListOf<VMWord>()
             opcodes.forEachIndexed { i, t ->
-                if (t == null) nulls.add(source[pc + i])
+                if (t == null) nulls.add(mem[pc + i])
                 else if ((pc + i) in jumpMap.keys) hit = false  // Miss if we overlap a jump dest
-                else if (source[pc + i].opcode != t) hit = false
+                else if (mem[pc + i].opcode != t) hit = false
             }
             if (hit && (check?.invoke(nulls) != false)) {
                 pc += opcodes.size
@@ -152,12 +170,12 @@ class Coder(val ast: Node) {
         }
 
         private fun code(op: Opcode) {
-            val oldword = source[pc - lastMatchSize]
-            mem.add(VMWord(oldword.lineNum, oldword.charNum, op))
+            val oldword = mem[pc - lastMatchSize]
+            outMem.add(VMWord(oldword.lineNum, oldword.charNum, op))
         }
         private fun value(v: Value) {
-            val oldword = source[pc - lastMatchSize]
-            mem.add(VMWord(oldword.lineNum, oldword.charNum, value = v))
+            val oldword = mem[pc - lastMatchSize]
+            outMem.add(VMWord(oldword.lineNum, oldword.charNum, value = v))
         }
     }
 }

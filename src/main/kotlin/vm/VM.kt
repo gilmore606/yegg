@@ -7,15 +7,13 @@ import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
+import com.dlfsystems.world.trait.Verb
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // A stack machine for executing a verb.
 
-class VM(
-    private val code: List<VMWord> = listOf(),
-    private val symbols: Map<String, Int> = mapOf()
-) {
+class VM(val verb: Verb) {
 
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
@@ -35,12 +33,18 @@ class VM(
     private inline fun popTwo() = listOf(stack.removeFirst(), stack.removeFirst())
     private inline fun popThree() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
     private inline fun popFour() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
-    private inline fun next() = code[pc++]
+    private inline fun next() = verb.code[pc++]
 
-    // Given a Context and args, execute each word of the input code starting from pc=0.
-    // Mutate the stack and variables as we go.
-    // Return back a Value (VVoid if no explicit return).
-    fun execute(c: Context, args: List<Value> = listOf()): Value {
+    fun execute(
+        c: Context,
+        args: List<Value> = listOf(),
+        entryPoint: Int? = null,
+        withVars: Map<String, Value>? = null
+    ): Value {
+
+        pc = entryPoint?.let { verb.entryPoints[it] } ?: 0
+
+        withVars?.forEach { (name, value) -> initVar(name, value) }
         initVar("args", VList.make(args))
         initVar("this", c.vThis)
         initVar("user", c.vUser)
@@ -48,17 +52,21 @@ class VM(
         try {
             return executeCode(c)
         } catch (e: Exception) {
-            throw (e as? VMException ?: VMException(E_SYS, e.message ?: e.stackTraceToString())).withLocation(lineNum, charNum)
+            throw (e as? VMException ?: VMException(E_SYS, e.message ?: e.stackTraceToString()))
+                .withLocation(lineNum, charNum)
         }
     }
 
-    private fun initVar(name: String, value: Value) { symbols[name]?.also { variables[it] = value } }
+    private fun initVar(name: String, value: Value) {
+        verb.symbols[name]?.also { variables[it] = value }
+    }
 
     private fun executeCode(c: Context): Value {
-        pc = 0
+
         val stackLimit = Yegg.world.getSysInt("stackLimit")
         var ticksLeft = c.ticksLeft
-        while (pc < code.size) {
+
+        while (pc < verb.code.size) {
 
             if (--ticksLeft < 0) fail(E_LIMIT, "tick limit exceeded")
             if (stack.size > stackLimit) fail(E_LIMIT, "stack depth exceeded")
@@ -91,6 +99,22 @@ class VM(
                     repeat(count) { entries.put(pop(), pop()) }
                     push(VMap(entries))
                 }
+                O_FUNVAL -> {
+                    val entryPointIndex = next().intFromV
+                    // Capture variables from scope
+                    val withVars = buildMap {
+                        (pop() as VList).v.map { (it as VString).v }.forEach { varName ->
+                            verb.symbols[varName]?.also {
+                                variables[it]?.also { put(varName, it) }
+                            }
+                        }
+                    }
+                    val args = (pop() as VList).v.map { (it as VString).v }
+                    push(VFun(verb.name, verb.traitID, c.vThis, entryPointIndex, args, withVars))
+                }
+
+                // Index/range ops
+
                 O_GETI -> {
                     val (a2, a1) = popTwo()
                     a1.getIndex(a2)?.also { push(it) }
@@ -150,6 +174,18 @@ class VM(
                         c.callsLeft++
                         ticksLeft = c.ticksLeft
                     } else fail(E_VERBNF, "verb name must be string")
+                }
+                O_FUNCALL -> {
+                    val name = (next().value as VString).v
+                    val argCount = next().intFromV
+                    val args = mutableListOf<Value>()
+                    repeat (argCount) { args.add(0, pop()) }
+                    verb.symbols[name]?.also { variableID ->
+                        val subject = variables[variableID]
+                        if (subject is VFun) {
+                            push(subject.verbInvoke(c, args))
+                        } else fail(E_TYPE, "cannot invoke non-fun as fun")
+                    } ?: fail(E_VARNF, "no such fun or variable")
                 }
 
                 // Variable ops

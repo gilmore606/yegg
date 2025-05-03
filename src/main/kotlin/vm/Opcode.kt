@@ -16,6 +16,12 @@ enum class Opcode(val argCount: Int = 0) {
     // Pop arg1 (as intval) pairs of stack values, and push a map of argX:argX+1.
     O_MAPVAL(1),
 
+    // Pop VList of string arg names.
+    // Pop VList of string scope var names.
+    // arg1 contains the entryPoint index.
+    // Push VFun.
+    O_FUNVAL(1),
+
     // Push index result of pop0[pop1].
     O_GETI,
 
@@ -37,6 +43,9 @@ enum class Opcode(val argCount: Int = 0) {
 
     // Call verb with arg1 stack args.
     O_CALL(1),
+
+    // Call fun with arg1 name and arg2 stack args.
+    O_FUNCALL(2),
 
     // Push variable with ID arg1.
     O_GETVAR(1), // variable ID to fetch
