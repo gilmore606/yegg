@@ -141,6 +141,11 @@ class VM(val verb: Verb) {
                     val condition = pop()
                     if (condition.isFalse()) pc = elseAddr
                 }
+                O_IFVAREQ -> {
+                    val varID = next().intFromV
+                    val elseAddr = next().address!!
+                    if (variables[varID] != pop()) pc = elseAddr
+                }
                 O_JUMP -> {
                     val addr = next().address!!
                     if (addr >= 0) pc = addr else return VVoid  // Unresolved jump dest means end-of-code
@@ -153,6 +158,12 @@ class VM(val verb: Verb) {
                 O_RETURNNULL -> {
                     if (stack.isNotEmpty()) fail(E_SYS, "stack polluted on return!")
                     return VVoid
+                }
+                O_RETVAL -> {
+                    return next().value!!
+                }
+                O_RETVAR -> {
+                    return variables[next().intFromV]!!
                 }
                 O_FAIL -> {
                     val a = pop()

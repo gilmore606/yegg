@@ -106,7 +106,6 @@ class N_WHEN(val subject: N_EXPR?, val options: List<Pair<N_EXPR?, Node>>): N_EX
             coder.jumpForward(this, "skip$n")
             o.second.code(coder)
             coder.code(this, O_RETURN)
-            coder.jumpForward(this, "end")
             coder.setForwardJump(this, "skip$n")
         }
         // else option
@@ -114,6 +113,5 @@ class N_WHEN(val subject: N_EXPR?, val options: List<Pair<N_EXPR?, Node>>): N_EX
             o.second.code(coder)
             coder.code(this, O_RETURN)
         }
-        coder.setForwardJump(this, "end")
     }
 }

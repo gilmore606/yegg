@@ -136,6 +136,24 @@ class Coder(val ast: Node) {
                 ?: consume(O_VAL, null, O_CMP_LT) { args -> args[0].isInt(0) }?.also { code(O_CMP_LTZ) }
                 ?: consume(O_VAL, null, O_CMP_LE) { args -> args[0].isInt(0) }?.also { code(O_CMP_LEZ) }
 
+                // O_GETVAR O_CMP_EQ O_IF => O_IFVAREQ
+                ?: consume(O_GETVAR, null, O_CMP_EQ, O_IF, null)?.also { args ->
+                    code(O_IFVAREQ)
+                    value(args[0].value!!)
+                    address(args[1].address!!)
+                }
+
+                // O_VAL O_RETURN => O_RETVAL
+                ?: consume(O_VAL, null, O_RETURN)?.also { args ->
+                    code(O_RETVAL)
+                    value(args[0].value!!)
+                }
+
+                // O_GETVAR O_RETURN => O_RETVAR
+                ?: consume(O_GETVAR, null, O_RETURN)?.also { args ->
+                    code(O_RETVAR)
+                    value(args[0].value!!)
+                }
 
                 // If nothing matched, copy and continue
                 ?: run {
@@ -180,6 +198,10 @@ class Coder(val ast: Node) {
         private fun value(v: Value) {
             val oldword = mem[pc - lastMatchSize]
             outMem.add(VMWord(oldword.lineNum, oldword.charNum, value = v))
+        }
+        private fun address(a: Int) {
+            val oldword = mem[pc - lastMatchSize]
+            outMem.add(VMWord(oldword.lineNum, oldword.charNum, address = a))
         }
     }
 }
