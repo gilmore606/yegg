@@ -63,8 +63,8 @@ enum class Opcode(val argCount: Int = 0) {
     // Set range pop2..pop1 of value pop0.
     O_SETRANGE,
 
-    // Spread-assign pop1 list to pop2 list of varnames.
-    O_SPREAD,
+    // Assign pop1 list's elements to pop2 list of varnames.
+    O_DESTRUCT,
 
     // Push iterableSize of pop0 as VInt.
     O_ITERSIZE,

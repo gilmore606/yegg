@@ -75,7 +75,7 @@ class Parser(inputTokens: List<Token>) {
         pReturn()?.also { return it }
         pFail()?.also { return it }
         pIncrement()?.also { return it }
-        pSpreadAssign()?.also { return it }
+        pDestructureList()?.also { return it }
         pAssign()?.also { return it }
         pExprStatement()?.also { return it }
         return null
@@ -229,15 +229,15 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
-    // Parse spread assign: [var1, var2...] = list
-    private fun pSpreadAssign(): N_STATEMENT? {
+    // Parse list destructure: [var1, var2...] = list
+    private fun pDestructureList(): N_STATEMENT? {
         if (nextIs(T_BRACKET_OPEN)) {
             var i = 1
             var done = false
             while (!done) {
                 if (nextToken(i).type != T_IDENTIFIER) return null
                 if (nextToken(i+1).type == T_BRACKET_CLOSE) done = true
-                else if (nextToken(i+1).type != T_COMMA) fail("spread assign list must contain only variable names")
+                else if (nextToken(i+1).type != T_COMMA) fail("destructure list must contain only variable names")
                 i += 2
             }
             if (nextToken(i).type != T_ASSIGN) return null
@@ -254,8 +254,8 @@ class Parser(inputTokens: List<Token>) {
             }
             consume(T_ASSIGN)
             pExpression()?.also { right ->
-                return node(N_SPREAD(vars, right))
-            } ?: fail("expression missing for spread assign")
+                return node(N_DESTRUCT(vars, right))
+            } ?: fail("expression missing for list destructure")
         }
         return null
     }

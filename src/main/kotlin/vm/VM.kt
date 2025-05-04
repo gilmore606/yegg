@@ -211,9 +211,9 @@ class VM(val verb: Verb) {
                         else fail(E_TYPE, "cannot increment ${it.type}")
                     } ?: fail(E_VARNF, "variable not found")
                 }
-                O_SPREAD -> {
+                O_DESTRUCT -> {
                     val (a2, a1) = popTwo()
-                    if (a2 !is VList) fail(E_TYPE, "cannot spread assign from non-list")
+                    if (a2 !is VList) fail(E_TYPE, "cannot destructure from non-list")
                     if ((a2 as VList).v.size < (a1 as VList).v.size) fail(E_RANGE, "missing args")
                     a1.v.forEachIndexed { i, vn ->
                         verb.symbols[(vn as VString).v]?.also { variables[it] = a2.v[i] }
