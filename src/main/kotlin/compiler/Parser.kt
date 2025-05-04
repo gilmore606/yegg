@@ -4,6 +4,7 @@ package com.dlfsystems.compiler
 
 import com.dlfsystems.compiler.TokenType.*
 import com.dlfsystems.compiler.ast.*
+import com.dlfsystems.world.ObjID
 
 // Take a stream of input tokens from Lexer and produce a tree of syntax nodes.
 
@@ -74,6 +75,7 @@ class Parser(inputTokens: List<Token>) {
         pReturn()?.also { return it }
         pFail()?.also { return it }
         pIncrement()?.also { return it }
+        pDestructureList()?.also { return it }
         pAssign()?.also { return it }
         pExprStatement()?.also { return it }
         return null
@@ -223,6 +225,37 @@ class Parser(inputTokens: List<Token>) {
                 } ?: fail("missing predicate for assignment")
             }
             return node(N_EXPRSTATEMENT(left))
+        }
+        return null
+    }
+
+    // Parse list destructure: [var1, var2...] = list
+    private fun pDestructureList(): N_STATEMENT? {
+        if (nextIs(T_BRACKET_OPEN)) {
+            var i = 1
+            var done = false
+            while (!done) {
+                if (nextToken(i).type != T_IDENTIFIER) return null
+                if (nextToken(i+1).type == T_BRACKET_CLOSE) done = true
+                else if (nextToken(i+1).type != T_COMMA) fail("destructure list must contain only variable names")
+                i += 2
+            }
+            if (nextToken(i).type != T_ASSIGN) return null
+            // Confirmed match, consume and produce
+            consume(T_BRACKET_OPEN)
+            val vars = mutableListOf<N_IDENTIFIER>()
+            done = false
+            while (!done) {
+                consume(T_BRACKET_CLOSE)?.also { done = true }
+                    ?: consume(T_IDENTIFIER)?.also {
+                        vars.add(node(N_IDENTIFIER(it.string)))
+                        consume(T_COMMA)
+                    }
+            }
+            consume(T_ASSIGN)
+            pExpression()?.also { right ->
+                return node(N_DESTRUCT(vars, right))
+            } ?: fail("expression missing for list destructure")
         }
         return null
     }
@@ -493,6 +526,7 @@ class Parser(inputTokens: List<Token>) {
         consume(T_STRING)?.also { return node(N_LITERAL_STRING(it.string)) }
         consume(T_INTEGER)?.also { return node(N_LITERAL_INTEGER(it.string.toInt())) }
         consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }
+        consume(T_OBJREF)?.also { return node(N_LITERAL_OBJ(ObjID(it.string))) }
         consume(T_IDENTIFIER)?.also { return node(N_IDENTIFIER(it.string)) }
         consume(T_TRUE, T_FALSE)?.also { return node(N_LITERAL_BOOLEAN(it.type == T_TRUE)) }
         return next()

@@ -3,6 +3,7 @@ package com.dlfsystems.compiler.ast
 import com.dlfsystems.compiler.Coder
 import com.dlfsystems.value.VString
 import com.dlfsystems.vm.Opcode.*
+import com.dlfsystems.world.ObjID
 
 // A literal value appearing in code.
 
@@ -28,6 +29,11 @@ class N_LITERAL_INTEGER(val value: Int): N_LITERAL() {
 class N_LITERAL_FLOAT(val value: Float): N_LITERAL() {
     override fun toText() = "$value"
     override fun codeValue(coder: Coder) { coder.value(this, value) }
+}
+
+class N_LITERAL_OBJ(val objID: ObjID): N_LITERAL() {
+    override fun toText() = "#$id"
+    override fun codeValue(coder: Coder) { coder.value(this, objID) }
 }
 
 class N_LITERAL_STRING(val value: String): N_LITERAL() {

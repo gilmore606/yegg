@@ -31,7 +31,8 @@ object Yegg {
     private val connections = mutableSetOf<Connection>()
     val connectedUsers = mutableMapOf<Obj, Connection>()
 
-    fun newID() = NanoId.generateOptimized(8, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 61, 16)
+    val idChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    fun newID() = NanoId.generateOptimized(8, idChars, 61, 16)
 
     fun start() {
         val file = File("$worldName.yegg")

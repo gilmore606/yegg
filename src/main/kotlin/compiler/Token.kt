@@ -50,6 +50,7 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_STRING_SUB_END("}"),
     T_INTEGER("n"),
     T_FLOAT("n.n"),
+    T_OBJREF("#xxxxx"),
 
     // Keywords
     T_AND("and", true),

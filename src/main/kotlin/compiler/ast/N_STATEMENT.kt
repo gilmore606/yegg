@@ -1,6 +1,7 @@
 package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
+import com.dlfsystems.value.VString
 import com.dlfsystems.vm.Opcode.*
 
 // A statement which doesn't necessarily return a value.
@@ -16,6 +17,18 @@ class N_ASSIGN(val left: N_EXPR, val right: N_EXPR): N_STATEMENT() {
     override fun code(coder: Coder) {
         right.code(coder)
         left.codeAssign(coder)
+    }
+}
+
+class N_DESTRUCT(val vars: List<N_IDENTIFIER>, val right: N_EXPR): N_STATEMENT() {
+    override fun toText() = "[${vars.joinToString(",")}] = $right"
+    override fun kids() = vars + listOf(right)
+
+    override fun code(coder: Coder) {
+        coder.code(this, O_VAL)
+        coder.value(this, vars.map { VString(it.name) })
+        right.code(coder)
+        coder.code(this, O_DESTRUCT)
     }
 }
 
