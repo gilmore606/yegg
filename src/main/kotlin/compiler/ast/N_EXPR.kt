@@ -85,3 +85,35 @@ class N_FUNCALL(val name: N_IDENTIFIER, val args: List<N_EXPR>): N_EXPR() {
         coder.value(this, args.size)
     }
 }
+
+// when [expr] { option1 -> expr  option 2 -> { .... expr } else -> ...}
+class N_WHEN(val subject: N_EXPR?, val options: List<Pair<N_EXPR?, Node>>): N_EXPR() {
+    override fun kids() = buildList {
+        subject?.also { add(it) }
+        addAll(options.mapNotNull { it.first })
+        addAll(options.map { it.second })
+    }
+
+    override fun code(coder: Coder) {
+        // non-null match options
+        options.filter { it.first != null }.forEachIndexed { n, o ->
+            o.first!!.code(coder)
+            subject?.also {
+                it.code(coder)
+                coder.code(this, O_CMP_EQ)
+            }
+            coder.code(this, O_IF)
+            coder.jumpForward(this, "skip$n")
+            o.second.code(coder)
+            coder.code(this, O_RETURN)
+            coder.jumpForward(this, "end")
+            coder.setForwardJump(this, "skip$n")
+        }
+        // else option
+        options.firstOrNull { it.first == null }?.also { o ->
+            o.second.code(coder)
+            coder.code(this, O_RETURN)
+        }
+        coder.setForwardJump(this, "end")
+    }
+}

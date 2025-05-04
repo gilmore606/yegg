@@ -273,7 +273,36 @@ class Parser(inputTokens: List<Token>) {
     // Parse any expression we find next.
     // Start with the lowest precedence operation, passing down to look for higher precedence operations.
     private fun pExpression(): N_EXPR? {
+        val next = this::pWhen
+        return next()
+    }
+
+    // Parse: when [expr] { expr ->... }
+    private fun pWhen(): N_EXPR? {
         val next = this::pAndOr
+        consume(T_WHEN)?.also {
+            val subject: N_EXPR? = pExpression()
+            consume(T_BRACE_OPEN) ?: fail("incomplete when")
+            val options = mutableListOf<Pair<N_EXPR?, Node>>()
+            var elseFound = false
+            while (!nextIs(T_BRACE_CLOSE)) {
+                pExpression()?.also { option ->
+                    consume(T_ARROW) ?: fail("missing arrow")
+                    (pBlock() ?: pExpression())?.also { result ->
+                        options.add(Pair(option, result))
+                    } ?: fail("missing block")
+                } ?: consume(T_ELSE)?.also {
+                    if (elseFound) fail("multiple else") else elseFound = true
+                    consume(T_ARROW) ?: fail("missing arrow")
+                    (pBlock() ?: pExpression())?.also { result ->
+                        options.add(Pair(null, result))
+                    }
+                } ?: fail("missing close brace")
+            }
+            consume(T_BRACE_CLOSE)
+            if (!elseFound) fail("no else in when expression")
+            return node(N_WHEN(subject, options))
+        }
         return next()
     }
 
