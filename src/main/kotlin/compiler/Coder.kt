@@ -54,10 +54,11 @@ class Coder(val ast: Node) {
     // Nodes call this to jump to a named future address.
     fun jumpForward(from: Node, name: String) {
         val address = mem.size
-        if (forwardJumps.containsKey(name)) {
-            forwardJumps[name]!!.add(address)
+        val fullname = "$name${from.id}"
+        if (forwardJumps.containsKey(fullname)) {
+            forwardJumps[fullname]!!.add(address)
         } else {
-            forwardJumps[name] = mutableSetOf(address)
+            forwardJumps[fullname] = mutableSetOf(address)
         }
         mem.add(VMWord(from.lineNum, from.charNum, address = -1))
     }
@@ -66,23 +67,26 @@ class Coder(val ast: Node) {
     // Nodes call this when a previously named jumpForward address is reached.
     fun setForwardJump(from: Node, name: String) {
         val dest = mem.size
-        forwardJumps[name]!!.forEach { loc ->
+        val fullname = "$name${from.id}"
+        forwardJumps[fullname]!!.forEach { loc ->
             mem[loc].fillAddress(dest)
         }
-        forwardJumps.remove(name)
+        forwardJumps.remove(fullname)
     }
 
     // Record a jump address we'll jump back to later.
     // Nodes call this to mark a named address which they'll code a jumpBack to.
     fun setBackJump(from: Node, name: String) {
         val dest = mem.size
-        backJumps[name] = dest
+        val fullname = "$name${from.id}"
+        backJumps[fullname] = dest
     }
 
     // Write address of a jump located in the past.
     // Nodes call this to jump to a named past address.
     fun jumpBack(from: Node, name: String) {
-        val dest = backJumps[name]
+        val fullname = "$name${from.id}"
+        val dest = backJumps[fullname]
         mem.add(VMWord(from.lineNum, from.charNum, address = dest))
     }
 

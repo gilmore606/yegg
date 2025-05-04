@@ -74,9 +74,9 @@ class N_LITERAL_FUN(val args: List<N_IDENTIFIER>, val block: N_BLOCK): N_LITERAL
         coder.code(this, O_FUNVAL)
         coder.codeEntryPoint(this)
         coder.code(this, O_JUMP)
-        coder.jumpForward(this, "skipFun$id")
+        coder.jumpForward(this, "skipFun")
         block.code(coder)
         coder.code(this, O_RETURN)
-        coder.setForwardJump(this, "skipFun$id")
+        coder.setForwardJump(this, "skipFun")
     }
 }
