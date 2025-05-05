@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.pow
 
 @Serializable
 @SerialName("VFloat")
@@ -37,6 +38,11 @@ data class VFloat(val v: Float): Value() {
     override fun divide(a2: Value) = when (a2) {
         is VInt -> VFloat(v / a2.v.toFloat())
         is VFloat -> VFloat(v / a2.v)
+        else -> null
+    }
+    override fun toPower(a2: Value) = when (a2) {
+        is VInt -> VFloat(v.pow(a2.v))
+        is VFloat -> VFloat(v.pow(a2.v))
         else -> null
     }
 
