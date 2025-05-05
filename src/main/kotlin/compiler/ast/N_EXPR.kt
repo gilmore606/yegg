@@ -13,7 +13,8 @@ abstract class N_EXPR: N_STATEMENT() {
     open fun codeIndexAssign(coder: Coder) { fail("illegal left side of index assignment") }
     // Does this expr have a constant value?
     open fun constantValue(): Value? = null
-
+    // If we have a constantValue(), code it and return true.
+    // Any code() on an N_EXPR that can have a constant value should call this first (and terminate if true).
     protected fun codeConstant(coder: Coder): Boolean {
         constantValue()?.also { value ->
             coder.code(this, O_VAL)
