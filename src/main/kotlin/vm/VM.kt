@@ -193,15 +193,15 @@ class VM(val verb: Verb) {
                     repeat (argCount) { args.add(0, pop()) }
                     verb.symbols[name]?.also { variableID ->
                         // Look for variable with VFun
-                        variables[variableID]?.also { subject ->
+                        variables[variableID]?.let { subject ->
                             if (subject is VFun) {
                                 push(subject.verbInvoke(c, args))
                             } else fail(E_TYPE, "cannot invoke ${subject?.type} as fun")
                         // Look for $sys.verb
                         } ?: Yegg.world.sys.callVerb(c, name, args)?.also {
                             push(it)
-                        }
-                    } ?: fail(E_VARNF, "no such fun or variable")
+                        } ?: fail(E_VARNF, "no such fun or variable")
+                    }
                 }
 
                 // Variable ops
