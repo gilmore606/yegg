@@ -64,23 +64,56 @@ class N_CONDITIONAL(val condition: N_EXPR, val eTrue: N_EXPR, val eFalse: N_EXPR
     override fun code(coder: Coder) {
         condition.code(coder)
         coder.code(this, O_IF)
-        coder.jumpForward(this, "cond$id")
+        coder.jumpForward(this, "cond")
         eTrue.code(coder)
         coder.code(this, O_JUMP)
-        coder.jumpForward(this, "condFalse$id")
-        coder.setForwardJump(this, "cond$id")
+        coder.jumpForward(this, "condFalse")
+        coder.setForwardJump(this, "cond")
         eFalse.code(coder)
-        coder.setForwardJump(this, "condFalse$id")
+        coder.setForwardJump(this, "condFalse")
     }
 }
 
 // A function call: ident([arg, arg...])
 class N_FUNCALL(val name: N_IDENTIFIER, val args: List<N_EXPR>): N_EXPR() {
     override fun kids() = listOf(name) + args
+
     override fun code(coder: Coder) {
         args.forEach { it.code(coder) }
         coder.code(this, O_FUNCALL)
         coder.value(this, name.name)
         coder.value(this, args.size)
+    }
+}
+
+// when [expr] { option1 -> expr  option 2 -> { .... expr } else -> ...}
+class N_WHEN(val subject: N_EXPR?, val options: List<Pair<N_EXPR?, Node>>, val asStatement: Boolean = false): N_EXPR() {
+    override fun kids() = buildList {
+        subject?.also { add(it) }
+        addAll(options.mapNotNull { it.first })
+        addAll(options.map { it.second })
+    }
+
+    override fun code(coder: Coder) {
+        // non-null match options
+        options.filter { it.first != null }.forEachIndexed { n, o ->
+            o.first!!.code(coder)
+            subject?.also {
+                it.code(coder)
+                coder.code(this, O_CMP_EQ)
+            }
+            coder.code(this, O_IF)
+            coder.jumpForward(this, "skip$n")
+            o.second.code(coder)
+            if (asStatement && o.second is N_EXPRSTATEMENT) coder.code(this, O_DISCARD)
+            coder.code(this, O_JUMP)
+            coder.jumpForward(this, "end")
+            coder.setForwardJump(this, "skip$n")
+        }
+        // else option
+        options.firstOrNull { it.first == null }?.also { o ->
+            o.second.code(coder)
+        }
+        coder.setForwardJump(this, "end")
     }
 }

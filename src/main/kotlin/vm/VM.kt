@@ -141,6 +141,11 @@ class VM(val verb: Verb) {
                     val condition = pop()
                     if (condition.isFalse()) pc = elseAddr
                 }
+                O_IFVAREQ -> {
+                    val varID = next().intFromV
+                    val elseAddr = next().address!!
+                    if (variables[varID] != pop()) pc = elseAddr
+                }
                 O_JUMP -> {
                     val addr = next().address!!
                     if (addr >= 0) pc = addr else return VVoid  // Unresolved jump dest means end-of-code
@@ -153,6 +158,12 @@ class VM(val verb: Verb) {
                 O_RETURNNULL -> {
                     if (stack.isNotEmpty()) fail(E_SYS, "stack polluted on return!")
                     return VVoid
+                }
+                O_RETVAL -> {
+                    return next().value!!
+                }
+                O_RETVAR -> {
+                    return variables[next().intFromV]!!
                 }
                 O_FAIL -> {
                     val a = pop()
@@ -181,11 +192,16 @@ class VM(val verb: Verb) {
                     val args = mutableListOf<Value>()
                     repeat (argCount) { args.add(0, pop()) }
                     verb.symbols[name]?.also { variableID ->
-                        val subject = variables[variableID]
-                        if (subject is VFun) {
-                            push(subject.verbInvoke(c, args))
-                        } else fail(E_TYPE, "cannot invoke non-fun as fun")
-                    } ?: fail(E_VARNF, "no such fun or variable")
+                        // Look for variable with VFun
+                        variables[variableID]?.let { subject ->
+                            if (subject is VFun) {
+                                push(subject.verbInvoke(c, args))
+                            } else fail(E_TYPE, "cannot invoke ${subject?.type} as fun")
+                        // Look for $sys.verb
+                        } ?: Yegg.world.sys.callVerb(c, name, args)?.also {
+                            push(it)
+                        } ?: fail(E_VARNF, "no such fun or variable")
+                    }
                 }
 
                 // Variable ops

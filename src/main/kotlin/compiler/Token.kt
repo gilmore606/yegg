@@ -65,6 +65,7 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_TRUE("true", true),
     T_WHILE("while", true),
     T_FAIL("fail", true),
+    T_WHEN("when", true),
 
     T_EOF("EOF");
 }

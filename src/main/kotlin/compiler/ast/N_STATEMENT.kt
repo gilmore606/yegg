@@ -59,15 +59,15 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
 
     override fun code(coder: Coder) {
         assign.code(coder)
-        coder.setBackJump(this, "forStart$id")
+        coder.setBackJump(this, "forStart")
         check.code(coder)
         coder.code(this, O_IF)
-        coder.jumpForward(this, "forEnd$id")
+        coder.jumpForward(this, "forEnd")
         body.code(coder)
         increment.code(coder)
         coder.code(this, O_JUMP)
-        coder.jumpBack(this, "forStart$id")
-        coder.setForwardJump(this, "forEnd$id")
+        coder.jumpBack(this, "forStart")
+        coder.setForwardJump(this, "forEnd")
     }
 }
 
@@ -87,7 +87,7 @@ class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEM
         source.code(coder)
         coder.code(this, O_SETVAR)
         coder.value(this, internalSource.variableID!!)
-        coder.setBackJump(this, "forStart$id")
+        coder.setBackJump(this, "forStart")
         coder.code(this, O_ITERPICK)
         coder.value(this, internalSource.variableID!!)
         coder.value(this, internalIndex.variableID!!)
@@ -103,7 +103,7 @@ class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEM
         coder.value(this, internalIndex.variableID!!)
         coder.code(this, O_CMP_LE)
         coder.code(this, O_IF)
-        coder.jumpBack(this, "forStart$id")
+        coder.jumpBack(this, "forStart")
     }
 }
 
@@ -121,7 +121,7 @@ class N_FORRANGE(val index: N_IDENTIFIER, val from: N_EXPR, val to: N_EXPR, val 
         from.code(coder)
         coder.code(this, O_SETVAR)
         coder.value(this, index.variableID!!)
-        coder.setBackJump(this, "forStart$id")
+        coder.setBackJump(this, "forStart")
         body.code(coder)
         coder.code(this, O_INCVAR)
         coder.value(this, index.variableID!!)
@@ -131,7 +131,7 @@ class N_FORRANGE(val index: N_IDENTIFIER, val from: N_EXPR, val to: N_EXPR, val 
         coder.value(this, index.variableID!!)
         coder.code(this, O_CMP_LT)
         coder.code(this, O_IF)
-        coder.jumpBack(this, "forStart$id")
+        coder.jumpBack(this, "forStart")
     }
 }
 
@@ -141,14 +141,14 @@ class N_WHILELOOP(val check: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
     override fun kids() = listOf(check, body)
 
     override fun code(coder: Coder) {
-        coder.setBackJump(this, "whileStart$id")
+        coder.setBackJump(this, "whileStart")
         check.code(coder)
         coder.code(this, O_IF)
-        coder.jumpForward(this, "whileEnd$id")
+        coder.jumpForward(this, "whileEnd")
         body.code(coder)
         coder.code(this, O_JUMP)
-        coder.jumpBack(this, "whileStart$id")
-        coder.setForwardJump(this, "whileEnd$id")
+        coder.jumpBack(this, "whileStart")
+        coder.setForwardJump(this, "whileEnd")
     }
 }
 
@@ -175,15 +175,15 @@ class N_IFSTATEMENT(val condition: N_EXPR, val sThen: N_STATEMENT, val sElse: N_
     override fun code(coder: Coder) {
         condition.code(coder)
         coder.code(this, O_IF)
-        coder.jumpForward(this, "ifskip$id")
+        coder.jumpForward(this, "ifskip")
         sThen.code(coder)
         sElse?.also { sElse ->
             coder.code(this, O_JUMP)
-            coder.jumpForward(this, "elseskip$id")
-            coder.setForwardJump(this, "ifskip$id")
+            coder.jumpForward(this, "elseskip")
+            coder.setForwardJump(this, "ifskip")
             sElse.code(coder)
-            coder.setForwardJump(this, "elseskip$id")
-        } ?: coder.setForwardJump(this, "ifskip$id")
+            coder.setForwardJump(this, "elseskip")
+        } ?: coder.setForwardJump(this, "ifskip")
     }
 }
 

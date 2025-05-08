@@ -31,12 +31,21 @@ enum class Opcode(val argCount: Int = 0) {
     // Jump to arg1 address if pop0 is false.
     O_IF(1),
 
+    // Jump to arg2 address if var arg1 == pop0.
+    O_IFVAREQ(2),
+
     // Jump to arg1 address.
     O_JUMP(1),
 
     // Return from verb with pop0 (or no value).
     O_RETURN,
     O_RETURNNULL,
+
+    // Return arg1 value.
+    O_RETVAL(1),
+
+    // Return variable value with arg1 varID.
+    O_RETVAR(1),
 
     // Throw E_USER with pop0 as message.
     O_FAIL,

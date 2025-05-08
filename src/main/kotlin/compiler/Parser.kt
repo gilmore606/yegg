@@ -74,6 +74,7 @@ class Parser(inputTokens: List<Token>) {
         pWhileLoop()?.also { return it }
         pReturn()?.also { return it }
         pFail()?.also { return it }
+        pWhen(asStatement = true)?.also { return node(N_EXPRSTATEMENT(it)) }
         pIncrement()?.also { return it }
         pDestructureList()?.also { return it }
         pAssign()?.also { return it }
@@ -273,8 +274,42 @@ class Parser(inputTokens: List<Token>) {
     // Parse any expression we find next.
     // Start with the lowest precedence operation, passing down to look for higher precedence operations.
     private fun pExpression(): N_EXPR? {
-        val next = this::pAndOr
+        val next = this::pWhenExpr
         return next()
+    }
+
+    // Parse 'when' as expr
+    private fun pWhenExpr(): N_EXPR? {
+        val next = this::pAndOr
+        pWhen(asStatement = false)?.also { return it }
+        return next()
+    }
+
+    // Parse: when [expr] { expr ->... }
+    private fun pWhen(asStatement: Boolean): N_EXPR? {
+        consume(T_WHEN)?.also {
+            var subject: N_EXPR? = null
+            consume(T_BRACE_OPEN) ?: run {
+                pExpression()?.also { subject = it } ?: fail("incomplete when subject")
+                consume(T_BRACE_OPEN) ?: fail("missing braces after when subject")
+            }
+            val options = mutableListOf<Pair<N_EXPR?, Node>>()
+            var elseFound = false
+            while (!nextIs(T_BRACE_CLOSE)) {
+                var option: N_EXPR? = null
+                pExpression()?.also { option = it }
+                    ?: consume(T_ELSE)?.also { elseFound = true }
+                    ?: fail("missing close brace")
+                consume(T_ARROW) ?: fail("missing arrow")
+                pStatement()?.also { result ->
+                    options.add(Pair(option, result))
+                } ?: fail("missing block")
+            }
+            consume(T_BRACE_CLOSE)
+            if (!asStatement && !elseFound) fail("no else in when expression")
+            return node(N_WHEN(subject, options, asStatement))
+        }
+        return null
     }
 
     // Parse: <expr> and|or <expr>
