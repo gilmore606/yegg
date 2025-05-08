@@ -51,7 +51,7 @@ class N_LITERAL_LIST(val value: List<N_EXPR>): N_LITERAL() {
     override fun toText() = value.joinToString(", ", "LIST[", "]")
     override fun constantValue(): Value? {
         val constant = mutableListOf<Value>()
-        value.forEach { expr ->
+        for (expr in value) {
             val exprConstant = expr.constantValue()
             if (exprConstant == null) return null else constant.add(exprConstant)
         }
@@ -70,7 +70,7 @@ class N_LITERAL_MAP(val value: Map<N_EXPR, N_EXPR>): N_LITERAL() {
     override fun toText() = value.keys.joinToString(", ", "MAP[", "]") { "$it: ${value[it]}" }
     override fun constantValue(): Value? {
         val constant = mutableMapOf<Value, Value>()
-        value.keys.forEach { key ->
+        for (key in value.keys) {
             val keyConstant = key.constantValue()
             if (keyConstant == null) return null else {
                 val valConstant = value[key]!!.constantValue()
