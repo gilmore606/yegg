@@ -2,6 +2,7 @@ package com.dlfsystems.value
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.math.pow
 
 @Serializable
 @SerialName("VInt")
@@ -35,6 +36,15 @@ data class VInt(val v: Int): Value() {
     override fun divide(a2: Value) = when (a2) {
         is VInt -> VInt(v / a2.v)
         is VFloat -> VFloat(v.toFloat() / a2.v)
+        else -> null
+    }
+    override fun toPower(a2: Value) = when (a2) {
+        is VInt -> VInt(v.toDouble().pow(a2.v).toInt())
+        is VFloat -> VFloat(v.toFloat().pow(v))
+        else -> null
+    }
+    override fun modulo(a2: Value) = when (a2) {
+        is VInt -> VInt(v % a2.v)
         else -> null
     }
 

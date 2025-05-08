@@ -48,6 +48,8 @@ sealed class Value {
     open fun plus(a2: Value): Value? = null
     open fun multiply(a2: Value): Value? = null
     open fun divide(a2: Value): Value? = null
+    open fun toPower(a2: Value): Value? = null
+    open fun modulo(a2: Value): Value? = null
 
     // Get or set a prop on this type.  Null raises E_PROPNF.
     open fun getProp(name: String): Value? = null
