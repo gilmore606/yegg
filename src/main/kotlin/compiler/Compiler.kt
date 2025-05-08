@@ -13,7 +13,7 @@ object Compiler {
         val symbols: Map<String, Int>,
         val tokens: List<Token>,
         val ast: Node,
-        val entryPoints: List<Int>,
+        val blocks: List<Pair<Int,Int>>,
     )
 
     fun compile(source: String): Result {
@@ -21,7 +21,7 @@ object Compiler {
         var code: List<VMWord>? = null
         var ast: Node? = null
         var symbols: Map<String, Int>? = null
-        var entryPoints: List<Int>? = null
+        var blocks: List<Pair<Int,Int>>? = null
         try {
             // Stage 1: Lex source into tokens.
             tokens = Lexer(source).lex()
@@ -34,8 +34,8 @@ object Compiler {
             // Stage 4: Generate VM opcodes.
             val coder = Coder(ast).apply { generate() }
             code = coder.mem
-            entryPoints = coder.entryPoints
-            return Result(source, code, symbols, tokens, ast, entryPoints)
+            blocks = coder.blocks
+            return Result(source, code, symbols, tokens, ast, blocks)
         } catch (e: CompileException) {
             throw e.withInfo(code, symbols, tokens, ast)
         } catch (e: Exception) {

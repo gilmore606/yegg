@@ -7,13 +7,12 @@ import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
-import com.dlfsystems.world.trait.Verb
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // A stack machine for executing a verb.
 
-class VM(val verb: Verb) {
+class VM(val exe: Executable) {
 
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
@@ -33,16 +32,15 @@ class VM(val verb: Verb) {
     private inline fun popTwo() = listOf(stack.removeFirst(), stack.removeFirst())
     private inline fun popThree() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
     private inline fun popFour() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
-    private inline fun next() = verb.code[pc++]
+    private inline fun next() = exe.code[pc++]
 
     fun execute(
         c: Context,
         args: List<Value> = listOf(),
-        entryPoint: Int? = null,
         withVars: Map<String, Value>? = null
     ): Value {
 
-        pc = entryPoint?.let { verb.entryPoints[it] } ?: 0
+        pc = 0
 
         withVars?.forEach { (name, value) -> initVar(name, value) }
         initVar("args", VList.make(args))
@@ -58,7 +56,7 @@ class VM(val verb: Verb) {
     }
 
     private fun initVar(name: String, value: Value) {
-        verb.symbols[name]?.also { variables[it] = value }
+        exe.symbols[name]?.also { variables[it] = value }
     }
 
     private fun executeCode(c: Context): Value {
@@ -66,7 +64,7 @@ class VM(val verb: Verb) {
         val stackLimit = Yegg.world.getSysInt("stackLimit")
         var ticksLeft = c.ticksLeft
 
-        while (pc < verb.code.size) {
+        while (pc < exe.code.size) {
 
             if (--ticksLeft < 0) fail(E_LIMIT, "tick limit exceeded")
             if (stack.size > stackLimit) fail(E_LIMIT, "stack depth exceeded")
@@ -100,17 +98,18 @@ class VM(val verb: Verb) {
                     push(VMap(entries))
                 }
                 O_FUNVAL -> {
-                    val entryPointIndex = next().intFromV
+                    val block = next().intFromV
+                    val code = exe.getBlockCode(block) // TODO: get jump offset?
                     // Capture variables from scope
                     val withVars = buildMap {
                         (pop() as VList).v.map { (it as VString).v }.forEach { varName ->
-                            verb.symbols[varName]?.also {
+                            exe.symbols[varName]?.also {
                                 variables[it]?.also { put(varName, it) }
                             }
                         }
                     }
                     val args = (pop() as VList).v.map { (it as VString).v }
-                    push(VFun(verb.name, verb.traitID, c.vThis, entryPointIndex, args, withVars))
+                    push(VFun(code, exe.symbols, exe.blocks, c.vThis, args, withVars))
                 }
 
                 // Index/range ops
@@ -191,7 +190,7 @@ class VM(val verb: Verb) {
                     val argCount = next().intFromV
                     val args = mutableListOf<Value>()
                     repeat (argCount) { args.add(0, pop()) }
-                    verb.symbols[name]?.also { variableID ->
+                    exe.symbols[name]?.also { variableID ->
                         // Look for variable with VFun
                         variables[variableID]?.let { subject ->
                             if (subject is VFun) {
@@ -232,7 +231,7 @@ class VM(val verb: Verb) {
                     if (a2 !is VList) fail(E_TYPE, "cannot destructure from non-list")
                     if ((a2 as VList).v.size < (a1 as VList).v.size) fail(E_RANGE, "missing args")
                     a1.v.forEachIndexed { i, vn ->
-                        verb.symbols[(vn as VString).v]?.also { variables[it] = a2.v[i] }
+                        exe.symbols[(vn as VString).v]?.also { variables[it] = a2.v[i] }
                     }
                 }
 
