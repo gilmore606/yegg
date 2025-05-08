@@ -296,18 +296,14 @@ class Parser(inputTokens: List<Token>) {
             val options = mutableListOf<Pair<N_EXPR?, Node>>()
             var elseFound = false
             while (!nextIs(T_BRACE_CLOSE)) {
-                pExpression()?.also { option ->
-                    consume(T_ARROW) ?: fail("missing arrow")
-                    pStatement()?.also { result ->
-                        options.add(Pair(option, result))
-                    } ?: fail("missing block")
-                } ?: consume(T_ELSE)?.also {
-                    if (elseFound) fail("multiple else") else elseFound = true
-                    consume(T_ARROW) ?: fail("missing arrow")
-                    pStatement()?.also { result ->
-                        options.add(Pair(null, result))
-                    }
-                } ?: fail("missing close brace")
+                var option: N_EXPR? = null
+                pExpression()?.also { option = it }
+                    ?: consume(T_ELSE)?.also { elseFound = true }
+                    ?: fail("missing close brace")
+                consume(T_ARROW) ?: fail("missing arrow")
+                pStatement()?.also { result ->
+                    options.add(Pair(option, result))
+                } ?: fail("missing block")
             }
             consume(T_BRACE_CLOSE)
             if (!asStatement && !elseFound) fail("no else in when expression")
