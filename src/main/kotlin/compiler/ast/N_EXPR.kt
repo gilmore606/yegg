@@ -1,6 +1,7 @@
 package com.dlfsystems.compiler.ast
 
 import com.dlfsystems.compiler.Coder
+import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
 
 // An expression which reduces to a Value.
@@ -10,14 +11,28 @@ abstract class N_EXPR: N_STATEMENT() {
     open fun codeAssign(coder: Coder) { fail("illegal left side of assignment") }
     // Code this expr as the left side of [i]= assign.
     open fun codeIndexAssign(coder: Coder) { fail("illegal left side of index assignment") }
+    // Does this expr have a constant value?
+    open fun constantValue(): Value? = null
+    // If we have a constantValue(), code it and return true.
+    // Any code() on an N_EXPR that can have a constant value should call this first (and terminate if true).
+    protected fun codeConstant(coder: Coder): Boolean {
+        constantValue()?.also { value ->
+            coder.code(this, O_VAL)
+            coder.value(this, value)
+            return true
+        }
+        return false
+    }
 }
 
 // Parenthetical expressions are parsed to N_PARENS to prevent X.(identifier) from binding as a literal reference.
 class N_PARENS(val expr: N_EXPR): N_EXPR() {
     override fun toText() = "($expr)"
     override fun kids() = listOf(expr)
+    override fun constantValue() = expr.constantValue()
 
     override fun code(coder: Coder) {
+        if (codeConstant(coder)) return
         expr.code(coder)
     }
 }
@@ -26,8 +41,10 @@ class N_PARENS(val expr: N_EXPR): N_EXPR() {
 class N_NEGATE(val expr: N_EXPR): N_EXPR() {
     override fun toText() = "-$expr"
     override fun kids() = listOf(expr)
+    override fun constantValue() = expr.constantValue()?.negate()
 
     override fun code(coder: Coder) {
+        if (codeConstant(coder)) return
         expr.code(coder)
         coder.code(this, O_NEGATE)
     }

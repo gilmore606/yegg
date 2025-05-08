@@ -329,6 +329,16 @@ class VM(val exe: Executable) {
                     a1.divide(a2)?.also { push(it) }
                         ?: fail(E_TYPE, "cannot divide ${a1.type} and ${a2.type}")
                 }
+                O_POWER -> {
+                    val (a2, a1) = popTwo()
+                    a1.toPower(a2)?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot raise ${a1.type} to power ${a2.type}")
+                }
+                O_MODULUS -> {
+                    val (a2, a1) = popTwo()
+                    a1.modulo(a2)?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot modulo ${a1.type} by ${a2.type}")
+                }
 
                 else -> fail(E_SYS, "unknown opcode $word")
             }
