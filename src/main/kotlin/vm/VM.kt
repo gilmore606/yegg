@@ -192,15 +192,17 @@ class VM(val exe: Executable) {
                     val args = mutableListOf<Value>()
                     repeat (argCount) { args.add(0, pop()) }
                     exe.symbols[name]?.also { variableID ->
+                        var result: Value? = null
                         // Look for variable with VFun
                         variables[variableID]?.let { subject ->
                             if (subject is VFun) {
-                                push(subject.verbInvoke(c, args))
+                                result = subject.verbInvoke(c, args)
                             } else fail(E_TYPE, "cannot invoke ${subject.type} as fun")
                         // Look for $sys.verb
                         } ?: Yegg.world.sys.callVerb(c, name, args)?.also {
-                            push(it)
+                            result = it
                         } ?: fail(E_VARNF, "no such fun or variable")
+                        result?.also { push(it) }
                     }
                 }
 
