@@ -20,6 +20,8 @@ class VM(val exe: Executable) {
     private var pc: Int = 0
     // The local stack.
     private val stack = ArrayDeque<Value>()
+    private fun dumpStack() = stack.joinToString(",") { "$it" }
+
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
@@ -152,11 +154,11 @@ class VM(val exe: Executable) {
                 }
                 O_RETURN -> {
                     if (stack.isEmpty()) fail(E_SYS, "no return value on stack!")
-                    if (stack.size > 1) fail(E_SYS, "stack polluted on return!")
+                    if (stack.size > 1) fail(E_SYS, "stack polluted on return!  ${dumpStack()}")
                     return pop()
                 }
                 O_RETURNNULL -> {
-                    if (stack.isNotEmpty()) fail(E_SYS, "stack polluted on return!")
+                    if (stack.isNotEmpty()) fail(E_SYS, "stack polluted on returnnull!  ${dumpStack()}")
                     return VVoid
                 }
                 O_RETVAL -> {
@@ -192,15 +194,17 @@ class VM(val exe: Executable) {
                     val args = mutableListOf<Value>()
                     repeat (argCount) { args.add(0, pop()) }
                     exe.symbols[name]?.also { variableID ->
+                        var result: Value? = null
                         // Look for variable with VFun
                         variables[variableID]?.let { subject ->
                             if (subject is VFun) {
-                                push(subject.verbInvoke(c, args))
-                            } else fail(E_TYPE, "cannot invoke ${subject?.type} as fun")
+                                result = subject.verbInvoke(c, args)
+                            } else fail(E_TYPE, "cannot invoke ${subject.type} as fun")
                         // Look for $sys.verb
                         } ?: Yegg.world.sys.callVerb(c, name, args)?.also {
-                            push(it)
+                            result = it
                         } ?: fail(E_VARNF, "no such fun or variable")
+                        result?.also { push(it) }
                     }
                 }
 

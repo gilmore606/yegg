@@ -454,28 +454,11 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse: !|-<expr>
     private fun pInverse(): N_EXPR? {
-        val next = this::pIfElse
+        val next = this::pFuncall
         consume(T_BANG, T_MINUS)?.also { operator ->
             pExpression()?.also { right ->
                 return node(N_NEGATE(right))
             } ?: fail("expression expected after $operator")
-        }
-        return next()
-    }
-
-    // Parse (as expression): if <expr> <expr> else <expr>
-    private fun pIfElse(): N_EXPR? {
-        val next = this::pFuncall
-        consume(T_IF)?.also {
-            pExpression()?.also { condition ->
-                pExpression()?.also { eThen ->
-                    consume(T_ELSE)?.also {
-                        pExpression()?.also { eElse ->
-                            return node(N_CONDITIONAL(condition, eThen, eElse))
-                        } ?: fail("missing else expression")
-                    } ?: fail("expected else in if expression")
-                } ?: fail("missing expression")
-            } ?: fail("missing condition")
         }
         return next()
     }
