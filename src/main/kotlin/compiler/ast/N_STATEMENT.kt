@@ -197,3 +197,24 @@ class N_INCREMENT(val identifier: N_IDENTIFIER, val isDecrement: Boolean = false
         coder.value(this, identifier.variableID!!)
     }
 }
+
+class N_SUSPEND(val seconds: N_EXPR): N_STATEMENT() {
+    override fun toText() = "suspend ($seconds)"
+    override fun kids() = listOf(seconds)
+
+    override fun code(coder: Coder) {
+        seconds.code(coder)
+        coder.code(this, O_SUSPEND)
+    }
+}
+
+class N_FORK(val seconds: N_EXPR, val function: N_LITERAL_FUN): N_STATEMENT() {
+    override fun toText() = "fork ($seconds) $function"
+    override fun kids() = listOf(seconds, function)
+
+    override fun code(coder: Coder) {
+        seconds.code(coder)
+        function.code(coder)
+        coder.code(this, O_FORK)
+    }
+}

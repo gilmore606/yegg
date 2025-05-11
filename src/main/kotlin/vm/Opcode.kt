@@ -50,6 +50,12 @@ enum class Opcode(val argCount: Int = 0) {
     // Throw E_USER with pop0 as message.
     O_FAIL,
 
+    // Suspend for pop0 seconds.
+    O_SUSPEND,
+
+    // Fork pop0 VFun pop1 seconds in the future.
+    O_FORK,
+
     // Call verb with arg1 stack args.
     O_CALL(1),
 

@@ -202,6 +202,17 @@ class VM(val exe: Executable) {
                     }
                 }
 
+                // Task ops
+
+                O_SUSPEND -> {
+                    val a = pop()
+
+                }
+                O_FORK -> {
+                    val (a2, a1) = popTwo()
+
+                }
+
                 // Variable ops
 
                 O_GETVAR -> {

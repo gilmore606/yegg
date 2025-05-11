@@ -74,6 +74,8 @@ class Parser(inputTokens: List<Token>) {
         pWhileLoop()?.also { return it }
         pReturn()?.also { return it }
         pFail()?.also { return it }
+        pSuspend()?.also { return it }
+        pFork()?.also { return it }
         pWhen(asStatement = true)?.also { return node(N_EXPRSTATEMENT(it)) }
         pIncrement()?.also { return it }
         pDestructureList()?.also { return it }
@@ -189,6 +191,27 @@ class Parser(inputTokens: List<Token>) {
         consume(T_FAIL) ?: return null
         pExpression()?.also { return node(N_FAIL(it)) }
             ?: fail("missing message expression for fail")
+        return null
+    }
+
+    // Parse: suspend <expr>
+    private fun pSuspend(): N_STATEMENT? {
+        consume(T_SUSPEND) ?: return null
+        pExpression()?.also { return node(N_SUSPEND(it)) }
+            ?: fail("missing time expression for suspend")
+        return null
+    }
+
+    // Parse: fork <expr> { block }
+    private fun pFork(): N_STATEMENT? {
+        consume(T_FORK) ?: return null
+        pExpression()?.also { seconds ->
+            pBlock()?.also { block ->
+                return node(N_FORK(
+                    seconds,
+                    node(N_LITERAL_FUN(listOf(), block))
+                )) } ?: fail("missing block for fork")
+        } ?: fail("missing time expression for fork")
         return null
     }
 
