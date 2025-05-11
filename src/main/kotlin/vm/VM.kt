@@ -99,7 +99,6 @@ class VM(val exe: Executable) {
                 }
                 O_FUNVAL -> {
                     val block = next().intFromV
-                    val code = exe.getBlockCode(block) // TODO: get jump offset?
                     // Capture variables from scope
                     val withVars = buildMap {
                         (pop() as VList).v.map { (it as VString).v }.forEach { varName ->
@@ -109,7 +108,7 @@ class VM(val exe: Executable) {
                         }
                     }
                     val args = (pop() as VList).v.map { (it as VString).v }
-                    push(VFun(code, exe.symbols, exe.blocks, c.vThis, args, withVars))
+                    push(exe.getLambda(block, c.vThis, args, withVars))
                 }
 
                 // Index/range ops
