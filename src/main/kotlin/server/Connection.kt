@@ -30,7 +30,7 @@ class Connection(private val sendText: (String) -> Unit) {
         } ?: run {
             if (text.startsWith(";")) {
                 val code = text.substringAfter(";")
-                sendText(Compiler.eval(Context(this), code))
+                sendText(Compiler.eval(Context(this), "return $code"))
             } else if (text.startsWith("@")) {
                 // TODO: get rid of these hardcoded @meta commands
                 parseMeta(text)
