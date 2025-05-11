@@ -54,7 +54,7 @@ class VM(val exe: Executable) {
         try {
             return executeCode(c)
         } catch (e: Exception) {
-            throw (e as? VMException ?: VMException(E_SYS, e.message ?: e.stackTraceToString()))
+            throw (e as? VMException ?: VMException(E_SYS, "${e.message} (mem $pc)\n${e.stackTraceToString()}"))
                 .withLocation(lineNum, charNum)
         }
     }

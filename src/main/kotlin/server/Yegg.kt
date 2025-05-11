@@ -14,6 +14,8 @@ object Yegg {
 
     var worldName = "Minimal"
     var logLevel = Log.Level.DEBUG
+    var optimizeCompiler = true
+
     private val JSON = Json { allowStructuredMapKeys = true }
 
     private const val CONNECT_MSG = "** Connected **"

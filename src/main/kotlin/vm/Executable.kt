@@ -1,5 +1,6 @@
 package com.dlfsystems.vm
 
+import com.dlfsystems.app.Log
 import com.dlfsystems.value.VFun
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
@@ -31,6 +32,7 @@ interface Executable {
                 address = it - offset
             ) } ?: word
         }
+        Log.d("LAMBDA CODE:\n${lambdaCode.dumpText()}\n")
         return VFun(lambdaCode, symbols, blocks, vThis, args, withVars)
     }
 
