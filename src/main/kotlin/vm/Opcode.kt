@@ -126,4 +126,7 @@ enum class Opcode(val argCount: Int = 0) {
     // Push the addition of pop0 and value arg1.
     O_ADDVAL(1),
 
+    // Push the addition of pop0, pop1, and value arg1.
+    O_CONCAT(1),
+
 }

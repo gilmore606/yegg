@@ -57,12 +57,12 @@ class N_STRING_SUB(val parts: List<N_EXPR>): N_EXPR() {
 
     override fun code(coder: Coder) {
         when (parts.size) {
-            0 -> N_LITERAL_STRING("").code(coder)
+            0 -> return
             else -> {
-                if (parts[0].toString() != "") parts[0].code(coder)
+                if (!parts[0].isEmptyString()) parts[0].code(coder)
                 var i = 1
                 while (i < parts.size) {
-                    if (parts[i].toString() != "") {
+                    if (!parts[i].isEmptyString()) {
                         parts[i].code(coder)
                         coder.code(this, O_ADD)
                     }
@@ -71,6 +71,8 @@ class N_STRING_SUB(val parts: List<N_EXPR>): N_EXPR() {
             }
         }
     }
+
+    private fun N_EXPR.isEmptyString() = (this is N_LITERAL_STRING) && (this.value == "")
 }
 
 // A three-part conditional expression: (cond) ? trueExpr : falseExpr

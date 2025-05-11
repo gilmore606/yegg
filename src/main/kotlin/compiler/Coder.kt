@@ -170,6 +170,12 @@ class Coder(val ast: Node) {
                     value(args[0].value!!)
                 }
 
+                // O_ADD O_VAL O_ADD => O_CONCAT
+                ?: consume(O_ADD, O_VAL, null, O_ADD)?.also { args ->
+                    code(O_CONCAT)
+                    value(args[0].value!!)
+                }
+
                 // O_VAL O_ADD => O_ADDVAL
                 ?: consume(O_VAL, null, O_ADD)?.also { args ->
                     code(O_ADDVAL)

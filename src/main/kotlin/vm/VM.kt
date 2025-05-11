@@ -323,6 +323,14 @@ class VM(val exe: Executable) {
                     a1.plus(a2)?.also { push(it) }
                         ?: fail(E_TYPE, "cannot add ${a1.type} and ${a2.type}")
                 }
+                O_CONCAT -> {
+                    val (a2, a1) = popTwo()
+                    val a3 = next().value!!
+                    a1.plus(a2)?.also { a12 ->
+                        a12.plus(a3)?.also { push(it) }
+                            ?: fail(E_TYPE, "cannot add ${a12.type} and ${a3.type}")
+                    } ?: fail(E_TYPE, "cannot add ${a1.type} and ${a2.type}")
+                }
                 O_MULT -> {
                     val (a2, a1) = popTwo()
                     a1.multiply(a2)?.also { push(it) }
