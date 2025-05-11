@@ -13,7 +13,7 @@ object Compiler {
         val symbols: Map<String, Int>,
         val tokens: List<Token>,
         val ast: Node,
-        val blocks: List<Pair<Int,Int>>,
+        val blocks: List<Executable.Block>,
     )
 
     fun compile(source: String): Result {
@@ -21,7 +21,7 @@ object Compiler {
         var code: List<VMWord>? = null
         var ast: Node? = null
         var symbols: Map<String, Int>? = null
-        var blocks: List<Pair<Int,Int>>? = null
+        var blocks: List<Executable.Block>? = null
         try {
             // Stage 1: Lex source into tokens.
             tokens = Lexer(source).lex()

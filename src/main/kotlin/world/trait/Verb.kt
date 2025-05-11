@@ -21,7 +21,7 @@ class Verb(
     var source = ""
     @Transient override var code: List<VMWord> = listOf()
     @Transient override var symbols: Map<String, Int> = mapOf()
-    @Transient override var blocks: List<Pair<Int,Int>> = listOf()
+    @Transient override var blocks: List<Executable.Block> = listOf()
 
     fun program(source: String) {
         this.source = source

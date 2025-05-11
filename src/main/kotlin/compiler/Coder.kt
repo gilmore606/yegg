@@ -5,6 +5,7 @@ import com.dlfsystems.vm.Opcode
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.vm.VMWord
 import com.dlfsystems.value.*
+import com.dlfsystems.vm.Executable
 import com.dlfsystems.world.ObjID
 
 class Coder(val ast: Node) {
@@ -16,7 +17,7 @@ class Coder(val ast: Node) {
     // Addresses stored to be used as future jump destinations.
     val backJumps = HashMap<String, Int>()
     // Entry points to literal VFuns.
-    val blocks = mutableListOf<Pair<Int,Int>>()
+    val blocks = mutableListOf<Executable.Block>()
 
     fun last() = if (mem.isEmpty()) null else mem[mem.size - 1]
 
@@ -50,14 +51,14 @@ class Coder(val ast: Node) {
     fun codeBlockStart(from: Node): Int {
         val entryPoint = blocks.size
         value(from, entryPoint)
-        blocks.add(Pair(mem.size + 2, -1))  // +2 to skip the O_JUMP<addr>
+        blocks.add(Executable.Block(mem.size + 2, -1))  // +2 to skip the O_JUMP<addr>
         return entryPoint
     }
 
     // Record a block end address.  Assumes the start was already coded!
     fun codeBlockEnd(from: Node, block: Int) {
-        blocks[block] = Pair(
-            blocks[block].first, mem.size
+        blocks[block] = Executable.Block(
+            blocks[block].start, mem.size
         )
     }
 
@@ -119,8 +120,8 @@ class Coder(val ast: Node) {
                     jumpMap[address] = -1
                 }
             }
-            blockStartMap.addAll(coder.blocks.map { it.first })
-            blockEndMap.addAll(coder.blocks.map { it.second })
+            blockStartMap.addAll(coder.blocks.map { it.start })
+            blockEndMap.addAll(coder.blocks.map { it.end })
 
             pc = 0
             while (pc < mem.size) {
@@ -128,8 +129,8 @@ class Coder(val ast: Node) {
                 if (jumpMap.containsKey(pc)) jumpMap[pc] = outMem.size
                 // If we've reached an entry point, record its new address
                 coder.blocks.forEachIndexed { n, it ->
-                    if (it.first == pc) blockStartMap[n] = outMem.size
-                    if (it.second == pc) blockEndMap[n] = outMem.size
+                    if (it.start == pc) blockStartMap[n] = outMem.size
+                    if (it.end == pc) blockEndMap[n] = outMem.size
                 }
 
                 // NEGATE NEGATE => ()
@@ -183,7 +184,9 @@ class Coder(val ast: Node) {
             }
             // Replace all block addresses
             coder.blocks.clear()
-            coder.blocks.addAll(blockStartMap.mapIndexed { n, it -> Pair(it, blockEndMap[n])})
+            coder.blocks.addAll(blockStartMap.mapIndexed { n, it ->
+                Executable.Block(it, blockEndMap[n])
+            })
             // Replace compiled code
             coder.mem = outMem
         }

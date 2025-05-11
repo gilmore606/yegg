@@ -14,7 +14,7 @@ import kotlinx.serialization.Serializable
 data class VFun(
     val withCode: List<VMWord>,
     val withSymbols: Map<String, Int>,
-    val withBlocks: List<Pair<Int, Int>>,
+    val withBlocks: List<Executable.Block>,
     val vThis: VObj,
     val argNames: List<String>,
     val vars: Map<String, Value>,
