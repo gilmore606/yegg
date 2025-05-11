@@ -32,10 +32,10 @@ abstract class Node {
     open fun identify() { }
 
     // Collect all variable names under this node.
-    fun collectVars(): List<String> = buildList {
+    fun collectVars(): List<String> = buildSet {
         kids().forEach { addAll(it.collectVars()) }
         variableName()?.also { add(it) }
-    }
+    }.toList()
 
     // Return our name if we're an identifier for a variable.
     open fun variableName(): String? = null

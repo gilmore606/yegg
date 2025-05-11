@@ -100,11 +100,12 @@ class N_LITERAL_FUN(val args: List<N_IDENTIFIER>, val block: N_BLOCK): N_LITERAL
         coder.code(this, O_VAL)
         coder.value(this, block.collectVars().map { VString(it) })
         coder.code(this, O_FUNVAL)
-        coder.codeEntryPoint(this)
+        val blockID = coder.codeBlockStart(this)
         coder.code(this, O_JUMP)
         coder.jumpForward(this, "skipFun")
         block.code(coder)
         coder.code(this, O_RETURN)
+        coder.codeBlockEnd(this, blockID)
         coder.setForwardJump(this, "skipFun")
     }
 }
