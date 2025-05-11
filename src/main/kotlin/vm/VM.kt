@@ -81,7 +81,7 @@ class VM(val exe: Executable) {
             when (word.opcode) {
 
                 O_DISCARD -> {
-                    pop()
+                    if (stack.isNotEmpty()) pop()
                 }
 
                 // Value ops
@@ -153,7 +153,7 @@ class VM(val exe: Executable) {
                     if (addr >= 0) pc = addr else return VVoid  // Unresolved jump dest means end-of-code
                 }
                 O_RETURN -> {
-                    if (stack.isEmpty()) fail(E_SYS, "no return value on stack!")
+                    if (stack.isEmpty()) return VVoid
                     if (stack.size > 1) fail(E_SYS, "stack polluted on return!  ${dumpStack()}")
                     return pop()
                 }
