@@ -14,6 +14,8 @@ interface Executable {
     val symbols: Map<String, Int>
     val blocks: List<Block>
 
+    fun execute(c: Context, args: List<Value>): Value
+
     fun getLambda(
         block: Int,
         vThis: VObj,

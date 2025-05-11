@@ -36,6 +36,8 @@ data class VFun(
         return null
     }
 
+    override fun execute(c: Context, args: List<Value>) = verbInvoke(c, args)
+
     fun verbInvoke(c: Context, args: List<Value>): Value {
         if ((args.size < argNames.size) || (args.size > argNames.size && args.size > 1))
             fail(E_RANGE, "lambda wants ${argNames.size} args but got ${args.size}")

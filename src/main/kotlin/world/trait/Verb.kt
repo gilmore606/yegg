@@ -29,6 +29,8 @@ class Verb(
         Log.i("programmed $name with code ${code.dumpText()}")
     }
 
+    override fun execute(c: Context, args: List<Value>) = call(c, c.vThis, args)
+
     fun call(
         c: Context, vThis: VObj,
         args: List<Value>,

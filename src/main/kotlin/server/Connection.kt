@@ -95,7 +95,12 @@ class Connection(private val sendText: (String) -> Unit) {
             vThis = match.obj?.vThis ?: Yegg.vNullObj
             vUser = connection?.user?.vThis ?: Yegg.vNullObj
         }
-        MCP.schedule(c, match.trait.id, match.verb, match.args)
+        Yegg.world.getTrait(match.trait.id)?.verbs?.get(match.verb)?.also { verb ->
+            MCP.schedule(c, verb, match.args)
+        } ?: run {
+            sendText("ERR: No verb ${match.verb} found for command")
+            sendText(c.stackDump())
+        }
     }
 
     // Respond to meta commands.

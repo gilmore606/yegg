@@ -1,28 +1,28 @@
 package com.dlfsystems.server
 
+import com.dlfsystems.app.Log
 import com.dlfsystems.vm.Context
 import com.dlfsystems.util.systemEpoch
-import com.dlfsystems.value.VFun
 import com.dlfsystems.value.Value
-import com.dlfsystems.world.trait.TraitID
+import com.dlfsystems.vm.Executable
 import kotlinx.coroutines.delay
 
+// The task scheduler.
+// Runs tasks at scheduled epoch times in a single thread.
 
 object MCP {
+
+    private const val WAIT_FOR_TASKS_MS = 100L
 
     private val taskMap = mutableMapOf<TaskID, Task>()
     private val timeMap = mutableMapOf<Int, MutableList<TaskID>>()
 
 
-    fun schedule(vFun: VFun, seconds: Int = 0) {
-
+    fun schedule(c: Context, exe: Executable, args: List<Value>, seconds: Int = 0) {
+        schedule(Task(systemEpoch() + seconds, c, exe, args))
     }
 
-    fun schedule(c: Context, trait: TraitID, verb: String, args: List<Value>, seconds: Int = 0) {
-        schedule(Task(systemEpoch() + seconds, c, trait, verb, args))
-    }
-
-    fun schedule(task: Task) {
+    private fun schedule(task: Task) {
         taskMap[task.id] = task
         timeMap[task.atSeconds]?.add(task.id) ?: run {
             timeMap[task.atSeconds] = mutableListOf(task.id)
@@ -39,7 +39,7 @@ object MCP {
                 }
                 runTask(task)
             } ?: run {
-                delay(100L)
+                delay(WAIT_FOR_TASKS_MS)
             }
         }
     }
@@ -57,9 +57,11 @@ object MCP {
 
     private fun runTask(task: Task) {
         try {
-            Yegg.world.getTrait(task.trait)!!.callVerb(task.c, task.verb, task.args)
+            task.exe.execute(task.c, task.args)
         } catch (e: SuspendException) {
             // TODO: how tf is this gonna work
+            // TODO: the resumed task will assume it can return values back through the stack, but those calls no longer exist
+            // TODO: reevaluate calling/returning through callstack
             schedule(task.apply { atSeconds = systemEpoch() + e.seconds })
         } catch (e: Exception) {
             task.c.connection?.sendText(e.toString())
@@ -67,3 +69,7 @@ object MCP {
         }
     }
 }
+
+
+// Throw me to suspend the current task
+class SuspendException(val seconds: Int): Exception()

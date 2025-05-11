@@ -212,7 +212,10 @@ class VM(val exe: Executable) {
                 }
                 O_FORK -> {
                     val (a2, a1) = popTwo()
-                    MCP.schedule(a2 as VFun, (a1 as VInt).v)
+                    MCP.schedule(Context(c.connection).apply {
+                        vThis = c.vThis
+                        vUser = c.vUser
+                    }, a2 as VFun, listOf(), (a1 as VInt).v)
                 }
 
                 // Variable ops
