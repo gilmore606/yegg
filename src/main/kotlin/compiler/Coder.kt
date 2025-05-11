@@ -182,6 +182,13 @@ class Coder(val ast: Node) {
                     value(args[0].value!!)
                 }
 
+                // O_FUNCALL O_DISCARD => O_FUNVOKE
+                ?: consume(O_FUNCALL, null, null, O_DISCARD)?.also { args ->
+                    code(O_FUNVOKE)
+                    value(args[0].value!!)
+                    value(args[1].value!!)
+                }
+
 
                 // If nothing matched, copy and continue
                 ?: run {

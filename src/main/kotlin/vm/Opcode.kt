@@ -60,6 +60,7 @@ enum class Opcode(val argCount: Int = 0) {
     O_CALL(1),
 
     // Call fun with arg1 name and arg2 stack args.
+    // Push result.
     O_FUNCALL(2),
 
     // Push variable with ID arg1.
@@ -134,5 +135,8 @@ enum class Opcode(val argCount: Int = 0) {
 
     // Push the addition of pop0, pop1, and value arg1.
     O_CONCAT(1),
+
+    // Call fun but do not push result.
+    O_FUNVOKE(2),
 
 }
