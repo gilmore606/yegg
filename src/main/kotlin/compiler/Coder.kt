@@ -107,8 +107,8 @@ class Coder(val ast: Node) {
         private val mem = coder.mem
         private val outMem = mutableListOf<VMWord>()
         private val jumpMap = mutableMapOf<Int, Int>()
-        private val blockStartMap = mutableListOf<Int>()
-        private val blockEndMap = mutableListOf<Int>()
+        private val blockStarts = mutableListOf<Int>()
+        private val blockEnds = mutableListOf<Int>()
         private var pc = 0
         private var lastMatchSize = 0
 
@@ -120,8 +120,8 @@ class Coder(val ast: Node) {
                     jumpMap[address] = -1
                 }
             }
-            blockStartMap.addAll(coder.blocks.map { it.start })
-            blockEndMap.addAll(coder.blocks.map { it.end })
+            blockStarts.addAll(coder.blocks.map { it.start })
+            blockEnds.addAll(coder.blocks.map { it.end })
 
             pc = 0
             while (pc < mem.size) {
@@ -129,8 +129,8 @@ class Coder(val ast: Node) {
                 if (jumpMap.containsKey(pc)) jumpMap[pc] = outMem.size
                 // If we've reached an entry point, record its new address
                 coder.blocks.forEachIndexed { n, it ->
-                    if (it.start == pc) blockStartMap[n] = outMem.size
-                    if (it.end == pc) blockEndMap[n] = outMem.size
+                    if (it.start == pc) blockStarts[n] = outMem.size
+                    if (it.end == pc) blockEnds[n] = outMem.size
                 }
 
                 // NEGATE NEGATE => ()
@@ -197,8 +197,8 @@ class Coder(val ast: Node) {
             }
             // Replace all block addresses
             coder.blocks.clear()
-            coder.blocks.addAll(blockStartMap.mapIndexed { n, it ->
-                Executable.Block(it, blockEndMap[n])
+            coder.blocks.addAll(blockStarts.mapIndexed { n, it ->
+                Executable.Block(it, blockEnds[n])
             })
             // Replace compiled code
             coder.mem = outMem
