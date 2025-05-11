@@ -21,7 +21,7 @@ interface Executable {
         withVars: Map<String, Value>,
     ): VFun {
         val offset = blocks[block].start
-        val code = code.subList(blocks[block].start, blocks[block].end).map { word ->
+        val lambdaCode = code.subList(blocks[block].start, blocks[block].end).map { word ->
             // Rewrite jump dests with offset
             word.address?.let { VMWord(
                 lineNum = word.lineNum,
@@ -29,7 +29,7 @@ interface Executable {
                 address = it - offset
             ) } ?: word
         }
-        return VFun(code, symbols, blocks, vThis, args, withVars)
+        return VFun(lambdaCode, symbols, blocks, vThis, args, withVars)
     }
 
 }
