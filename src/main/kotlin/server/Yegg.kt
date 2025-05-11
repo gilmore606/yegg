@@ -5,6 +5,9 @@ import com.dlfsystems.value.*
 import com.dlfsystems.world.World
 import com.dlfsystems.world.Obj
 import io.viascom.nanoid.NanoId
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.system.exitProcess
@@ -59,6 +62,10 @@ object Yegg {
                     props["password"] = VString("")
                 }
             }
+        }
+
+        GlobalScope.launch {
+            MCP.runTasks()
         }
     }
 

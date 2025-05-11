@@ -2,6 +2,8 @@
 
 package com.dlfsystems.vm
 
+import com.dlfsystems.server.MCP
+import com.dlfsystems.server.SuspendException
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
@@ -206,11 +208,11 @@ class VM(val exe: Executable) {
 
                 O_SUSPEND -> {
                     val a = pop()
-
+                    throw SuspendException((a as VInt).v)
                 }
                 O_FORK -> {
                     val (a2, a1) = popTwo()
-
+                    MCP.schedule(a2 as VFun, (a1 as VInt).v)
                 }
 
                 // Variable ops
