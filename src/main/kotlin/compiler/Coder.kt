@@ -170,6 +170,13 @@ class Coder(val ast: Node) {
                     value(args[0].value!!)
                 }
 
+                // O_VAL O_ADD => O_ADDVAL
+                ?: consume(O_VAL, null, O_ADD)?.also { args ->
+                    code(O_ADDVAL)
+                    value(args[0].value!!)
+                }
+
+
                 // If nothing matched, copy and continue
                 ?: run {
                     outMem.add(mem[pc++])

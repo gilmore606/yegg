@@ -59,10 +59,10 @@ class N_STRING_SUB(val parts: List<N_EXPR>): N_EXPR() {
         when (parts.size) {
             0 -> N_LITERAL_STRING("").code(coder)
             else -> {
-                parts[0].code(coder)
+                if (parts[0].toString() != "") parts[0].code(coder)
                 var i = 1
                 while (i < parts.size) {
-                    if (!(parts[i] is N_LITERAL_STRING && (parts[i] as N_LITERAL_STRING).value == "")) {
+                    if (parts[i].toString() != "") {
                         parts[i].code(coder)
                         coder.code(this, O_ADD)
                     }

@@ -123,4 +123,7 @@ enum class Opcode(val argCount: Int = 0) {
     O_CMP_LTZ,
     O_CMP_LEZ,
 
+    // Push the addition of pop0 and value arg1.
+    O_ADDVAL(1),
+
 }
