@@ -5,7 +5,6 @@ import com.dlfsystems.value.*
 import com.dlfsystems.world.World
 import com.dlfsystems.world.Obj
 import io.viascom.nanoid.NanoId
-import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.system.exitProcess
@@ -34,13 +33,16 @@ object Yegg {
     private val connections = mutableSetOf<Connection>()
     val connectedUsers = mutableMapOf<Obj, Connection>()
 
-    var schedulerJob: Job? = null
+    const val ID_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    fun newID() = NanoId.generateOptimized(8, ID_CHARS, 61, 16)
 
-    val idChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    fun newID() = NanoId.generateOptimized(8, idChars, 61, 16)
-
-    @OptIn(DelicateCoroutinesApi::class)
+    // Start the server.
     fun start() {
+        loadWorld()
+        MCP.start()
+    }
+
+    private fun loadWorld() {
         val file = File("$worldName.yegg")
         if (file.exists()) {
             Log.i("Loading database from ${file.path}...")
@@ -65,10 +67,6 @@ object Yegg {
                     props["password"] = VString("")
                 }
             }
-        }
-
-        schedulerJob = GlobalScope.launch {
-            MCP.runTasks()
         }
     }
 

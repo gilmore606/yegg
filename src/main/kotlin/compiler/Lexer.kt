@@ -183,7 +183,7 @@ class Lexer(val source: String) {
     private fun isIdentifierChar(c: Char) = (c in 'a'..'z') || (c in 'A'..'Z') || (c in '0'..'9') || (c == '_')
 
     // Is this a legal char for an internal ID string?
-    private fun isIDChar(c: Char) = Yegg.idChars.contains(c)
+    private fun isIDChar(c: Char) = Yegg.ID_CHARS.contains(c)
 
     // Begin a new accumulating token of (possibly) type.  Start with acc if given.
     private fun begin(type: TokenType, acc: Char? = null) {

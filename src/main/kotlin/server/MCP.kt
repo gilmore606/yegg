@@ -4,7 +4,7 @@ import com.dlfsystems.vm.Context
 import com.dlfsystems.util.systemEpoch
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Executable
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import java.util.*
 
 // The task scheduler.
@@ -12,11 +12,11 @@ import java.util.*
 
 object MCP {
 
-    private const val WAIT_FOR_TASKS_MS = 100L
-
+    private const val WAIT_FOR_TASKS_MS = 10L
     private val taskMap = TreeMap<TaskID, Task>()
+    private var job: Job? = null
 
-
+    // Schedule an executable to run some seconds in the future.
     fun schedule(
         c: Context,
         exe: Executable,
@@ -27,7 +27,19 @@ object MCP {
         taskMap[task.id] = task
     }
 
-    suspend fun runTasks() {
+    @OptIn(DelicateCoroutinesApi::class)
+    fun start() {
+        if (job?.isActive == true) throw IllegalStateException("Already started")
+        job = GlobalScope.launch {
+            runTasks()
+        }
+    }
+
+    fun stop() {
+        job?.cancel()
+    }
+
+    private suspend fun runTasks() {
         while (true) {
             getNextTask()?.also { task ->
                 taskMap.remove(task.id)
