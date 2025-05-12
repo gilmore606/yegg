@@ -52,7 +52,7 @@ object MCP {
             // TODO: how tf is this gonna work
             // TODO: the resumed task will assume it can return values back through the stack, but those calls no longer exist
             // TODO: reevaluate calling/returning through callstack
-            schedule(task.apply { atEpoch = systemEpoch() + e.seconds })
+            // schedule(task.apply { atEpoch = systemEpoch() + e.seconds })
         } catch (e: Exception) {
             task.c.connection?.sendText(e.toString())
             task.c.connection?.sendText(task.c.stackDump())
