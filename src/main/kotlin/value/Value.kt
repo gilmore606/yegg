@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed class Value {
-    enum class Type { VOID, BOOL, INT, FLOAT, STRING, LIST, MAP, OBJ, TRAIT, FUN }
+    enum class Type { VOID, BOOL, INT, FLOAT, STRING, LIST, MAP, OBJ, TRAIT, FUN, TASK }
 
     @SerialName("yType")
     abstract val type: Type
