@@ -28,9 +28,10 @@ SupervisorJob() +
         exe: Executable,
         args: List<Value>,
         secondsInFuture: Int = 0
-    ) {
+    ): TaskID {
         val task = Task(systemEpoch() + secondsInFuture, c, exe, args)
         taskMap[task.id] = task
+        return task.id
     }
 
     // Cancel a scheduled task.

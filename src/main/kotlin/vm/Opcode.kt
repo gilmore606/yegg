@@ -54,6 +54,7 @@ enum class Opcode(val argCount: Int = 0) {
     O_SUSPEND,
 
     // Fork pop0 VFun pop1 seconds in the future.
+    // Push VTask with taskID of forked task.
     O_FORK,
 
     // Call verb with arg1 stack args.
