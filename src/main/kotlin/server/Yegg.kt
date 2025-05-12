@@ -109,6 +109,7 @@ object Yegg {
     }
 
     fun shutdownServer() {
+        MCP.stop()
         exitProcess(0)
     }
 }

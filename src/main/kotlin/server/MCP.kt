@@ -16,6 +16,12 @@ object MCP {
     private val taskMap = TreeMap<TaskID, Task>()
     private var job: Job? = null
 
+    private val coroutineScope = CoroutineScope(
+SupervisorJob() +
+        Dispatchers.Default.limitedParallelism(1) +
+        CoroutineName("Yegg MCP thread")
+    )
+
     // Schedule an executable to run some seconds in the future.
     fun schedule(
         c: Context,
@@ -27,14 +33,30 @@ object MCP {
         taskMap[task.id] = task
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
+    // Cancel a scheduled task.
+    fun cancel(taskID: TaskID) { taskMap.remove(taskID) }
+
+    // Move a scheduled task to immediate execution.
+    fun resume(taskID: TaskID) {
+        taskMap[taskID]?.also { task ->
+            taskMap.remove(taskID)
+            val newTask = Task(systemEpoch(), task.c, task.exe, task.args)
+            taskMap[newTask.id] = newTask
+        } ?: throw IllegalArgumentException("Task $taskID does not exist")
+    }
+
+    // Is the given taskID a valid scheduled task?
+    fun isValidTask(taskID: TaskID) = taskMap.containsKey(taskID)
+
+    // Start processing all queued tasks.
     fun start() {
         if (job?.isActive == true) throw IllegalStateException("Already started")
-        job = GlobalScope.launch {
+        job = coroutineScope.launch {
             runTasks()
         }
     }
 
+    // Stop processing queued tasks.
     fun stop() {
         job?.cancel()
     }
