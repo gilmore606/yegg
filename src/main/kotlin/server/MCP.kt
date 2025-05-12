@@ -14,8 +14,7 @@ object MCP {
 
     private const val WAIT_FOR_TASKS_MS = 100L
 
-    private val taskMap = mutableMapOf<TaskID, Task>()
-    private val timeTree = TreeMap<Int, MutableList<TaskID>>()
+    private val taskMap = TreeMap<TaskID, Task>()
 
 
     fun schedule(
@@ -24,24 +23,14 @@ object MCP {
         args: List<Value>,
         secondsInFuture: Int = 0
     ) {
-        schedule(Task(systemEpoch() + secondsInFuture, c, exe, args))
-    }
-
-    private fun schedule(task: Task) {
+        val task = Task(systemEpoch() + secondsInFuture, c, exe, args)
         taskMap[task.id] = task
-        timeTree[task.atSeconds]?.add(task.id) ?: run {
-            timeTree.put(task.atSeconds, mutableListOf(task.id))
-        }
     }
 
     suspend fun runTasks() {
         while (true) {
             getNextTask()?.also { task ->
                 taskMap.remove(task.id)
-                timeTree[task.atSeconds]!!.apply {
-                    remove(task.id)
-                    if (isEmpty()) timeTree.remove(task.atSeconds)
-                }
                 runTask(task)
             } ?: run {
                 delay(WAIT_FOR_TASKS_MS)
@@ -50,13 +39,10 @@ object MCP {
     }
 
     private fun getNextTask(): Task? {
-        if (timeTree.isEmpty()) return null
-        // Find lowest time we have tasks for
-        val exeTime = timeTree.firstKey()
-        // If that's in the future, abort
-        if (exeTime > systemEpoch()) return null
-        // Return the first task in the current second
-        return taskMap[timeTree[exeTime]!!.first()]
+        if (taskMap.isEmpty()) return null
+        val nextTask = taskMap[taskMap.firstKey()]
+        if (nextTask!!.atEpoch > systemEpoch()) return null
+        return nextTask
     }
 
     private fun runTask(task: Task) {
@@ -66,7 +52,7 @@ object MCP {
             // TODO: how tf is this gonna work
             // TODO: the resumed task will assume it can return values back through the stack, but those calls no longer exist
             // TODO: reevaluate calling/returning through callstack
-            schedule(task.apply { atSeconds = systemEpoch() + e.seconds })
+            schedule(task.apply { atEpoch = systemEpoch() + e.seconds })
         } catch (e: Exception) {
             task.c.connection?.sendText(e.toString())
             task.c.connection?.sendText(task.c.stackDump())
