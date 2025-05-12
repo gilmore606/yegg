@@ -30,7 +30,7 @@ class Connection(private val sendText: (String) -> Unit) {
         } ?: run {
             if (text.startsWith(";")) {
                 val code = text.substringAfter(";")
-                sendText(Compiler.eval(Context(this), code))
+                sendText(Compiler.eval(Context(this), "return $code"))
             } else if (text.startsWith("@")) {
                 // TODO: get rid of these hardcoded @meta commands
                 parseMeta(text)
@@ -95,10 +95,10 @@ class Connection(private val sendText: (String) -> Unit) {
             vThis = match.obj?.vThis ?: Yegg.vNullObj
             vUser = connection?.user?.vThis ?: Yegg.vNullObj
         }
-        try {
-            match.trait.callVerb(c, match.verb, match.args)
-        } catch (e: Exception) {
-            sendText(e.toString())
+        Yegg.world.getTrait(match.trait.id)?.verbs?.get(match.verb)?.also { verb ->
+            MCP.schedule(c, verb, match.args)
+        } ?: run {
+            sendText("ERR: No verb ${match.verb} found for command")
             sendText(c.stackDump())
         }
     }

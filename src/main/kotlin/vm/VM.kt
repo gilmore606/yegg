@@ -2,6 +2,8 @@
 
 package com.dlfsystems.vm
 
+import com.dlfsystems.server.MCP
+import com.dlfsystems.server.SuspendException
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
@@ -52,7 +54,7 @@ class VM(val exe: Executable) {
         try {
             return executeCode(c)
         } catch (e: Exception) {
-            throw (e as? VMException ?: VMException(E_SYS, e.message ?: e.stackTraceToString()))
+            throw (e as? VMException ?: VMException(E_SYS, "${e.message} (mem $pc)\n${e.stackTraceToString()}"))
                 .withLocation(lineNum, charNum)
         }
     }
@@ -79,7 +81,7 @@ class VM(val exe: Executable) {
             when (word.opcode) {
 
                 O_DISCARD -> {
-                    pop()
+                    if (stack.isNotEmpty()) pop()
                 }
 
                 // Value ops
@@ -151,7 +153,7 @@ class VM(val exe: Executable) {
                     if (addr >= 0) pc = addr else return VVoid  // Unresolved jump dest means end-of-code
                 }
                 O_RETURN -> {
-                    if (stack.isEmpty()) fail(E_SYS, "no return value on stack!")
+                    if (stack.isEmpty()) return VVoid
                     if (stack.size > 1) fail(E_SYS, "stack polluted on return!  ${dumpStack()}")
                     return pop()
                 }
@@ -186,7 +188,7 @@ class VM(val exe: Executable) {
                         ticksLeft = c.ticksLeft
                     } else fail(E_VERBNF, "verb name must be string")
                 }
-                O_FUNCALL -> {
+                O_FUNCALL, O_FUNVOKE -> {
                     val name = (next().value as VString).v
                     val argCount = next().intFromV
                     val args = mutableListOf<Value>()
@@ -202,8 +204,22 @@ class VM(val exe: Executable) {
                         } ?: Yegg.world.sys.callVerb(c, name, args)?.also {
                             result = it
                         } ?: fail(E_VARNF, "no such fun or variable")
-                        result?.also { push(it) }
+                        result?.also { if (word.opcode == O_FUNCALL) push(it) }
                     }
+                }
+
+                // Task ops
+
+                O_SUSPEND -> {
+                    val a = pop()
+                    throw SuspendException((a as VInt).v)
+                }
+                O_FORK -> {
+                    val (a2, a1) = popTwo()
+                    MCP.schedule(Context(c.connection).apply {
+                        vThis = c.vThis
+                        vUser = c.vUser
+                    }, a2 as VFun, listOf(), (a1 as VInt).v)
                 }
 
                 // Variable ops

@@ -1,6 +1,7 @@
 package com.dlfsystems.compiler
 
 import com.dlfsystems.compiler.ast.Node
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.vm.Opcode
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.vm.VMWord
@@ -25,7 +26,7 @@ class Coder(val ast: Node) {
     // Nodes will then call Coder.code() and Coder.value() to output their compiled code.
     fun generate() {
         ast.code(this)
-        Optimizer(this).optimize()
+        if (Yegg.optimizeCompiler) Optimizer(this).optimize()
     }
 
     // Write an opcode into memory.
@@ -180,6 +181,13 @@ class Coder(val ast: Node) {
                 ?: consume(O_VAL, null, O_ADD)?.also { args ->
                     code(O_ADDVAL)
                     value(args[0].value!!)
+                }
+
+                // O_FUNCALL O_DISCARD => O_FUNVOKE
+                ?: consume(O_FUNCALL, null, null, O_DISCARD)?.also { args ->
+                    code(O_FUNVOKE)
+                    value(args[0].value!!)
+                    value(args[1].value!!)
                 }
 
 

@@ -13,6 +13,8 @@ object Yegg {
 
     var worldName = "Minimal"
     var logLevel = Log.Level.DEBUG
+    var optimizeCompiler = true
+
     private val JSON = Json { allowStructuredMapKeys = true }
 
     private const val CONNECT_MSG = "** Connected **"
@@ -31,10 +33,16 @@ object Yegg {
     private val connections = mutableSetOf<Connection>()
     val connectedUsers = mutableMapOf<Obj, Connection>()
 
-    val idChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    fun newID() = NanoId.generateOptimized(8, idChars, 61, 16)
+    const val ID_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    fun newID() = NanoId.generateOptimized(8, ID_CHARS, 61, 16)
 
+    // Start the server.
     fun start() {
+        loadWorld()
+        MCP.start()
+    }
+
+    private fun loadWorld() {
         val file = File("$worldName.yegg")
         if (file.exists()) {
             Log.i("Loading database from ${file.path}...")

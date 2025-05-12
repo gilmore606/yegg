@@ -1,5 +1,6 @@
 package com.dlfsystems.vm
 
+import com.dlfsystems.app.Log
 import com.dlfsystems.value.VFun
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
@@ -13,6 +14,8 @@ interface Executable {
     val code: List<VMWord>
     val symbols: Map<String, Int>
     val blocks: List<Block>
+
+    fun execute(c: Context, args: List<Value>): Value
 
     fun getLambda(
         block: Int,
@@ -29,6 +32,7 @@ interface Executable {
                 address = it - offset
             ) } ?: word
         }
+        Log.d("LAMBDA CODE:\n${lambdaCode.dumpText()}\n")
         return VFun(lambdaCode, symbols, blocks, vThis, args, withVars)
     }
 

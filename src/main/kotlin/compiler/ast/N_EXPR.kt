@@ -59,7 +59,7 @@ class N_STRING_SUB(val parts: List<N_EXPR>): N_EXPR() {
         when (parts.size) {
             0 -> return
             else -> {
-                if (!parts[0].isEmptyString()) parts[0].code(coder)
+                parts[0].code(coder)
                 var i = 1
                 while (i < parts.size) {
                     if (!parts[i].isEmptyString()) {
