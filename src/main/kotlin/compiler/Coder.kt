@@ -210,6 +210,11 @@ class Coder(val ast: Node) {
                     value(args[0].value!!)
                 }
 
+                ?: consume(O_VAL, null, O_GETTRAIT)?.also { args ->
+                    code(O_VTRAIT)
+                    value(args[0].value!!)
+                }
+
 
                 // If nothing matched, copy and continue
                 ?: run {

@@ -287,8 +287,8 @@ class VM(val exe: Executable) {
                     if (!a2.setProp((a3 as VString).v, a1))
                         fail(E_PROPNF, "property not found")
                 }
-                O_GETTRAIT -> {
-                    val a1 = pop()
+                O_GETTRAIT, O_VTRAIT -> {
+                    val a1 = if (word.opcode == O_VTRAIT) next().value!! else pop()
                     if (a1 is VString) {
                         Yegg.world.getTrait(a1.v)?.also { push(it.vTrait) }
                             ?: fail (E_TRAITNF, "trait not found")

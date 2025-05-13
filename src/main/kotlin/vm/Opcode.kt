@@ -149,4 +149,7 @@ enum class Opcode(val argCount: Int = 0) {
     // Get literal-named property.
     O_VGETPROP(1),
 
+    // Get literal-named trait.
+    O_VTRAIT(1),
+
 }
