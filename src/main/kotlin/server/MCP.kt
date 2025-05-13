@@ -17,7 +17,7 @@ object MCP {
     private var job: Job? = null
 
     private val coroutineScope = CoroutineScope(
-    SupervisorJob() +
+        SupervisorJob() +
         Dispatchers.Default.limitedParallelism(1) +
         CoroutineName("Yegg MCP thread")
     )
