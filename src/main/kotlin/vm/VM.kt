@@ -174,7 +174,7 @@ class VM(val exe: Executable) {
 
                 // Verb ops
 
-                O_CALL, O_VCALL, O_VCVOKE -> {
+                O_CALL, O_VCALL, O_VCALLST -> {
                     val argCount = next().intFromV
                     val a2 = if (word.opcode == O_CALL) pop() else next().value
                     val a1 = pop()
@@ -184,13 +184,13 @@ class VM(val exe: Executable) {
                         c.ticksLeft = ticksLeft
                         c.callsLeft--
                         a1.callVerb(c, a2.v, args)?.also {
-                            if (word.opcode != O_VCVOKE) push(it)
+                            if (word.opcode != O_VCALLST) push(it)
                         } ?: fail(E_VERBNF, "verb not found")
                         c.callsLeft++
                         ticksLeft = c.ticksLeft
                     } else fail(E_VERBNF, "verb name must be string")
                 }
-                O_FUNCALL, O_FUNVOKE -> {
+                O_FUNCALL, O_FUNCALLST -> {
                     val name = (next().value as VString).v
                     val argCount = next().intFromV
                     val args = mutableListOf<Value>()
@@ -206,7 +206,7 @@ class VM(val exe: Executable) {
                         } ?: Yegg.world.sys.callVerb(c, name, args)?.also {
                             result = it
                         } ?: fail(E_VARNF, "no such fun or variable")
-                        result?.also { if (word.opcode == O_FUNCALL) push(it) }
+                        result?.also { if (word.opcode != O_FUNCALLST) push(it) }
                     }
                 }
 
@@ -287,7 +287,7 @@ class VM(val exe: Executable) {
                     if (!a2.setProp((a3 as VString).v, a1))
                         fail(E_PROPNF, "property not found")
                 }
-                O_GETTRAIT, O_VTRAIT -> {
+                O_TRAIT, O_VTRAIT -> {
                     val a1 = if (word.opcode == O_VTRAIT) next().value!! else pop()
                     if (a1 is VString) {
                         Yegg.world.getTrait(a1.v)?.also { push(it.vTrait) }

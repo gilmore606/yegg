@@ -96,7 +96,7 @@ enum class Opcode(val argCount: Int = 0) {
     O_SETPROP,
 
     // Push trait named by string pop0.
-    O_GETTRAIT,
+    O_TRAIT,
 
     // Push negation of pop0.
     O_NEGATE,
@@ -137,11 +137,11 @@ enum class Opcode(val argCount: Int = 0) {
     // Push the addition of pop0, pop1, and value arg1.
     O_CONCAT(1),
 
-    // Call fun but do not push result.
-    O_FUNVOKE(2),
+    // Call fun as statement (do not push result).
+    O_FUNCALLST(2),
 
-    // Call literal-named verb but do not push result.
-    O_VCVOKE(2),
+    // Call literal-named verb as statement (do not push result).
+    O_VCALLST(2),
 
     // Call literal-named verb.
     O_VCALL(2),
