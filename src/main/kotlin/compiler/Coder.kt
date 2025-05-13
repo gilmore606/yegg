@@ -190,6 +190,26 @@ class Coder(val ast: Node) {
                     value(args[1].value!!)
                 }
 
+                // O_VAL O_CALL O_DISCARD => O_VCVOKE
+                ?: consume(O_VAL, null, O_CALL, null, O_DISCARD)?.also { args ->
+                    code(O_VCVOKE)
+                    value(args[1].value!!) // write O_CALL arg first
+                    value(args[0].value!!)
+                }
+
+                // O_VAL O_CALL => O_VCALL
+                ?: consume(O_VAL, null, O_CALL, null)?.also { args ->
+                    code(O_VCALL)
+                    value(args[1].value!!) // write O_CALL arg first
+                    value(args[0].value!!)
+                }
+
+                // O_VAL O_GETPROP => O_VGETPROP
+                ?: consume(O_VAL, null, O_GETPROP)?.also { args ->
+                    code(O_VGETPROP)
+                    value(args[0].value!!)
+                }
+
 
                 // If nothing matched, copy and continue
                 ?: run {

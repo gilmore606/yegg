@@ -140,4 +140,13 @@ enum class Opcode(val argCount: Int = 0) {
     // Call fun but do not push result.
     O_FUNVOKE(2),
 
+    // Call literal-named verb but do not push result.
+    O_VCVOKE(2),
+
+    // Call literal-named verb.
+    O_VCALL(2),
+
+    // Get literal-named property.
+    O_VGETPROP(1),
+
 }

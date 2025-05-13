@@ -174,16 +174,18 @@ class VM(val exe: Executable) {
 
                 // Verb ops
 
-                O_CALL -> {
+                O_CALL, O_VCALL, O_VCVOKE -> {
                     val argCount = next().intFromV
-                    val (a2, a1) = popTwo()
+                    val a2 = if (word.opcode == O_CALL) pop() else next().value
+                    val a1 = pop()
                     val args = mutableListOf<Value>()
                     repeat(argCount) { args.add(0, pop()) }
                     if (a2 is VString) {
                         c.ticksLeft = ticksLeft
                         c.callsLeft--
-                        a1.callVerb(c, a2.v, args)?.also { push(it) }
-                            ?: fail(E_VERBNF, "verb not found")
+                        a1.callVerb(c, a2.v, args)?.also {
+                            if (word.opcode != O_VCVOKE) push(it)
+                        } ?: fail(E_VERBNF, "verb not found")
                         c.callsLeft++
                         ticksLeft = c.ticksLeft
                     } else fail(E_VERBNF, "verb name must be string")
@@ -272,8 +274,9 @@ class VM(val exe: Executable) {
 
                 // Property ops
 
-                O_GETPROP -> {
-                    val (a2, a1) = popTwo()
+                O_GETPROP, O_VGETPROP -> {
+                    val a2 = if (word.opcode == O_VGETPROP) next().value!! else pop()
+                    val a1 = pop()
                     if (a2 is VString) {
                         a1.getProp(a2.v)?.also { push(it) }
                             ?: fail(E_PROPNF, "property not found")
