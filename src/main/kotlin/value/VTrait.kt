@@ -33,14 +33,9 @@ data class VTrait(val v: Trait.ID?): Value() {
         return getTrait()?.setProp(name, value) ?: false
     }
 
-
-    // Custom props
-
     private fun propAsString() = v?.let { v ->
         VString("$" + Yegg.world.getTrait(v)?.name)
     } ?: VString(asString())
-
-    // Custom verbs
 
     override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
         return getTrait()?.callVerb(c, name, args)

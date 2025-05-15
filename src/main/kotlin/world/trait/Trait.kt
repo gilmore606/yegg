@@ -14,7 +14,6 @@ import kotlinx.serialization.Serializable
 
 // A collection of verbs and props, which can apply to an Obj.
 
-
 @Serializable
 sealed class Trait(val name: String) {
 

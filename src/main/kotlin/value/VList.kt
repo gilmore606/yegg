@@ -1,5 +1,6 @@
 package com.dlfsystems.value
 
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.*
 import kotlinx.serialization.SerialName
@@ -26,9 +27,9 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
 
     override fun getProp(name: String): Value? {
         when (name) {
-            "length" -> return propSize()
-            "isEmpty" -> return propIsEmpty()
-            "isNotEmpty" -> return propIsNotEmpty()
+            "length" -> return VInt(v.size)
+            "isEmpty" -> return if (v.isEmpty()) Yegg.vTrue else Yegg.vFalse
+            "isNotEmpty" -> return if (v.isEmpty()) Yegg.vFalse else Yegg.vTrue
         }
         return null
     }
@@ -84,15 +85,6 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         }
         return null
     }
-
-
-    // Custom props
-
-    private fun propSize(): Value = VInt(v.size)
-    private fun propIsEmpty(): Value = VBool(v.isEmpty())
-    private fun propIsNotEmpty(): Value = VBool(v.isNotEmpty())
-
-    // Custom verbs
 
     private fun verbJoin(args: List<Value>): Value {
         requireArgCount(args, 0, 1)
