@@ -1,29 +1,30 @@
 package com.dlfsystems.world
 
-import com.dlfsystems.server.CommandMatch
-import com.dlfsystems.server.Preposition
+import com.dlfsystems.server.parser.CommandMatch
+import com.dlfsystems.server.parser.Preposition
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
 import com.dlfsystems.world.trait.Trait
-import com.dlfsystems.world.trait.TraitID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
 
 // An instance in the world.
 
 @Serializable
-@SerialName("ObjID")
-data class ObjID(val id: String) { override fun toString() = id }
-
-@Serializable
 @SerialName("Obj")
 class Obj {
-    val id = ObjID(Yegg.newID())
+
+    @Serializable
+    @SerialName("ObjID")
+    data class ID(val id: String) { override fun toString() = id }
+
+    val id = ID(Yegg.newID())
     val vThis = VObj(id)
 
-    val traits: MutableList<TraitID> = mutableListOf()
+    val traits: MutableList<Trait.ID> = mutableListOf()
 
     val props: MutableMap<String, Value> = mutableMapOf()
 

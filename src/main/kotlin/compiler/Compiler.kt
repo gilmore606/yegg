@@ -2,6 +2,9 @@ package com.dlfsystems.compiler
 
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.compiler.ast.Node
+import com.dlfsystems.compiler.lexer.Lexer
+import com.dlfsystems.compiler.lexer.Token
+import com.dlfsystems.compiler.parser.Parser
 import com.dlfsystems.vm.*
 import com.dlfsystems.world.trait.Verb
 
@@ -11,7 +14,6 @@ object Compiler {
         val source: String,
         val code: List<VMWord>,
         val symbols: Map<String, Int>,
-        val tokens: List<Token>,
         val ast: Node,
         val blocks: List<Executable.Block>,
     )
@@ -35,7 +37,7 @@ object Compiler {
             val coder = Coder(ast).apply { generate() }
             code = coder.mem
             blocks = coder.blocks
-            return Result(source, code, symbols, tokens, ast, blocks)
+            return Result(source, code, symbols, ast, blocks)
         } catch (e: CompileException) {
             throw e.withInfo(code, symbols, tokens, ast)
         } catch (e: Exception) {

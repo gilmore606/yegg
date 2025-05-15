@@ -1,4 +1,4 @@
-package com.dlfsystems.compiler
+package com.dlfsystems.compiler.lexer
 
 enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     // Groupers

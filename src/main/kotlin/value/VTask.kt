@@ -1,7 +1,7 @@
 package com.dlfsystems.value
 
-import com.dlfsystems.server.MCP
-import com.dlfsystems.server.TaskID
+import com.dlfsystems.server.mcp.MCP
+import com.dlfsystems.server.mcp.Task
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.vm.Context
 import kotlinx.serialization.SerialName
@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @SerialName("VTask")
-data class VTask(val v: TaskID): Value() {
+data class VTask(val v: Task.ID): Value() {
 
     @SerialName("yType")
     override val type = Type.TASK

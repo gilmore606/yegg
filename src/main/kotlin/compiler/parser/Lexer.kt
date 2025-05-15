@@ -1,6 +1,7 @@
-package com.dlfsystems.compiler
+package com.dlfsystems.compiler.lexer
 
-import com.dlfsystems.compiler.TokenType.*
+import com.dlfsystems.compiler.CompileException
+import com.dlfsystems.compiler.lexer.TokenType.*
 import com.dlfsystems.server.Yegg
 
 // Take an input string and produce a stream of tokens.

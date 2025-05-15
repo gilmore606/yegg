@@ -16,7 +16,7 @@ import kotlinx.serialization.Transient
 @Serializable
 class Verb(
     val name: String,
-    val traitID: TraitID,
+    val traitID: Trait.ID,
 ): Executable {
     var source = ""
     @Transient override var code: List<VMWord> = listOf()

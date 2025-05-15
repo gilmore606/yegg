@@ -1,4 +1,4 @@
-package com.dlfsystems.server
+package com.dlfsystems.server.mcp
 
 import com.dlfsystems.vm.Context
 import com.dlfsystems.util.systemEpoch
@@ -7,13 +7,14 @@ import com.dlfsystems.vm.Executable
 import kotlinx.coroutines.*
 import java.util.*
 
+
 // The task scheduler.
 // Runs tasks at scheduled epoch times in a single thread.
 
 object MCP {
 
     private const val WAIT_FOR_TASKS_MS = 10L
-    private val taskMap = TreeMap<TaskID, Task>()
+    private val taskMap = TreeMap<Task.ID, Task>()
     private var job: Job? = null
 
     private val coroutineScope = CoroutineScope(
@@ -28,17 +29,17 @@ object MCP {
         exe: Executable,
         args: List<Value>,
         secondsInFuture: Int = 0
-    ): TaskID {
+    ): Task.ID {
         val task = Task(systemEpoch() + secondsInFuture, c, exe, args)
         taskMap[task.id] = task
         return task.id
     }
 
     // Cancel a scheduled task.
-    fun cancel(taskID: TaskID) { taskMap.remove(taskID) }
+    fun cancel(taskID: Task.ID) { taskMap.remove(taskID) }
 
     // Move a scheduled task to immediate execution.
-    fun resume(taskID: TaskID) {
+    fun resume(taskID: Task.ID) {
         taskMap[taskID]?.also { task ->
             taskMap.remove(taskID)
             val newTask = Task(systemEpoch(), task.c, task.exe, task.args)
@@ -47,7 +48,7 @@ object MCP {
     }
 
     // Is the given taskID a valid scheduled task?
-    fun isValidTask(taskID: TaskID) = taskMap.containsKey(taskID)
+    fun isValidTask(taskID: Task.ID) = taskMap.containsKey(taskID)
 
     // Start processing all queued tasks.
     fun start() {
@@ -96,5 +97,3 @@ object MCP {
 }
 
 
-// Throw me to suspend the current task
-class SuspendException(val seconds: Int): Exception()

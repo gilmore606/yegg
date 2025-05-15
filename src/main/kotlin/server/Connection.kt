@@ -1,14 +1,17 @@
 package com.dlfsystems.server
 
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.server.mcp.MCP
+import com.dlfsystems.server.parser.CommandMatch
+import com.dlfsystems.server.parser.Preposition
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 
-data class ConnectionID(val id: String) { override fun toString() = id }
 
 class Connection(private val sendText: (String) -> Unit) {
 
-    val id = ConnectionID(Yegg.newID())
+    data class ID(val id: String) { override fun toString() = id }
+    val id = ID(Yegg.newID())
 
     var buffer = mutableListOf<String>()
     var programming: Pair<String, String>? = null

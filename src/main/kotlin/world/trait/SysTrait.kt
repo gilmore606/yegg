@@ -1,7 +1,7 @@
 package com.dlfsystems.world.trait
 
 import com.dlfsystems.app.Log
-import com.dlfsystems.server.Command
+import com.dlfsystems.server.parser.Command
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.util.systemEpoch
 import com.dlfsystems.value.*

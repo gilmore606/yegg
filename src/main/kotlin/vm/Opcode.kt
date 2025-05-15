@@ -1,6 +1,8 @@
 package com.dlfsystems.vm
 
 // An opcode representing an instruction for a VM.
+// Pop0/pop1 = values popped from the stack.
+// Arg1/arg2 = non-opcode VMwords written directly after the opcode.
 
 enum class Opcode(val argCount: Int = 0) {
 
@@ -16,9 +18,9 @@ enum class Opcode(val argCount: Int = 0) {
     // Pop arg1 (as intval) pairs of stack values, and push a map of argX:argX+1.
     O_MAPVAL(1),
 
-    // Pop VList of string arg names.
-    // Pop VList of string scope var names.
-    // arg1 contains the entryPoint index.
+    // Pop0 = string arg names.
+    // Pop1 = string scope var names.
+    // arg1 = entryPoint index.
     // Push VFun.
     O_FUNVAL(1),
 
@@ -31,21 +33,12 @@ enum class Opcode(val argCount: Int = 0) {
     // Jump to arg1 address if pop0 is false.
     O_IF(1),
 
-    // Jump to arg2 address if var arg1 == pop0.
-    O_IFVAREQ(2),
-
     // Jump to arg1 address.
     O_JUMP(1),
 
     // Return from verb with pop0 (or no value).
     O_RETURN,
     O_RETURNNULL,
-
-    // Return arg1 value.
-    O_RETVAL(1),
-
-    // Return variable value with arg1 varID.
-    O_RETVAR(1),
 
     // Throw E_USER with pop0 as message.
     O_FAIL,
@@ -131,16 +124,19 @@ enum class Opcode(val argCount: Int = 0) {
     O_CMP_LTZ,
     O_CMP_LEZ,
 
+    // Jump to arg2 address if var arg1 == pop0.
+    O_IFVAREQ(2),
+
     // Push the addition of pop0 and value arg1.
     O_ADDVAL(1),
 
     // Push the addition of pop0, pop1, and value arg1.
     O_CONCAT(1),
 
-    // Call fun as statement (do not push result).
+    // Call fun but do not push result.
     O_FUNCALLST(2),
 
-    // Call literal-named verb as statement (do not push result).
+    // Call literal-named verb but do not push result.
     O_VCALLST(2),
 
     // Call literal-named verb.
@@ -151,5 +147,11 @@ enum class Opcode(val argCount: Int = 0) {
 
     // Get literal-named trait.
     O_VTRAIT(1),
+
+    // Return arg1 value.
+    O_RETVAL(1),
+
+    // Return variable value with arg1 varID.
+    O_RETVAR(1),
 
 }

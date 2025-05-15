@@ -1,4 +1,4 @@
-package com.dlfsystems.server
+package com.dlfsystems.server.parser
 
 import com.dlfsystems.value.Value
 import com.dlfsystems.world.Obj

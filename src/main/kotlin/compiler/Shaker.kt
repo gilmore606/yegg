@@ -1,6 +1,6 @@
 package com.dlfsystems.compiler
 
-import com.dlfsystems.compiler.ast.N_IDENTIFIER
+import com.dlfsystems.compiler.ast.expr.identifier.N_IDENTIFIER
 import com.dlfsystems.compiler.ast.Node
 
 // Assign variable IDs to identifiers.

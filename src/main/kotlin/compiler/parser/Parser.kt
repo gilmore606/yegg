@@ -1,10 +1,20 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
-package com.dlfsystems.compiler
+package com.dlfsystems.compiler.parser
 
-import com.dlfsystems.compiler.TokenType.*
+import com.dlfsystems.compiler.CompileException
+import com.dlfsystems.compiler.lexer.TokenType.*
 import com.dlfsystems.compiler.ast.*
-import com.dlfsystems.world.ObjID
+import com.dlfsystems.compiler.ast.expr.*
+import com.dlfsystems.compiler.ast.expr.identifier.*
+import com.dlfsystems.compiler.ast.expr.literal.*
+import com.dlfsystems.compiler.ast.expr.ref.N_INDEX
+import com.dlfsystems.compiler.ast.expr.ref.N_PROPREF
+import com.dlfsystems.compiler.ast.expr.ref.N_RANGE
+import com.dlfsystems.compiler.ast.statement.*
+import com.dlfsystems.compiler.lexer.Token
+import com.dlfsystems.compiler.lexer.TokenType
+import com.dlfsystems.world.Obj
 
 // Take a stream of input tokens from Lexer and produce a tree of syntax nodes.
 
@@ -69,15 +79,15 @@ class Parser(inputTokens: List<Token>) {
     // Parse any statement type we find next.
     private fun pStatement(): N_STATEMENT? {
         pBlock()?.also { return it }
-        pIfThen()?.also { return it }
+        pIfElse()?.also { return it }
         pForLoop()?.also { return it }
-        pWhileLoop()?.also { return it }
+        pWhile()?.also { return it }
         pReturn()?.also { return it }
         pFail()?.also { return it }
         pSuspend()?.also { return it }
         pWhen(asStatement = true)?.also { return node(N_EXPRSTATEMENT(it)) }
         pIncrement()?.also { return it }
-        pDestructureList()?.also { return it }
+        pDestructure()?.also { return it }
         pAssign()?.also { return it }
         pExprStatement()?.also { return it }
         return null
@@ -99,16 +109,16 @@ class Parser(inputTokens: List<Token>) {
     }
 
     // Parse: if <expr> <statement> [else <statement>]
-    private fun pIfThen(): N_STATEMENT? {
+    private fun pIfElse(): N_STATEMENT? {
         consume(T_IF) ?: return null
         pExpression()?.also { condition ->
             pStatement()?.also { eThen ->
                 consume(T_ELSE)?.also {
                     pStatement()?.also { eElse ->
-                        return node(N_IFSTATEMENT(condition, eThen, eElse))
+                        return node(N_IF(condition, eThen, eElse))
                     } ?: fail("missing else block")
                 }
-                return node(N_IFSTATEMENT(condition, eThen))
+                return node(N_IF(condition, eThen))
             } ?: fail("missing then block")
         } ?: fail("missing condition")
         return null
@@ -169,11 +179,11 @@ class Parser(inputTokens: List<Token>) {
     }
 
     // Parse: while <expr> <statement>
-    private fun pWhileLoop(): N_STATEMENT? {
+    private fun pWhile(): N_STATEMENT? {
         consume(T_WHILE) ?: return null
         pExpression()?.also { check ->
             pStatement()?.also { body ->
-                return node(N_WHILELOOP(check, body))
+                return node(N_WHILE(check, body))
             } ?: fail("missing while body")
         } ?: fail("missing while check expression")
         return null
@@ -240,7 +250,7 @@ class Parser(inputTokens: List<Token>) {
     }
 
     // Parse list destructure: [var1, var2...] = list
-    private fun pDestructureList(): N_STATEMENT? {
+    private fun pDestructure(): N_STATEMENT? {
         if (nextIs(T_BRACKET_OPEN)) {
             var i = 1
             var done = false
@@ -293,10 +303,12 @@ class Parser(inputTokens: List<Token>) {
         consume(T_FORK)?.also {
             pExpression()?.also { seconds ->
                 pBlock()?.also { block ->
-                    return node(N_FORK(
+                    return node(
+                        N_FORK(
                         seconds,
                         node(N_LITERAL_FUN(listOf(), block))
-                    )) } ?: fail("missing block for fork")
+                    )
+                    ) } ?: fail("missing block for fork")
             } ?: fail("missing time expression for fork")
         }
         return next()
@@ -344,7 +356,8 @@ class Parser(inputTokens: List<Token>) {
             val operator = consume()
             next()?.also { right ->
                 left = node(if (operator.type == T_AND) N_AND(left, right)
-                            else N_OR(left, right))
+                            else N_OR(left, right)
+                )
             }
         }
         return left
@@ -386,7 +399,8 @@ class Parser(inputTokens: List<Token>) {
             val operator = consume()
             next()?.also { right ->
                 left = node(if (operator.type == T_EQUALS) N_CMP_EQ(left, right)
-                            else N_CMP_NEQ(left, right))
+                            else N_CMP_NEQ(left, right)
+                )
             }
         }
         return left
@@ -418,7 +432,8 @@ class Parser(inputTokens: List<Token>) {
             val operator = consume()
             next()?.also { right ->
                 left = node(if (operator.type == T_PLUS) N_ADD(left, right)
-                            else N_SUBTRACT(left, right))
+                            else N_SUBTRACT(left, right)
+                )
             }
         }
         return left
@@ -568,7 +583,7 @@ class Parser(inputTokens: List<Token>) {
         consume(T_STRING)?.also { return node(N_LITERAL_STRING(it.string)) }
         consume(T_INTEGER)?.also { return node(N_LITERAL_INTEGER(it.string.toInt())) }
         consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }
-        consume(T_OBJREF)?.also { return node(N_LITERAL_OBJ(ObjID(it.string))) }
+        consume(T_OBJREF)?.also { return node(N_LITERAL_OBJ(Obj.ID(it.string))) }
         consume(T_IDENTIFIER)?.also { return node(N_IDENTIFIER(it.string)) }
         consume(T_TRUE, T_FALSE)?.also { return node(N_LITERAL_BOOLEAN(it.type == T_TRUE)) }
         return next()
