@@ -75,7 +75,6 @@ class Parser(inputTokens: List<Token>) {
         pReturn()?.also { return it }
         pFail()?.also { return it }
         pSuspend()?.also { return it }
-        pFork()?.also { return it }
         pWhen(asStatement = true)?.also { return node(N_EXPRSTATEMENT(it)) }
         pIncrement()?.also { return it }
         pDestructureList()?.also { return it }
@@ -202,19 +201,6 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
-    // Parse: fork <expr> { block }
-    private fun pFork(): N_STATEMENT? {
-        consume(T_FORK) ?: return null
-        pExpression()?.also { seconds ->
-            pBlock()?.also { block ->
-                return node(N_FORK(
-                    seconds,
-                    node(N_LITERAL_FUN(listOf(), block))
-                )) } ?: fail("missing block for fork")
-        } ?: fail("missing time expression for fork")
-        return null
-    }
-
     // Parse: <ident>++|-- / ++|--<ident>
     private fun pIncrement(): N_STATEMENT? {
         fun make(ident: String, isDec: Boolean): N_STATEMENT {
@@ -297,7 +283,22 @@ class Parser(inputTokens: List<Token>) {
     // Parse any expression we find next.
     // Start with the lowest precedence operation, passing down to look for higher precedence operations.
     private fun pExpression(): N_EXPR? {
+        val next = this::pFork
+        return next()
+    }
+
+    // Parse: fork <expr> { block }
+    private fun pFork(): N_EXPR? {
         val next = this::pWhenExpr
+        consume(T_FORK)?.also {
+            pExpression()?.also { seconds ->
+                pBlock()?.also { block ->
+                    return node(N_FORK(
+                        seconds,
+                        node(N_LITERAL_FUN(listOf(), block))
+                    )) } ?: fail("missing block for fork")
+            } ?: fail("missing time expression for fork")
+        }
         return next()
     }
 

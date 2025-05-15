@@ -174,21 +174,23 @@ class VM(val exe: Executable) {
 
                 // Verb ops
 
-                O_CALL -> {
+                O_CALL, O_VCALL, O_VCALLST -> {
                     val argCount = next().intFromV
-                    val (a2, a1) = popTwo()
+                    val a2 = if (word.opcode == O_CALL) pop() else next().value
+                    val a1 = pop()
                     val args = mutableListOf<Value>()
                     repeat(argCount) { args.add(0, pop()) }
                     if (a2 is VString) {
                         c.ticksLeft = ticksLeft
                         c.callsLeft--
-                        a1.callVerb(c, a2.v, args)?.also { push(it) }
-                            ?: fail(E_VERBNF, "verb not found")
+                        a1.callVerb(c, a2.v, args)?.also {
+                            if (word.opcode != O_VCALLST) push(it)
+                        } ?: fail(E_VERBNF, "verb not found")
                         c.callsLeft++
                         ticksLeft = c.ticksLeft
                     } else fail(E_VERBNF, "verb name must be string")
                 }
-                O_FUNCALL, O_FUNVOKE -> {
+                O_FUNCALL, O_FUNCALLST -> {
                     val name = (next().value as VString).v
                     val argCount = next().intFromV
                     val args = mutableListOf<Value>()
@@ -204,7 +206,7 @@ class VM(val exe: Executable) {
                         } ?: Yegg.world.sys.callVerb(c, name, args)?.also {
                             result = it
                         } ?: fail(E_VARNF, "no such fun or variable")
-                        result?.also { if (word.opcode == O_FUNCALL) push(it) }
+                        result?.also { if (word.opcode != O_FUNCALLST) push(it) }
                     }
                 }
 
@@ -216,10 +218,11 @@ class VM(val exe: Executable) {
                 }
                 O_FORK -> {
                     val (a2, a1) = popTwo()
-                    MCP.schedule(Context(c.connection).apply {
+                    val taskID = MCP.schedule(Context(c.connection).apply {
                         vThis = c.vThis
                         vUser = c.vUser
                     }, a2 as VFun, listOf(), (a1 as VInt).v)
+                    push(VTask(taskID))
                 }
 
                 // Variable ops
@@ -271,8 +274,9 @@ class VM(val exe: Executable) {
 
                 // Property ops
 
-                O_GETPROP -> {
-                    val (a2, a1) = popTwo()
+                O_GETPROP, O_VGETPROP -> {
+                    val a2 = if (word.opcode == O_VGETPROP) next().value!! else pop()
+                    val a1 = pop()
                     if (a2 is VString) {
                         a1.getProp(a2.v)?.also { push(it) }
                             ?: fail(E_PROPNF, "property not found")
@@ -283,8 +287,8 @@ class VM(val exe: Executable) {
                     if (!a2.setProp((a3 as VString).v, a1))
                         fail(E_PROPNF, "property not found")
                 }
-                O_GETTRAIT -> {
-                    val a1 = pop()
+                O_TRAIT, O_VTRAIT -> {
+                    val a1 = if (word.opcode == O_VTRAIT) next().value!! else pop()
                     if (a1 is VString) {
                         Yegg.world.getTrait(a1.v)?.also { push(it.vTrait) }
                             ?: fail (E_TRAITNF, "trait not found")

@@ -123,6 +123,6 @@ class N_TRAITREF(val expr: N_EXPR): N_EXPR() {
 
     override fun code(coder: Coder) {
         expr.code(coder)
-        coder.code(this, O_GETTRAIT)
+        coder.code(this, O_TRAIT)
     }
 }
