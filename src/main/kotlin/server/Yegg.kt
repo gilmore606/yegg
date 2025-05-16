@@ -13,14 +13,17 @@ import kotlin.system.exitProcess
 object Yegg {
 
     var worldName = "Minimal"
+    var serverAddress = "127.0.0.1"
+    var serverPort = 8888
     var logLevel = Log.Level.DEBUG
     var optimizeCompiler = true
 
-    private val JSON = Json { allowStructuredMapKeys = true }
 
     private const val CONNECT_MSG = "** Connected **"
     private const val DISCONNECT_MSG = "** Disconnected **"
     const val HUH_MSG = "I don't understand that."
+
+    private val JSON = Json { allowStructuredMapKeys = true }
 
     val vTrue = VBool(true)
     val vFalse = VBool(false)
@@ -41,6 +44,7 @@ object Yegg {
     fun start() {
         loadWorld()
         MCP.start()
+        Telnet.start()
     }
 
     private fun loadWorld() {
@@ -110,6 +114,7 @@ object Yegg {
     }
 
     fun shutdownServer() {
+        Telnet.stop()
         MCP.stop()
         exitProcess(0)
     }

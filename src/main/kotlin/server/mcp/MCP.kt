@@ -20,7 +20,7 @@ object MCP {
     private val coroutineScope = CoroutineScope(
         SupervisorJob() +
         Dispatchers.Default.limitedParallelism(1) +
-        CoroutineName("Yegg MCP thread")
+        CoroutineName("Yegg MCP")
     )
 
     // Schedule an executable to run some seconds in the future.

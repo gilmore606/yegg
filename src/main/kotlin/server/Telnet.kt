@@ -1,0 +1,66 @@
+package com.dlfsystems.server
+
+import com.dlfsystems.app.Log
+import io.ktor.network.selector.*
+import io.ktor.network.sockets.*
+import io.ktor.utils.io.*
+import kotlinx.coroutines.*
+
+object Telnet {
+
+    private var job: Job? = null
+
+    private val coroutineScope = CoroutineScope(
+        SupervisorJob() +
+        Dispatchers.Default.limitedParallelism(1) +
+        CoroutineName("Yegg telnet")
+    )
+
+    fun start() {
+        if (job?.isActive == true) throw IllegalStateException("Already started")
+        job = coroutineScope.launch { server() }
+    }
+
+    fun stop() {
+        job?.cancel()
+    }
+
+    private suspend fun server() {
+        val serverSocket = aSocket(SelectorManager(Dispatchers.IO))
+            .tcp().bind(Yegg.serverAddress, Yegg.serverPort)
+        Log.i("Server listening at ${serverSocket.localAddress}:${serverSocket.port}")
+
+        while (true) {
+
+            val client = serverSocket.accept()
+            Log.i("Accepted client socket: $client")
+
+            coroutineScope.launch {
+                val receive = client.openReadChannel()
+                val send = client.openWriteChannel(autoFlush = true)
+
+                val conn = Connection {
+                    launch {
+                        send.writeStringUtf8("${it.replace("\n", "\r\n")}\r\n")
+                    }
+                }
+                Yegg.addConnection(conn)
+
+                try {
+                    while (true) {
+                        val input = receive.readUTF8Line() ?: break
+                        conn.receiveText(input)
+                    }
+                    Log.i("Closing client socket: $client")
+                } catch (e: Throwable) {
+                    Log.i("Connection error on $client: $e")
+                }
+
+                client.close()
+                Yegg.removeConnection(conn)
+            }
+
+        }
+    }
+
+}
