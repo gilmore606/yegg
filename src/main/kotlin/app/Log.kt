@@ -13,7 +13,6 @@ object Log {
     private val timestamp: String
         get() = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))
 
-    private var file: File? = null
     private var writer: BufferedWriter? = null
 
     fun d(m: String) { log(Level.DEBUG, m) }
@@ -22,10 +21,9 @@ object Log {
     fun e(m: String) { log(Level.ERROR, m) }
 
     fun start(filename: String) {
+        File("$filename.log.old").delete()
         File("$filename.log").renameTo(File("$filename.log.old"))
-        file = File("$filename.log").also {
-            writer = it.bufferedWriter()
-        }
+        writer = File("$filename.log").bufferedWriter()
     }
 
     fun stop() {
@@ -34,7 +32,7 @@ object Log {
 
     private fun log(level: Level, m: String) {
         if (level >= Yegg.logLevel) {
-            println("$level: $m")
+            if (Yegg.logToConsole) println("$level: $m")
             writer?.write("$timestamp $level: $m\n")
         }
     }

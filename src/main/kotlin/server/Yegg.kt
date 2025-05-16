@@ -17,6 +17,7 @@ object Yegg {
     var serverAddress = "127.0.0.1"
     var serverPort = 8888
     var logLevel = Log.Level.DEBUG
+    var logToConsole = true
     var optimizeCompiler = true
 
     private const val CONNECT_MSG = "** Connected **"
@@ -54,10 +55,12 @@ object Yegg {
         loadWorld()
         MCP.start()
         Telnet.start()
+        Log.i("Server started.")
     }
 
     // Shut down the server.
     fun shutdownServer() {
+        Log.i("Server shutting down.")
         Telnet.stop()
         MCP.stop()
         Log.stop()
