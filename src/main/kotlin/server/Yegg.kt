@@ -6,6 +6,7 @@ import com.dlfsystems.value.*
 import com.dlfsystems.world.World
 import com.dlfsystems.world.Obj
 import io.viascom.nanoid.NanoId
+import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.system.exitProcess
@@ -17,7 +18,6 @@ object Yegg {
     var serverPort = 8888
     var logLevel = Log.Level.DEBUG
     var optimizeCompiler = true
-
 
     private const val CONNECT_MSG = "** Connected **"
     private const val DISCONNECT_MSG = "** Disconnected **"
@@ -40,11 +40,26 @@ object Yegg {
     const val ID_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     fun newID() = NanoId.generateOptimized(8, ID_CHARS, 61, 16)
 
+    private val coroutineScope = CoroutineScope(
+        SupervisorJob() +
+                Dispatchers.Default.limitedParallelism(1) +
+                CoroutineName("Yegg")
+    )
+    fun launch(block: suspend CoroutineScope.() -> Unit) = coroutineScope.launch(block = block)
+
+
     // Start the server.
     fun start() {
         loadWorld()
         MCP.start()
         Telnet.start()
+    }
+
+    // Shut down the server.
+    fun shutdownServer() {
+        Telnet.stop()
+        MCP.stop()
+        exitProcess(0)
     }
 
     private fun loadWorld() {
@@ -113,9 +128,4 @@ object Yegg {
         return ""
     }
 
-    fun shutdownServer() {
-        Telnet.stop()
-        MCP.stop()
-        exitProcess(0)
-    }
 }

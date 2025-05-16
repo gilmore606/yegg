@@ -10,15 +10,9 @@ object Telnet {
 
     private var job: Job? = null
 
-    private val coroutineScope = CoroutineScope(
-        SupervisorJob() +
-        Dispatchers.Default.limitedParallelism(1) +
-        CoroutineName("Yegg telnet")
-    )
-
     fun start() {
         if (job?.isActive == true) throw IllegalStateException("Already started")
-        job = coroutineScope.launch { server() }
+        job = Yegg.launch { server() }
     }
 
     fun stop() {
@@ -35,12 +29,12 @@ object Telnet {
             val client = serverSocket.accept()
             Log.i("Accepted client socket: $client")
 
-            coroutineScope.launch {
+            Yegg.launch {
                 val receive = client.openReadChannel()
                 val send = client.openWriteChannel(autoFlush = true)
 
                 val conn = Connection {
-                    launch {
+                    Yegg.launch {
                         send.writeStringUtf8("${it.replace("\n", "\r\n")}\r\n")
                     }
                 }
