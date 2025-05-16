@@ -50,6 +50,7 @@ object Yegg {
 
     // Start the server.
     fun start() {
+        Log.start(worldName)
         loadWorld()
         MCP.start()
         Telnet.start()
@@ -59,6 +60,7 @@ object Yegg {
     fun shutdownServer() {
         Telnet.stop()
         MCP.stop()
+        Log.stop()
         exitProcess(0)
     }
 
