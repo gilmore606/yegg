@@ -65,6 +65,7 @@ object MCP {
     private suspend fun runTasks() {
         while (true) {
             getNextTask()?.also { task ->
+                Log.d("Executing ${task.id} $task")
                 timeMap.remove(task.timeID)
                 taskMap.remove(task.id)
                 val result = task.execute()

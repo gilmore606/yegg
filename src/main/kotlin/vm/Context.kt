@@ -22,11 +22,10 @@ class Context(
         vThis: VObj,
         exe: Executable,
         args: List<Value>,
-        withVars: Map<String, Value> = emptyMap()
     ) {
         exe.jitCompile()
         stack.addFirst(
-            VM(this, vThis, exe, args, withVars)
+            VM(this, vThis, exe, args)
         )
     }
 

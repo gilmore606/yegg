@@ -17,7 +17,6 @@ class VM(
     val vThis: VObj,
     val exe: Executable,
     val args: List<Value> = listOf(),
-    withVars: Map<String, Value> = mapOf(),
 ) {
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
@@ -53,7 +52,7 @@ class VM(
 
 
     init {
-        withVars.forEach { (name, v) -> initVar(name, v) }
+        exe.getInitialVars(args).forEach { (name, v) -> initVar(name, v) }
         initVar("args", VList.make(args))
         initVar("this", c.vThis)
         initVar("user", c.vUser)
@@ -232,6 +231,7 @@ class VM(
                 O_FORK -> {
                     val (a2, a1) = popTwo()
                     val task = Task.make(
+                        connection = c.connection,
                         exe = a2 as VFun,
                         vThis = c.vThis,
                         vUser = c.vUser,

@@ -24,6 +24,8 @@ data class Task(val c: Context) {
 
     fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
 
+    override fun toString() = c.stack.first().toString()
+
     fun setTime(secondsInFuture: Int) {
         atEpoch = systemEpoch() + secondsInFuture
         timeID = TimeID.generateID(atEpoch * 1000L)
@@ -72,7 +74,7 @@ data class Task(val c: Context) {
             vUser: VObj = Yegg.vNullObj,
         ) = Task(
             Context(connection, vThis, vUser).apply {
-                push(vThis, exe, args, exe.getInitialVars(args))
+                push(vThis, exe, args)
             }
         )
     }
