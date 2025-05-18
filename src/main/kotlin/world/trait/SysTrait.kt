@@ -25,7 +25,7 @@ class SysTrait : Trait("sys") {
         return super.getProp(obj, propName)
     }
 
-    override fun callVerb(c: Context, verbName: String, args: List<Value>): Value? {
+    override fun callStaticVerb(c: Context, verbName: String, args: List<Value>): Value? {
         when (verbName) {
             "connectUser" -> return verbConnectUser(c, args)
             "disconnectUser" -> return verbDisconnectUser(c, args)
@@ -42,7 +42,7 @@ class SysTrait : Trait("sys") {
             "dumpDatabase" -> return verbDumpDatabase(args)
             "shutdownServer" -> return verbShutdownServer(args)
         }
-        return super.callVerb(c, verbName, args)
+        return super.callStaticVerb(c, verbName, args)
     }
 
     // $sys.time -> n

@@ -3,6 +3,7 @@ package com.dlfsystems.server
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.server.mcp.MCP
+import com.dlfsystems.server.mcp.Task
 import com.dlfsystems.server.parser.CommandMatch
 import com.dlfsystems.server.parser.Preposition
 import com.dlfsystems.vm.Context
@@ -96,15 +97,16 @@ class Connection(private val sendText: (String) -> Unit) {
     }
 
     private fun runCommand(match: CommandMatch) {
-        val c = Context(this).apply {
-            vThis = match.obj?.vThis ?: Yegg.vNullObj
-            vUser = connection?.user?.vThis ?: Yegg.vNullObj
-        }
-        Yegg.world.getTrait(match.trait.id)?.verbs?.get(match.verb)?.also { verb ->
-            MCP.schedule(c, verb, match.args)
+        Yegg.world.getTrait(match.trait.id)?.getVerb(match.verb)?.also { verb ->
+            MCP.schedule(Task.make(
+                exe = verb,
+                args = match.args,
+                connection = this,
+                vThis = match.obj?.vThis ?: Yegg.vNullObj,
+                vUser = this.user?.vThis ?: Yegg.vNullObj
+            ))
         } ?: run {
             sendText("ERR: No verb ${match.verb} found for command")
-            sendText(c.stackDump())
         }
     }
 

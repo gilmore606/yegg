@@ -2,6 +2,7 @@ package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException
+import com.dlfsystems.world.trait.Verb
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -61,6 +62,11 @@ sealed class Value {
     open fun setIndex(index: Value, value: Value): Boolean = false
     open fun setRange(from: Value, to: Value, value: Value): Boolean = false
 
-    // Call a verb on this type and return its value.  Null raises E_VERBNF.
-    open fun callVerb(c: Context, name: String, args: List<Value>): Value? = null
+    // Call a static built-in verb on this type and return its value.
+    // Return null if no such static verb.
+    open fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? = null
+
+    // Get a verb on this type.  Return null if no such verb.
+    open fun getVerb(c: Context, name: String): Verb? = null
+
 }

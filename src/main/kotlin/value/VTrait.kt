@@ -37,7 +37,7 @@ data class VTrait(val v: Trait.ID?): Value() {
         VString("$" + Yegg.world.getTrait(v)?.name)
     } ?: VString(asString())
 
-    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
-        return getTrait()?.callVerb(c, name, args)
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
+        return getTrait()?.callStaticVerb(c, name, args)
     }
 }

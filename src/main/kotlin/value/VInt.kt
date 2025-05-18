@@ -50,18 +50,10 @@ data class VInt(val v: Int): Value() {
 
     override fun getProp(name: String): Value? {
         when (name) {
-            "asFloat" -> return propAsFloat()
-            "asString" -> return propAsString()
+            "asFloat" -> return VFloat(v.toFloat())
+            "asString" -> return VString(asString())
         }
         return null
     }
-
-
-    // Custom props
-
-    private fun propAsFloat() = VFloat(v.toFloat())
-    private fun propAsString() = VString(asString())
-
-    // Custom verbs
 
 }

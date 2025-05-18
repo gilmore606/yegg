@@ -15,8 +15,6 @@ interface Executable {
     val symbols: Map<String, Int>
     val blocks: List<Block>
 
-    fun execute(c: Context, args: List<Value>): Value
-
     fun getLambda(
         block: Int,
         vThis: VObj,
@@ -35,5 +33,9 @@ interface Executable {
         Log.d("LAMBDA CODE:\n${lambdaCode.dumpText()}\n")
         return VFun(lambdaCode, symbols, blocks, vThis, args, withVars)
     }
+
+    fun captureScope(args: List<Value>): Map<String, Value> = emptyMap()
+
+    fun JITCompile() { }
 
 }

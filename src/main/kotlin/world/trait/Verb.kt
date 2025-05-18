@@ -2,11 +2,6 @@ package com.dlfsystems.world.trait
 
 import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.Compiler
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.value.VObj
-import com.dlfsystems.value.Value
-import com.dlfsystems.vm.Context
-import com.dlfsystems.vm.VM
 import com.dlfsystems.vm.VMWord
 import com.dlfsystems.vm.dumpText
 import com.dlfsystems.vm.Executable
@@ -26,23 +21,10 @@ class Verb(
     fun program(source: String) {
         this.source = source
         recompile()
-        Log.i("programmed $name with code ${code.dumpText()}")
+        Log.d("programmed $name with code ${code.dumpText()}")
     }
 
-    override fun execute(c: Context, args: List<Value>) = call(c, c.vThis, args)
-
-    fun call(
-        c: Context, vThis: VObj,
-        args: List<Value>,
-        withVars: Map<String, Value>? = null
-    ): Value {
-        if (code.isEmpty()) recompile()
-        val vm = VM(this)
-        c.push(vThis, Yegg.world.getTrait(traitID)!!.vTrait, name, args, vm)
-        val r = vm.execute(c, args, withVars)
-        c.pop()
-        return r
-    }
+    override fun JITCompile() { if (code.isEmpty()) recompile() }
 
     private fun recompile() {
         Compiler.compile(source).also {

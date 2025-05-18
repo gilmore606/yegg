@@ -3,21 +3,28 @@
 package com.dlfsystems.vm
 
 import com.dlfsystems.server.mcp.MCP
-import com.dlfsystems.server.mcp.SuspendException
 import com.dlfsystems.server.Yegg
+import com.dlfsystems.server.mcp.Task
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
 
-// A stack machine for executing a verb.
+// A stack machine for one-time execution of an Executable in a Context.
 
-class VM(val exe: Executable) {
-
+class VM(
+    val c: Context,
+    val vThis: VObj,
+    val exe: Executable,
+    val args: List<Value> = listOf(),
+    withVars: Map<String, Value> = mapOf(),
+) {
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
+
     // The local stack.
     private val stack = ArrayDeque<Value>()
+    private val stackLimit = Yegg.world.getSysInt("stackLimit")
     private fun dumpStack() = stack.joinToString(",") { "$it" }
 
     // Local variables by ID.
@@ -27,6 +34,12 @@ class VM(val exe: Executable) {
     var lineNum: Int = 0
     var charNum: Int = 0
     private fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
+    private fun failVM(e: Exception) { throw (e as? VMException
+        ?: VMException(E_SYS, "${e.message} (mem $pc)\n${e.stackTraceToString()}")).withLocation(lineNum, charNum) }
+
+    // Set true on Result.Call return to drop the return value (i.e. don't put it on stack).
+    // Used by optimizer opcodes.
+    private var dropReturnValue: Boolean = false
 
     private inline fun push(v: Value) = stack.addFirst(v)
     private inline fun peek() = stack.first()
@@ -36,41 +49,42 @@ class VM(val exe: Executable) {
     private inline fun popFour() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
     private inline fun next() = exe.code[pc++]
 
-    fun execute(
-        c: Context,
-        args: List<Value> = listOf(),
-        withVars: Map<String, Value>? = null
-    ): Value {
+    override fun toString() = "$vThis $exe(${args.joinToString(",")})  (line ${lineNum})"
 
-        pc = 0
 
-        withVars?.forEach { (name, value) -> initVar(name, value) }
+    init {
+        withVars.forEach { (name, v) -> initVar(name, v) }
         initVar("args", VList.make(args))
         initVar("this", c.vThis)
         initVar("user", c.vUser)
-
-        try {
-            return executeCode(c)
-        } catch (e: Exception) {
-            throw (e as? VMException ?: VMException(E_SYS, "${e.message} (mem $pc)\n${e.stackTraceToString()}"))
-                .withLocation(lineNum, charNum)
-        }
     }
 
     private fun initVar(name: String, value: Value) {
         exe.symbols[name]?.also { variables[it] = value }
     }
 
-    private fun executeCode(c: Context): Value {
 
-        val stackLimit = Yegg.world.getSysInt("stackLimit")
-        var ticksLeft = c.ticksLeft
+    sealed class Result {
+        data class Return(val v: Value) : Result()
+        data class Call(val exe: Executable, val args: List<Value>, val vThis: VObj = Yegg.vNullObj): Result()
+        data class Suspend(val seconds: Int): Result()
+    }
 
+    // If passed a vReturn, push it to the stack.
+    // Commence execution at current program counter.
+    fun execute(vReturn: Value? = null): Result {
+        vReturn?.also {
+            if (dropReturnValue) dropReturnValue = false
+            else push(it)
+        }
+        try { return executeCode() } catch (e: Exception) { failVM(e) }
+        throw IllegalStateException()
+    }
+
+    private fun executeCode(): Result {
         while (pc < exe.code.size) {
-
-            if (--ticksLeft < 0) fail(E_LIMIT, "tick limit exceeded")
-            if (stack.size > stackLimit) fail(E_LIMIT, "stack depth exceeded")
-            if (c.callsLeft < 1) fail(E_MAXREC, "call depth exceeded")
+            if (--c.ticksLeft < 0) fail(E_LIMIT, "tick limit exceeded")
+            if (stack.size > stackLimit) fail(E_MAXREC, "stack depth exceeded")
 
             val word = next()
             lineNum = word.lineNum
@@ -148,22 +162,23 @@ class VM(val exe: Executable) {
                 }
                 O_JUMP -> {
                     val addr = next().address!!
-                    if (addr >= 0) pc = addr else return VVoid  // Unresolved jump dest means end-of-code
+                    // Unresolved jump dest means end-of-code
+                    if (addr >= 0) pc = addr else return Result.Return(VVoid)
                 }
                 O_RETURN -> {
-                    if (stack.isEmpty()) return VVoid
+                    if (stack.isEmpty()) return Result.Return(VVoid)
                     if (stack.size > 1) fail(E_SYS, "stack polluted on return!  ${dumpStack()}")
-                    return pop()
+                    return Result.Return(pop())
                 }
                 O_RETURNNULL -> {
                     if (stack.isNotEmpty()) fail(E_SYS, "stack polluted on returnnull!  ${dumpStack()}")
-                    return VVoid
+                    return Result.Return(VVoid)
                 }
                 O_RETVAL -> {
-                    return next().value!!
+                    return Result.Return(next().value!!)
                 }
                 O_RETVAR -> {
-                    return variables[next().intFromV]!!
+                    return Result.Return(variables[next().intFromV]!!)
                 }
                 O_FAIL -> {
                     val a = pop()
@@ -176,51 +191,53 @@ class VM(val exe: Executable) {
                     val argCount = next().intFromV
                     val a2 = if (word.opcode == O_CALL) pop() else next().value
                     val a1 = pop()
-                    val args = mutableListOf<Value>()
-                    repeat(argCount) { args.add(0, pop()) }
+                    val args = buildList { repeat(argCount) { add(0, pop()) } }
                     if (a2 is VString) {
-                        c.ticksLeft = ticksLeft
-                        c.callsLeft--
-                        a1.callVerb(c, a2.v, args)?.also {
-                            if (word.opcode != O_VCALLST) push(it)
-                        } ?: fail(E_VERBNF, "verb not found")
-                        c.callsLeft++
-                        ticksLeft = c.ticksLeft
+                        // If static built-in verb, call directly without returning
+                        val vReturn = a1.callStaticVerb(c, a2.v, args)
+                        if (vReturn != null) {
+                            if (word.opcode != O_VCALLST) push(vReturn)
+                        } else {
+                            val verb = a1.getVerb(c, a2.v)
+                            if (verb != null) {
+                                if (word.opcode == O_VCALLST) dropReturnValue = true
+                                val vThis = if (a1 is VObj) a1 else Yegg.vNullObj
+                                return Result.Call(verb, args, vThis)
+                            } else fail(E_VERBNF, "verb not found")
+                        }
                     } else fail(E_VERBNF, "verb name must be string")
                 }
                 O_FUNCALL, O_FUNCALLST -> {
                     val name = (next().value as VString).v
                     val argCount = next().intFromV
-                    val args = mutableListOf<Value>()
-                    repeat (argCount) { args.add(0, pop()) }
-                    exe.symbols[name]?.also { variableID ->
-                        var result: Value? = null
-                        // Look for variable with VFun
-                        variables[variableID]?.let { subject ->
-                            if (subject is VFun) {
-                                result = subject.verbInvoke(c, args)
-                            } else fail(E_TYPE, "cannot invoke ${subject.type} as fun")
-                        // Look for $sys.verb
-                        } ?: Yegg.world.sys.callVerb(c, name, args)?.also {
-                            result = it
-                        } ?: fail(E_VARNF, "no such fun or variable")
-                        result?.also { if (word.opcode != O_FUNCALLST) push(it) }
-                    }
+                    val args = buildList { repeat(argCount) { add(0, pop()) } }
+                    // If static sys function, call directly without returning
+                    Yegg.world.sys.callStaticVerb(c, name, args)?.also {
+                        if (word.opcode != O_FUNCALLST) push(it)
+                    } ?: exe.symbols[name]?.also { variableID ->
+                        variables[variableID]?.let { value ->
+                            if (value is Executable) {
+                                return Result.Call(value, args)
+                            } else fail(E_TYPE, "cannot invoke ${value.type} as fun")
+                        }
+                    } ?: fail(E_VARNF, "no such fun or variable")
                 }
 
                 // Task ops
 
                 O_SUSPEND -> {
                     val a = pop()
-                    throw SuspendException((a as VInt).v)
+                    return Result.Suspend((a as VInt).v)
                 }
                 O_FORK -> {
                     val (a2, a1) = popTwo()
-                    val taskID = MCP.schedule(Context(c.connection).apply {
-                        vThis = c.vThis
-                        vUser = c.vUser
-                    }, a2 as VFun, listOf(), (a1 as VInt).v)
-                    push(VTask(taskID))
+                    val task = Task.make(
+                        exe = a2 as VFun,
+                        vThis = c.vThis,
+                        vUser = c.vUser,
+                    )
+                    MCP.schedule(task, (a1 as VInt).v)
+                    push(task.vID)
                 }
 
                 // Variable ops
@@ -326,11 +343,11 @@ class VM(val exe: Executable) {
                         else -> { }
                     }
                 }
-                O_CMP_EQZ -> { push(VBool(pop().cmpEq(VInt(0)))) }
-                O_CMP_GTZ -> { push(VBool(pop().cmpGt(VInt(0)))) }
-                O_CMP_GEZ -> { push(VBool(pop().cmpGe(VInt(0)))) }
-                O_CMP_LTZ -> { push(VBool(pop().cmpLt(VInt(0)))) }
-                O_CMP_LEZ -> { push(VBool(pop().cmpLe(VInt(0)))) }
+                O_CMP_EQZ -> { push(VBool(pop().cmpEq(Yegg.vZero))) }
+                O_CMP_GTZ -> { push(VBool(pop().cmpGt(Yegg.vZero))) }
+                O_CMP_GEZ -> { push(VBool(pop().cmpGe(Yegg.vZero))) }
+                O_CMP_LTZ -> { push(VBool(pop().cmpLt(Yegg.vZero))) }
+                O_CMP_LEZ -> { push(VBool(pop().cmpLe(Yegg.vZero))) }
 
                 // Math ops
 
@@ -378,7 +395,7 @@ class VM(val exe: Executable) {
                 else -> fail(E_SYS, "unknown opcode $word")
             }
         }
-        return if (stack.isEmpty()) VVoid else pop()
+        return Result.Return(if (stack.isEmpty()) VVoid else pop())
     }
 
 }
