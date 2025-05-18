@@ -72,7 +72,7 @@ data class Task(val c: Context) {
             vUser: VObj = Yegg.vNullObj,
         ) = Task(
             Context(connection, vThis, vUser).apply {
-                push(vThis, exe, args, exe.captureScope(args))
+                push(vThis, exe, args, exe.getInitialVars(args))
             }
         )
     }

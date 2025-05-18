@@ -34,7 +34,7 @@ interface Executable {
         return VFun(lambdaCode, symbols, blocks, vThis, args, withVars)
     }
 
-    fun captureScope(args: List<Value>): Map<String, Value> = emptyMap()
+    fun getInitialVars(args: List<Value>): Map<String, Value> = emptyMap()
 
     fun jitCompile() { }
 

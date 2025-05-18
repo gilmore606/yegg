@@ -1,11 +1,8 @@
 package com.dlfsystems.value
 
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.E_RANGE
 import com.dlfsystems.vm.VMWord
 import com.dlfsystems.vm.Executable
-import com.dlfsystems.vm.VM
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -29,7 +26,7 @@ data class VFun(
     override val symbols = buildMap { withSymbols.forEach { put(it.key, it.value) } }
     override val blocks = buildList { addAll(withBlocks) }
 
-    override fun captureScope(args: List<Value>) = buildMap {
+    override fun getInitialVars(args: List<Value>) = buildMap {
         vars.forEach { (name, v) -> put(name, v) }
         if ((args.size < argNames.size) || (args.size > argNames.size && args.size > 1))
             fail(E_RANGE, "lambda wants ${argNames.size} args but got ${args.size}")

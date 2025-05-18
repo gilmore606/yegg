@@ -18,6 +18,8 @@ class Verb(
     @Transient override var symbols: Map<String, Int> = mapOf()
     @Transient override var blocks: List<Executable.Block> = listOf()
 
+    override fun toString() = name
+
     fun program(source: String) {
         this.source = source
         recompile()
