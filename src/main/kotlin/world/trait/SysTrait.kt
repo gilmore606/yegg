@@ -80,8 +80,8 @@ class SysTrait : Trait("sys") {
 
     // $sys.notifyConn("text")
     private fun verbNotifyConn(c: Context, args: List<Value>): VVoid {
-        if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for notifyConn")
-        c.connection?.id?.id?.also { Yegg.notifyConn(it, (args[0] as VString).v) }
+        if (args.size != 1) throw IllegalArgumentException("Bad args for notifyConn")
+        c.connection?.id?.id?.also { Yegg.notifyConn(it, args[0].asString()) }
         return VVoid
     }
 

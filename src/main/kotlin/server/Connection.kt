@@ -1,13 +1,14 @@
 package com.dlfsystems.server
 
 import com.dlfsystems.app.Log
+import com.dlfsystems.compiler.CompileException
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.server.mcp.Task
 import com.dlfsystems.server.parser.CommandMatch
 import com.dlfsystems.server.parser.Preposition
-import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
+import com.dlfsystems.world.trait.Verb
 
 
 class Connection(private val sendText: (String) -> Unit) {
@@ -35,8 +36,17 @@ class Connection(private val sendText: (String) -> Unit) {
             } else buffer.add(text)
         } ?: run {
             if (text.startsWith(";")) {
-                val code = text.substringAfter(";")
-                sendText(Compiler.eval(Context(this), "return $code"))
+                val eval = text.substringAfter(";")
+                val source = if (eval.startsWith(";")) "notifyConn(${eval.substringAfter(";")})" else eval
+                try {
+                    val verb = Verb("eval", Yegg.world.sys.id).apply { program(source) }
+                    MCP.schedule(Task.make(
+                        exe = verb,
+                        connection = this,
+                    ))
+                } catch (e: Exception) {
+                    sendText(e.toString())
+                }
             } else if (text.startsWith("@")) {
                 // TODO: get rid of these hardcoded @meta commands
                 parseMeta(text)
@@ -103,7 +113,6 @@ class Connection(private val sendText: (String) -> Unit) {
                 args = match.args,
                 connection = this,
                 vThis = match.obj?.vThis ?: Yegg.vNullObj,
-                vUser = this.user?.vThis ?: Yegg.vNullObj
             ))
         } ?: run {
             sendText("ERR: No verb ${match.verb} found for command")

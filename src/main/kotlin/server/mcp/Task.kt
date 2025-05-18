@@ -71,11 +71,10 @@ data class Task(val c: Context) {
             vThis: VObj = Yegg.vNullObj,
             vUser: VObj = Yegg.vNullObj,
         ) = Task(
-            Context(connection).apply {
-                this.vThis = vThis
-                this.vUser = vUser
+            Context(connection, vThis, vUser).apply {
                 push(vThis, exe, args, exe.captureScope(args))
             }
         )
     }
+
 }

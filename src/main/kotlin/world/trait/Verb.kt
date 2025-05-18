@@ -24,7 +24,7 @@ class Verb(
         Log.d("programmed $name with code ${code.dumpText()}")
     }
 
-    override fun JITCompile() { if (code.isEmpty()) recompile() }
+    override fun jitCompile() { if (code.isEmpty()) recompile() }
 
     private fun recompile() {
         Compiler.compile(source).also {

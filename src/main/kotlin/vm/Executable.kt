@@ -36,6 +36,6 @@ interface Executable {
 
     fun captureScope(args: List<Value>): Map<String, Value> = emptyMap()
 
-    fun JITCompile() { }
+    fun jitCompile() { }
 
 }

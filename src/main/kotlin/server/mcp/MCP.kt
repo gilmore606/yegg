@@ -80,6 +80,7 @@ object MCP {
     }
 
     private fun getNextTask(): Task? {
+        if (timeMap.isEmpty()) return null
         taskMap[timeMap[timeMap.firstKey()]]?.also { nextTask ->
             if (nextTask.atEpoch > systemEpoch()) return null
             return nextTask
