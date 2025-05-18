@@ -5,7 +5,6 @@ import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.value.*
 import com.dlfsystems.world.World
 import com.dlfsystems.world.Obj
-import io.viascom.nanoid.NanoId
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -37,9 +36,6 @@ object Yegg {
 
     private val connections = mutableSetOf<Connection>()
     val connectedUsers = mutableMapOf<Obj, Connection>()
-
-    const val ID_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    fun newID() = NanoId.generateOptimized(8, ID_CHARS, 61, 16)
 
     private val coroutineScope = CoroutineScope(
         SupervisorJob() +

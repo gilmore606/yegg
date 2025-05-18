@@ -5,6 +5,7 @@ import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.server.mcp.Task
 import com.dlfsystems.server.parser.CommandMatch
 import com.dlfsystems.server.parser.Preposition
+import com.dlfsystems.util.NanoID
 import com.dlfsystems.world.Obj
 import com.dlfsystems.world.trait.Verb
 
@@ -12,7 +13,7 @@ import com.dlfsystems.world.trait.Verb
 class Connection(private val sendText: (String) -> Unit) {
 
     data class ID(val id: String) { override fun toString() = id }
-    val id = ID(Yegg.newID())
+    val id = ID(NanoID.newID())
 
     var buffer = mutableListOf<String>()
     var programming: Pair<String, String>? = null
@@ -37,7 +38,7 @@ class Connection(private val sendText: (String) -> Unit) {
                 val eval = text.substringAfter(";")
                 val source = if (eval.startsWith(";")) "notifyConn(${eval.substringAfter(";")})" else eval
                 try {
-                    val verb = Verb("eval", Yegg.world.sys.id).apply { program(source) }
+                    val verb = Verb("eval").apply { program(source) }
                     MCP.schedule(Task.make(
                         exe = verb,
                         connection = this,

@@ -9,10 +9,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 @Serializable
-class Verb(
-    val name: String,
-    val traitID: Trait.ID,
-): Executable {
+class Verb(val name: String): Executable {
     var source = ""
     @Transient override var code: List<VMWord> = listOf()
     @Transient override var symbols: Map<String, Int> = mapOf()

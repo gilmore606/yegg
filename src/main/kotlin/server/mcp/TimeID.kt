@@ -5,6 +5,9 @@ import java.lang.Comparable
 import kotlin.experimental.and
 import kotlin.random.Random
 
+// Unique ID for a Task's scheduled execution time.
+// Sortable by execution time, then creation time.
+
 @Serializable
 data class TimeID(val id: String): Comparable<TimeID> {
     override fun toString() = id

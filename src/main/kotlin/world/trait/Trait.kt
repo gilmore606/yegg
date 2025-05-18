@@ -5,6 +5,7 @@ import com.dlfsystems.server.parser.Command
 import com.dlfsystems.server.parser.Command.Arg
 import com.dlfsystems.server.parser.CommandMatch
 import com.dlfsystems.server.parser.Preposition
+import com.dlfsystems.util.NanoID
 import com.dlfsystems.util.matchesWildcard
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
@@ -26,7 +27,7 @@ sealed class Trait(val name: String) {
     @SerialName("TraitID")
     data class ID(val id: String) { override fun toString() = id }
 
-    val id = ID(Yegg.newID())
+    val id = ID(NanoID.newID())
     val vTrait = VTrait(id)
 
     val traits: MutableList<ID> = mutableListOf()
@@ -69,7 +70,7 @@ sealed class Trait(val name: String) {
         verbs[verbName]?.also {
             it.program(source)
         } ?: run {
-            verbs[verbName] = Verb(verbName, id).apply { program(source) }
+            verbs[verbName] = Verb(verbName).apply { program(source) }
         }
     }
 
