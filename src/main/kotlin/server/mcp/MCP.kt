@@ -49,6 +49,8 @@ object MCP {
     // Is the given taskID a valid scheduled task?
     fun isValidTask(taskID: Task.ID) = taskMap.containsKey(taskID)
 
+    fun taskList() = taskMap.values.toList()
+
     // Start processing all queued tasks.
     fun start() {
         if (job?.isActive == true) throw IllegalStateException("Already started")

@@ -3,6 +3,7 @@ package com.dlfsystems.world.trait
 import com.dlfsystems.app.Log
 import com.dlfsystems.server.parser.Command
 import com.dlfsystems.server.Yegg
+import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.util.systemEpoch
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
@@ -21,6 +22,7 @@ class SysTrait : Trait("sys") {
         when (propName) {
             "time" -> return propTime()
             "connectedUsers" -> return propConnectedUsers()
+            "tasks" -> return propTasks()
         }
         return super.getProp(obj, propName)
     }
@@ -49,7 +51,10 @@ class SysTrait : Trait("sys") {
     private fun propTime() = VInt(systemEpoch())
 
     // $sys.connectedUsers -> [#obj, #obj...]
-    private fun propConnectedUsers() = VList(Yegg.connectedUsers.keys.map { it.vThis }.toMutableList())
+    private fun propConnectedUsers() = VList.make(Yegg.connectedUsers.keys.map { it.vThis })
+
+    // $sys.tasks ->
+    private fun propTasks() = VList.make(MCP.taskList().map { it.vID })
 
     // $sys.connectUser("username", "password") -> true if connected
     private fun verbConnectUser(c: Context, args: List<Value>): VBool {

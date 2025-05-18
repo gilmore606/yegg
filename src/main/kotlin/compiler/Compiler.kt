@@ -1,12 +1,10 @@
 package com.dlfsystems.compiler
 
-import com.dlfsystems.server.Yegg
 import com.dlfsystems.compiler.ast.Node
 import com.dlfsystems.compiler.lexer.Lexer
 import com.dlfsystems.compiler.lexer.Token
 import com.dlfsystems.compiler.parser.Parser
 import com.dlfsystems.vm.*
-import com.dlfsystems.world.trait.Verb
 
 object Compiler {
 
