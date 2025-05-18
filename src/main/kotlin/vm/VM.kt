@@ -33,8 +33,6 @@ class VM(
     var lineNum: Int = 0
     var charNum: Int = 0
     private fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
-    private fun failVM(e: Exception) { throw (e as? VMException
-        ?: VMException(E_SYS, "${e.message} (mem $pc)\n${e.stackTraceToString()}")).withLocation(lineNum, charNum) }
 
     // Set true on Result.Call return to drop the return value (i.e. don't put it on stack).
     // Used by optimizer opcodes.
@@ -76,8 +74,13 @@ class VM(
             if (dropReturnValue) dropReturnValue = false
             else push(it)
         }
-        try { return executeCode() } catch (e: Exception) { failVM(e) }
-        throw IllegalStateException()
+        try {
+            return executeCode()
+        } catch (e: Exception) {
+            throw (e as? VMException ?: VMException(E_SYS,
+                "${e.message} (mem $pc)\n${e.stackTraceToString()}"
+            )).withLocation(lineNum, charNum)
+        }
     }
 
     private fun executeCode(): Result {
