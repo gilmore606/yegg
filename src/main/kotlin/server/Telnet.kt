@@ -45,13 +45,13 @@ object Telnet {
                         send.writeStringUtf8("${it.replace("\n", "\r\n")}\r\n")
                     }
                 }
-                Yegg.onYeggThread { Yegg.addConnection(conn) }
+                onYeggThread { Yegg.addConnection(conn) }
 
 
                 try {
                     while (true) {
                         val input = receive.readUTF8Line() ?: break
-                        Yegg.onYeggThread { conn.receiveText(input) }
+                        onYeggThread { conn.receiveText(input) }
                     }
                     Log.i("Closing client socket: $client")
                 } catch (e: Throwable) {
@@ -59,7 +59,7 @@ object Telnet {
                 }
 
                 client.close()
-                Yegg.onYeggThread { Yegg.removeConnection(conn) }
+                onYeggThread { Yegg.removeConnection(conn) }
             }
 
         }

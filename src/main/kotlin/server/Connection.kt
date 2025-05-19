@@ -44,7 +44,7 @@ class Connection(private val sendText: (String) -> Unit) {
                         connection = this,
                     ))
                 } catch (e: Exception) {
-                    sendText(e.toString())
+                    sendText("E_HUH: ${e.message}")
                 }
             } else if (text.startsWith("@")) {
                 // TODO: get rid of these hardcoded @meta commands

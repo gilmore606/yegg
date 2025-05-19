@@ -30,7 +30,7 @@ object Yegg {
     val vNullObj = VObj(null)
     val vNullTrait = VTrait(null)
     val vZero = VInt(0)
-    val vNullStr = VString("")
+    val vEmptyStr = VString("")
 
     lateinit var world: World
 
@@ -45,7 +45,7 @@ object Yegg {
 
     fun launch(block: suspend CoroutineScope.() -> Unit) = coroutineScope.launch(block = block)
 
-    suspend fun onYeggThread(block: suspend CoroutineScope.() -> Unit) =
+    suspend fun onThread(block: suspend CoroutineScope.() -> Unit) =
         withContext(coroutineScope.coroutineContext, block)
 
 
@@ -134,3 +134,5 @@ object Yegg {
     }
 
 }
+
+suspend fun onYeggThread(block: suspend CoroutineScope.() -> Unit) = Yegg.onThread(block)

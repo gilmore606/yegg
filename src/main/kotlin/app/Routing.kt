@@ -2,6 +2,7 @@ package com.dlfsystems.app
 
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.server.Connection
+import com.dlfsystems.server.onYeggThread
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -24,18 +25,18 @@ fun Application.configureRouting() {
 
         webSocket("/ws") {
             val conn = Connection { launch { outgoing.send(Frame.Text(it)) } }
-            Yegg.addConnection(conn)
+            onYeggThread { Yegg.addConnection(conn) }
             for (frame in incoming) {
                 if (frame is Frame.Text) {
                     val text = frame.readText()
-                    conn.receiveText(text)
+                    onYeggThread { conn.receiveText(text) }
                     if (conn.quitRequested) {
-                        Yegg.removeConnection(conn)
+                        onYeggThread { Yegg.removeConnection(conn) }
                         close(CloseReason(CloseReason.Codes.NORMAL, "Client requested close"))
                     }
                 }
             }
-            Yegg.removeConnection(conn)
+            onYeggThread { Yegg.removeConnection(conn) }
         }
 
         post("/program/{traitName}/{verbName}")  {
