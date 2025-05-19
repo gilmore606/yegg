@@ -13,7 +13,7 @@ object Telnet {
     // Separate thread, to avoid blocking MCP on client buffer flushes (and vice versa)
     private val scope = CoroutineScope(
         SupervisorJob() +
-                Dispatchers.IO.limitedParallelism(1) +
+                Dispatchers.IO +
                 CoroutineName("Yegg telnet")
     )
 
@@ -41,17 +41,17 @@ object Telnet {
                 val send = client.openWriteChannel(autoFlush = true)
 
                 val conn = Connection {
-                    // TODO: Do better, don't launch for every send.  This is inefficient and doesn't(?) guarantee delivery order.
                     scope.launch {
                         send.writeStringUtf8("${it.replace("\n", "\r\n")}\r\n")
                     }
                 }
-                Yegg.addConnection(conn)
+                Yegg.onYeggThread { Yegg.addConnection(conn) }
+
 
                 try {
                     while (true) {
                         val input = receive.readUTF8Line() ?: break
-                        conn.receiveText(input)
+                        Yegg.onYeggThread { conn.receiveText(input) }
                     }
                     Log.i("Closing client socket: $client")
                 } catch (e: Throwable) {
@@ -59,7 +59,7 @@ object Telnet {
                 }
 
                 client.close()
-                Yegg.removeConnection(conn)
+                Yegg.onYeggThread { Yegg.removeConnection(conn) }
             }
 
         }

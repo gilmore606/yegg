@@ -42,7 +42,11 @@ object Yegg {
                 Dispatchers.Default.limitedParallelism(1) +
                 CoroutineName("Yegg")
     )
+
     fun launch(block: suspend CoroutineScope.() -> Unit) = coroutineScope.launch(block = block)
+
+    suspend fun onYeggThread(block: suspend CoroutineScope.() -> Unit) =
+        withContext(coroutineScope.coroutineContext, block)
 
 
     // Start the server.
