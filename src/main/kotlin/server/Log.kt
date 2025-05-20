@@ -1,6 +1,5 @@
-package com.dlfsystems.app
+package com.dlfsystems.server
 
-import com.dlfsystems.server.Yegg
 import java.io.BufferedWriter
 import java.io.File
 import java.time.LocalDateTime

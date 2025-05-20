@@ -1,6 +1,6 @@
 package com.dlfsystems.server.mcp
 
-import com.dlfsystems.server.Connection
+import com.dlfsystems.server.parser.Connection
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.util.NanoID
 import com.dlfsystems.util.systemEpoch

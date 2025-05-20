@@ -1,6 +1,6 @@
 package com.dlfsystems.server.mcp
 
-import com.dlfsystems.app.Log
+import com.dlfsystems.server.Log
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.util.systemEpoch
 import kotlinx.coroutines.*

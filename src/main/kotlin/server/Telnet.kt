@@ -1,6 +1,6 @@
 package com.dlfsystems.server
 
-import com.dlfsystems.app.Log
+import com.dlfsystems.server.parser.Connection
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*

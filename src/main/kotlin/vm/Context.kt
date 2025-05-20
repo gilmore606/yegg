@@ -1,6 +1,6 @@
 package com.dlfsystems.vm
 
-import com.dlfsystems.server.Connection
+import com.dlfsystems.server.parser.Connection
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.*
 

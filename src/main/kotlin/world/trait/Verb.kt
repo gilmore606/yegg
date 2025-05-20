@@ -1,6 +1,6 @@
 package com.dlfsystems.world.trait
 
-import com.dlfsystems.app.Log
+import com.dlfsystems.server.Log
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.vm.VMWord
 import com.dlfsystems.vm.dumpText
