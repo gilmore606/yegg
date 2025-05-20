@@ -1,5 +1,6 @@
 package com.dlfsystems.value
 
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.*
 import kotlinx.serialization.SerialName
@@ -30,11 +31,11 @@ data class VString(var v: String): Value() {
 
     override fun getProp(name: String): Value? {
         when (name) {
-            "length" -> return propLength()
-            "asInt" -> return propAsInt()
-            "asFloat" -> return propAsFloat()
-            "isEmpty" -> return propIsEmpty()
-            "isNotEmpty" -> return propIsNotEmpty()
+            "length" -> return VInt(v.length)
+            "asInt" -> return VInt(v.toInt())
+            "asFloat" -> return VFloat(v.toFloat())
+            "isEmpty" -> return if (v.isEmpty()) Yegg.vTrue else Yegg.vFalse
+            "isNotEmpty" -> return if (v.isNotEmpty()) Yegg.vTrue else Yegg.vFalse
         }
         return null
     }
@@ -82,7 +83,7 @@ data class VString(var v: String): Value() {
         return false
     }
 
-    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
         when (name) {
             "split" -> return verbSplit(args)
             "contains" -> return verbContains(args)
@@ -92,17 +93,6 @@ data class VString(var v: String): Value() {
         }
         return null
     }
-
-
-    // Custom props
-
-    private fun propLength() = VInt(v.length)
-    private fun propAsInt() = VInt(v.toInt())
-    private fun propAsFloat() = VFloat(v.toFloat())
-    private fun propIsEmpty() = VBool(v.isEmpty())
-    private fun propIsNotEmpty() = VBool(v.isNotEmpty())
-
-    // Custom verbs
 
     private fun verbSplit(args: List<Value>): Value {
         requireArgCount(args, 0, 1)
@@ -133,4 +123,5 @@ data class VString(var v: String): Value() {
         val s = args[0].asString()
         return if (v.contains(s)) VInt(v.indexOf(s)) else VInt(-1)
     }
+
 }

@@ -3,6 +3,7 @@ package com.dlfsystems.world
 import com.dlfsystems.server.parser.CommandMatch
 import com.dlfsystems.server.parser.Preposition
 import com.dlfsystems.server.Yegg
+import com.dlfsystems.util.NanoID
 import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
@@ -21,7 +22,7 @@ class Obj {
     @SerialName("ObjID")
     data class ID(val id: String) { override fun toString() = id }
 
-    val id = ID(Yegg.newID())
+    val id = ID(NanoID.newID())
     val vThis = VObj(id)
 
     val traits: MutableList<Trait.ID> = mutableListOf()

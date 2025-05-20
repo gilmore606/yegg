@@ -43,7 +43,7 @@ fun List<VMWord>.dumpText(): String {
         cell.opcode?.also { opcode ->
             repeat (opcode.argCount) {
                 pc++
-                val arg = get(pc)
+                val arg = if (pc < size) get(pc).toString() else "??"
                 s += " $arg"
             }
         }

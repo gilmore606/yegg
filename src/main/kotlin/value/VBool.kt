@@ -30,12 +30,7 @@ data class VBool(val v: Boolean): Value() {
         return null
     }
 
-
-    // Custom props
-
     private fun propAsInt() = VInt(if (v) 1 else 0)
     private fun propAsString() = VString(asString())
-
-    // Custom verbs
 
 }

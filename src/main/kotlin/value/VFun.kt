@@ -1,11 +1,8 @@
 package com.dlfsystems.value
 
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.E_RANGE
 import com.dlfsystems.vm.VMWord
 import com.dlfsystems.vm.Executable
-import com.dlfsystems.vm.VM
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -25,33 +22,18 @@ data class VFun(
     override fun toString() = "VFUN"
     override fun asString() = toString()
 
-    override val code = withCode // no need to copy, it was made on demand
-    override val symbols = buildMap { withSymbols.forEach { put(it.key, it.value) } }
-    override val blocks = buildList { addAll(withBlocks) }
+    override val code = withCode
+    override val symbols = withSymbols
+    override val blocks = withBlocks
 
-    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
-        when (name) {
-            "invoke" -> return verbInvoke(c, args)
-        }
-        return null
-    }
-
-    override fun execute(c: Context, args: List<Value>) = verbInvoke(c, args)
-
-    fun verbInvoke(c: Context, args: List<Value>): Value {
+    override fun getInitialVars(args: List<Value>) = buildMap {
+        vars.forEach { (name, v) -> put(name, v) }
         if ((args.size < argNames.size) || (args.size > argNames.size && args.size > 1))
             fail(E_RANGE, "lambda wants ${argNames.size} args but got ${args.size}")
-        val vm = VM(this)
-        c.push(c.vThis, Yegg.vNullTrait, "->", args, vm)
-        val r = vm.execute(c, listOf(), buildMap {
-            vars.forEach { (name, v) -> put(name, v) }
-            argNames.forEachIndexed { n, name ->
-                args.getOrNull(n)?.also { put(name, it) } ?: fail(E_RANGE, "arg $name not found")
-            }
-            if (argNames.isEmpty() && args.size == 1) put("it", args[0])
-        })
-        c.pop()
-        return r
+        argNames.forEachIndexed { n, name ->
+            args.getOrNull(n)?.also { put(name, it) } ?: fail(E_RANGE, "arg $name not found")
+        }
+        if (argNames.isEmpty() && args.size == 1) put("it", args[0])
     }
 
 }

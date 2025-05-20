@@ -5,7 +5,6 @@ import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.value.*
 import com.dlfsystems.world.World
 import com.dlfsystems.world.Obj
-import io.viascom.nanoid.NanoId
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -13,6 +12,7 @@ import kotlin.system.exitProcess
 
 object Yegg {
 
+    // TODO: load from config
     var worldName = "Minimal"
     var serverAddress = "127.0.0.1"
     var serverPort = 8888
@@ -31,15 +31,14 @@ object Yegg {
     val vNullObj = VObj(null)
     val vNullTrait = VTrait(null)
     val vZero = VInt(0)
-    val vNullStr = VString("")
+    val vEmptyStr = VString("")
+    val vEmptyList = VList.make(emptyList())
+    val vEmptyMap = VMap.make(emptyMap())
 
     lateinit var world: World
 
     private val connections = mutableSetOf<Connection>()
     val connectedUsers = mutableMapOf<Obj, Connection>()
-
-    const val ID_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    fun newID() = NanoId.generateOptimized(8, ID_CHARS, 61, 16)
 
     private val coroutineScope = CoroutineScope(
         SupervisorJob() +
@@ -49,7 +48,7 @@ object Yegg {
 
     fun launch(block: suspend CoroutineScope.() -> Unit) = coroutineScope.launch(block = block)
 
-    suspend fun onYeggThread(block: suspend CoroutineScope.() -> Unit) =
+    suspend fun onThread(block: suspend CoroutineScope.() -> Unit) =
         withContext(coroutineScope.coroutineContext, block)
 
 
@@ -138,3 +137,7 @@ object Yegg {
     }
 
 }
+
+// Switch execution to the Yegg server thread.
+// Use this to modify the World state from other threads.
+suspend fun onYeggThread(block: suspend CoroutineScope.() -> Unit) = Yegg.onThread(block)
