@@ -53,16 +53,18 @@ object Yegg {
 
 
     // Start the server.
-    fun start() {
-        Log.start(worldName)
-        loadWorld()
+    fun start(testMode: Boolean = false) {
+        if (!testMode) {
+            Log.start(worldName)
+            loadWorld()
+        }
         MCP.start()
         Telnet.start()
         Log.i("Server started.")
     }
 
     // Shut down the server.
-    fun shutdownServer() {
+    fun stop() {
         Log.i("Server shutting down.")
         Telnet.stop()
         MCP.stop()
