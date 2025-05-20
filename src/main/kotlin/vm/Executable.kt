@@ -31,7 +31,8 @@ interface Executable {
             ) } ?: word
         }
         Log.d("LAMBDA CODE:\n${lambdaCode.dumpText()}\n")
-        return VFun(lambdaCode, symbols, blocks, vThis, args, withVars)
+        val offsetBlocks = blocks.map { Block(it.start - offset, it.end - offset) }
+        return VFun(lambdaCode, symbols, offsetBlocks, vThis, args, withVars)
     }
 
     fun getInitialVars(args: List<Value>): Map<String, Value> = emptyMap()
