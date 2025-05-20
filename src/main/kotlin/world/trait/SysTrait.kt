@@ -1,6 +1,6 @@
 package com.dlfsystems.world.trait
 
-import com.dlfsystems.app.Log
+import com.dlfsystems.server.Log
 import com.dlfsystems.server.parser.Command
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.server.mcp.MCP

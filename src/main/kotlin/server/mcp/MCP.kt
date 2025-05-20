@@ -1,6 +1,6 @@
 package com.dlfsystems.server.mcp
 
-import com.dlfsystems.app.Log
+import com.dlfsystems.server.Log
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.util.systemEpoch
 import kotlinx.coroutines.*
@@ -14,7 +14,7 @@ object MCP {
 
     private const val WAIT_FOR_TASKS_MS = 10L
 
-    private val timeMap = TreeMap<TimeID, Task.ID>()
+    private val timeMap = TreeMap<TimeID, Task>()
     private val taskMap = HashMap<Task.ID, Task>()
 
     private var job: Job? = null
@@ -25,7 +25,7 @@ object MCP {
         secondsInFuture: Int = 0
     ) {
         task.setTime(secondsInFuture)
-        timeMap[task.timeID] = task.id
+        timeMap[task.timeID] = task
         taskMap[task.id] = task
     }
 
@@ -42,7 +42,7 @@ object MCP {
         taskMap[taskID]?.also { task ->
             timeMap.remove(task.timeID)
             task.setTime(0)
-            timeMap[task.timeID] = task.id
+            timeMap[task.timeID] = task
         } ?: throw IllegalArgumentException("Task $taskID does not exist")
     }
 
@@ -73,7 +73,7 @@ object MCP {
                 val result = task.execute()
                 if (result is Task.Result.Suspend) {
                     task.setTime(result.seconds)
-                    timeMap[task.timeID] = task.id
+                    timeMap[task.timeID] = task
                     taskMap[task.id] = task
                 }
             } ?: run {
@@ -84,7 +84,7 @@ object MCP {
 
     private fun getNextTask(): Task? {
         if (timeMap.isEmpty()) return null
-        taskMap[timeMap[timeMap.firstKey()]]?.also { nextTask ->
+        timeMap[timeMap.firstKey()]?.also { nextTask ->
             if (nextTask.atEpoch > systemEpoch()) return null
             return nextTask
         }

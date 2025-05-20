@@ -9,7 +9,9 @@ import kotlin.random.Random
 // Sortable by execution time, then creation time.
 
 @Serializable
-data class TimeID(val id: String): Comparable<TimeID> {
+data class TimeID(val time: Long): Comparable<TimeID> {
+    val id: String = generate(time, System.currentTimeMillis(), Random.nextBytes(ENTROPY_SIZE))
+
     override fun toString() = id
     override fun compareTo(other: TimeID) = id.compareTo(other.id)
 
@@ -25,11 +27,7 @@ data class TimeID(val id: String): Comparable<TimeID> {
             'y', 'z'
         )
 
-        // Generate task ID string for a given queue time.
-        // Unique and lexically sortable by creation time.
-        fun generateID(time: Long) = generateID(time, System.currentTimeMillis(), Random.nextBytes(ENTROPY_SIZE))
-
-        private fun generateID(time: Long, createTime: Long, entropy: ByteArray): TimeID {
+        private fun generate(time: Long, createTime: Long, entropy: ByteArray): String {
             val chars = CharArray(ID_LENGTH)
             // time
             chars[0] = charMapping[time.ushr(45).toInt() and 0x1f]
@@ -61,7 +59,7 @@ data class TimeID(val id: String): Comparable<TimeID> {
             chars[24] = charMapping[(entropy[2].toInt() shl 5 or (entropy[3].toShort() and 0xff).toInt().ushr(7) and 0x1f)]
             chars[25] = charMapping[((entropy[3].toShort() and 0xff).toInt().ushr(2) and 0x1f)]
 
-            return TimeID(String(chars))
+            return String(chars)
         }
     }
 }

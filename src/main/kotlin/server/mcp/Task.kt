@@ -1,6 +1,6 @@
 package com.dlfsystems.server.mcp
 
-import com.dlfsystems.server.Connection
+import com.dlfsystems.server.parser.Connection
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.util.NanoID
 import com.dlfsystems.util.systemEpoch
@@ -11,8 +11,7 @@ import com.dlfsystems.vm.*
 import com.dlfsystems.vm.VMException.Type.*
 import kotlinx.serialization.Serializable
 
-
-data class Task(val c: Context) {
+class Task(val c: Context) {
 
     @Serializable
     data class ID(val id: String) { override fun toString() = id }
@@ -20,7 +19,7 @@ data class Task(val c: Context) {
     val vID = VTask(id)
 
     // TimeID includes the schedule time, and changes with every rescheduling.
-    var timeID = TimeID("")
+    var timeID = TimeID(0L)
     var atEpoch = 0
 
     fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
@@ -29,7 +28,7 @@ data class Task(val c: Context) {
 
     fun setTime(secondsInFuture: Int) {
         atEpoch = systemEpoch() + secondsInFuture
-        timeID = TimeID.generateID(atEpoch * 1000L)
+        timeID = TimeID(atEpoch * 1000L)
     }
 
 
