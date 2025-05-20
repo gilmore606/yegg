@@ -9,7 +9,7 @@ object NanoID {
     const val CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
     // Calculated from SIZE and CHARS.size.
-    private const val step = 9
+    private const val step = 10
     private const val mask = 63
 
     private val random = SecureRandom()
