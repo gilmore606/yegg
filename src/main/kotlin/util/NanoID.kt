@@ -4,20 +4,27 @@ import java.security.SecureRandom
 
 object NanoID {
 
+    const val SIZE = 8
+
     const val CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-    fun newID(size: Int = 8, step: Int = 16, mask: Int = 61): String {
-        val random = SecureRandom()
-        val idBuilder = StringBuilder(size)
+    // Calculated from SIZE and CHARS.size.
+    private const val step = 9
+    private const val mask = 63
+
+    private val random = SecureRandom()
+
+    fun newID(): String {
+        val id = StringBuilder(SIZE)
         val bytes = ByteArray(step)
         while (true) {
             random.nextBytes(bytes)
             for (i in 0 until step) {
-                val cIndex = bytes[i].toInt() and mask
-                if (cIndex < CHARS.length) {
-                    idBuilder.append(CHARS[cIndex])
-                    if (idBuilder.length == size) {
-                        return idBuilder.toString()
+                val ci = bytes[i].toInt() and mask
+                if (ci < CHARS.length) {
+                    id.append(CHARS[ci])
+                    if (id.length == SIZE) {
+                        return id.toString()
                     }
                 }
             }
