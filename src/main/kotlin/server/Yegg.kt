@@ -6,19 +6,23 @@ import com.dlfsystems.value.*
 import com.dlfsystems.world.World
 import com.dlfsystems.world.Obj
 import kotlinx.coroutines.*
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.system.exitProcess
 
 object Yegg {
 
-    // TODO: load from config
-    var worldName = "Minimal"
-    var serverAddress = "127.0.0.1"
-    var serverPort = 8888
-    var logLevel = Log.Level.DEBUG
-    var logToConsole = true
-    var optimizeCompiler = true
+    @Serializable
+    class Conf(
+        val worldName: String,
+        val serverAddress: String,
+        val serverPort: Int,
+        val logLevel: Log.Level,
+        val logToConsole: Boolean,
+        val optimizeCompiler: Boolean,
+    )
+    private const val CONFIG_PATH = "yegg.json"
 
     private const val CONNECT_MSG = "** Connected **"
     private const val DISCONNECT_MSG = "** Disconnected **"
@@ -35,6 +39,7 @@ object Yegg {
     val vEmptyList = VList.make(emptyList())
     val vEmptyMap = VMap.make(emptyMap())
 
+    lateinit var conf: Conf
     lateinit var world: World
 
     private val connections = mutableSetOf<Connection>()
@@ -54,11 +59,15 @@ object Yegg {
 
     // Start the server.
     fun start() {
-        Log.start(worldName)
-        loadWorld()
-        MCP.start()
-        Telnet.start()
-        Log.i("Server started.")
+        println("Loading from ${System.getProperty("user.dir")}")
+        launch {
+            conf = JSON.decodeFromString(File(CONFIG_PATH).readText(Charsets.UTF_8))
+            Log.start(conf.worldName)
+            loadWorld()
+            MCP.start()
+            Telnet.start()
+            Log.i("Server started.")
+        }
     }
 
     // Shut down the server.
@@ -71,6 +80,7 @@ object Yegg {
     }
 
     private fun loadWorld() {
+        val worldName = conf.worldName
         val file = File("$worldName.yegg")
         if (file.exists()) {
             Log.i("Loading database from ${file.path}...")

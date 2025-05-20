@@ -28,7 +28,7 @@ object Telnet {
 
     private suspend fun server() {
         val serverSocket = aSocket(SelectorManager(Dispatchers.IO))
-            .tcp().bind(Yegg.serverAddress, Yegg.serverPort)
+            .tcp().bind(Yegg.conf.serverAddress, Yegg.conf.serverPort)
         Log.i("Server listening at ${serverSocket.localAddress}:${serverSocket.port}")
 
         while (true) {

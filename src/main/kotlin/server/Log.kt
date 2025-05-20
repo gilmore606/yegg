@@ -30,8 +30,8 @@ object Log {
     }
 
     private fun log(level: Level, m: String) {
-        if (level >= Yegg.logLevel) {
-            if (Yegg.logToConsole) println("$level: $m")
+        if (level >= Yegg.conf.logLevel) {
+            if (Yegg.conf.logToConsole) println("$level: $m")
             writer?.write("$timestamp $level: $m\n")
         }
     }
