@@ -1,18 +1,18 @@
-package com.dlfsystems.server
+package com.dlfsystems.server.parser
 
-import com.dlfsystems.app.Log
-import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.server.Log
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.server.mcp.MCP
-import com.dlfsystems.server.parser.CommandMatch
-import com.dlfsystems.server.parser.Preposition
-import com.dlfsystems.vm.Context
+import com.dlfsystems.server.mcp.Task
+import com.dlfsystems.util.NanoID
 import com.dlfsystems.world.Obj
+import com.dlfsystems.world.trait.Verb
 
 
 class Connection(private val sendText: (String) -> Unit) {
 
     data class ID(val id: String) { override fun toString() = id }
-    val id = ID(Yegg.newID())
+    val id = ID(NanoID.newID())
 
     var buffer = mutableListOf<String>()
     var programming: Pair<String, String>? = null
@@ -34,8 +34,17 @@ class Connection(private val sendText: (String) -> Unit) {
             } else buffer.add(text)
         } ?: run {
             if (text.startsWith(";")) {
-                val code = text.substringAfter(";")
-                sendText(Compiler.eval(Context(this), "return $code"))
+                val eval = text.substringAfter(";")
+                val source = if (eval.startsWith(";")) "notifyConn(${eval.substringAfter(";")})" else eval
+                try {
+                    val verb = Verb("eval").apply { program(source) }
+                    MCP.schedule(Task.make(
+                        exe = verb,
+                        connection = this,
+                    ))
+                } catch (e: Exception) {
+                    sendText("E_HUH: ${e.message}")
+                }
             } else if (text.startsWith("@")) {
                 // TODO: get rid of these hardcoded @meta commands
                 parseMeta(text)
@@ -96,15 +105,15 @@ class Connection(private val sendText: (String) -> Unit) {
     }
 
     private fun runCommand(match: CommandMatch) {
-        val c = Context(this).apply {
-            vThis = match.obj?.vThis ?: Yegg.vNullObj
-            vUser = connection?.user?.vThis ?: Yegg.vNullObj
-        }
-        Yegg.world.getTrait(match.trait.id)?.verbs?.get(match.verb)?.also { verb ->
-            MCP.schedule(c, verb, match.args)
+        Yegg.world.getTrait(match.trait.id)?.getVerb(match.verb)?.also { verb ->
+            MCP.schedule(Task.make(
+                exe = verb,
+                args = match.args,
+                connection = this,
+                vThis = match.obj?.vThis ?: Yegg.vNullObj,
+            ))
         } ?: run {
             sendText("ERR: No verb ${match.verb} found for command")
-            sendText(c.stackDump())
         }
     }
 

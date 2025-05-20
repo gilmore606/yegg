@@ -1,6 +1,6 @@
 package com.dlfsystems.server
 
-import com.dlfsystems.app.Log
+import com.dlfsystems.server.parser.Connection
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
@@ -28,7 +28,7 @@ object Telnet {
 
     private suspend fun server() {
         val serverSocket = aSocket(SelectorManager(Dispatchers.IO))
-            .tcp().bind(Yegg.serverAddress, Yegg.serverPort)
+            .tcp().bind(Yegg.conf.serverAddress, Yegg.conf.serverPort)
         Log.i("Server listening at ${serverSocket.localAddress}:${serverSocket.port}")
 
         while (true) {
@@ -45,13 +45,13 @@ object Telnet {
                         send.writeStringUtf8("${it.replace("\n", "\r\n")}\r\n")
                     }
                 }
-                Yegg.onYeggThread { Yegg.addConnection(conn) }
+                onYeggThread { Yegg.addConnection(conn) }
 
 
                 try {
                     while (true) {
                         val input = receive.readUTF8Line() ?: break
-                        Yegg.onYeggThread { conn.receiveText(input) }
+                        onYeggThread { conn.receiveText(input) }
                     }
                     Log.i("Closing client socket: $client")
                 } catch (e: Throwable) {
@@ -59,7 +59,7 @@ object Telnet {
                 }
 
                 client.close()
-                Yegg.onYeggThread { Yegg.removeConnection(conn) }
+                onYeggThread { Yegg.removeConnection(conn) }
             }
 
         }

@@ -25,8 +25,8 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
 }
 
 class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
-    private val internalIndex = N_IDENTIFIER(makeID().toString())
-    private val internalSource = N_IDENTIFIER(makeID().toString())
+    private val internalIndex = N_IDENTIFIER(makeID())
+    private val internalSource = N_IDENTIFIER(makeID())
 
     override fun toText(depth: Int) = tab(depth) + "for ($index in $source) " + body.toText(depth + 1)
     override fun toText() = toText(0)

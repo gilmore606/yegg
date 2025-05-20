@@ -1,15 +1,15 @@
 package com.dlfsystems.compiler.ast
 
-import com.dlfsystems.server.Yegg
 import com.dlfsystems.compiler.Coder
 import com.dlfsystems.compiler.CompileException
+import com.dlfsystems.util.NanoID
 
 // A node in the syntax tree.
 
 data class NodeID(val id: String) { override fun toString() = id }
 
 abstract class Node {
-    val id: NodeID = makeID()
+    val id: NodeID = NodeID(makeID())
 
     var lineNum = 0
     var charNum = 0
@@ -43,7 +43,5 @@ abstract class Node {
     // Generate opcodes for this node.
     open fun code(coder: Coder) { }
 
-    companion object {
-        fun makeID() = NodeID(Yegg.newID())
-    }
+    fun makeID() = NanoID.newID()
 }

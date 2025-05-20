@@ -5,6 +5,7 @@ import com.dlfsystems.server.parser.Command
 import com.dlfsystems.server.parser.Command.Arg
 import com.dlfsystems.server.parser.CommandMatch
 import com.dlfsystems.server.parser.Preposition
+import com.dlfsystems.util.NanoID
 import com.dlfsystems.util.matchesWildcard
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
@@ -26,7 +27,7 @@ sealed class Trait(val name: String) {
     @SerialName("TraitID")
     data class ID(val id: String) { override fun toString() = id }
 
-    val id = ID(Yegg.newID())
+    val id = ID(NanoID.newID())
     val vTrait = VTrait(id)
 
     val traits: MutableList<ID> = mutableListOf()
@@ -63,11 +64,13 @@ sealed class Trait(val name: String) {
         commands.removeIf { it.spec == spec }
     }
 
+    fun getVerb(name: String): Verb? = verbs[name]
+
     fun programVerb(verbName: String, source: String) {
         verbs[verbName]?.also {
             it.program(source)
         } ?: run {
-            verbs[verbName] = Verb(verbName, id).apply { program(source) }
+            verbs[verbName] = Verb(verbName).apply { program(source) }
         }
     }
 
@@ -87,12 +90,7 @@ sealed class Trait(val name: String) {
         return true
     }
 
-    open fun callVerb(c: Context, verbName: String, args: List<Value>): Value? {
-        verbs[verbName]?.also {
-            return it.call(c, c.vThis, args)
-        }
-        return null
-    }
+    open fun callStaticVerb(c: Context, verbName: String, args: List<Value>): Value? = null
 
     fun matchCommand(obj: Obj?, cmdstr: String, argstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
         fun matchArg(argType: Arg?, argString: String, matchedObj: Obj?): Value? =

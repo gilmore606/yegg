@@ -1,6 +1,5 @@
-package com.dlfsystems.app
+package com.dlfsystems.server
 
-import com.dlfsystems.server.Yegg
 import java.io.BufferedWriter
 import java.io.File
 import java.time.LocalDateTime
@@ -31,8 +30,8 @@ object Log {
     }
 
     private fun log(level: Level, m: String) {
-        if (level >= Yegg.logLevel) {
-            if (Yegg.logToConsole) println("$level: $m")
+        if (level >= Yegg.conf.logLevel) {
+            if (Yegg.conf.logToConsole) println("$level: $m")
             writer?.write("$timestamp $level: $m\n")
         }
     }

@@ -42,7 +42,7 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
         return true
     }
 
-    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
         when (name) {
             "hasKey" -> return verbHasKey(args)
             "hasValue" -> return verbHasValue(args)
@@ -50,13 +50,9 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
         return null
     }
 
-    // Custom props
-
     private fun propLength() = VInt(v.size)
     private fun propKeys() = VList(v.keys.toMutableList())
     private fun propValues() = VList(v.values.toMutableList())
-
-    // Custom verbs
 
     private fun verbHasKey(args: List<Value>): Value {
         requireArgCount(args, 1, 1)
@@ -71,5 +67,7 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
 
     companion object {
         val keyTypes = listOf(Type.STRING, Type.INT, Type.OBJ, Type.TRAIT)
+
+        fun make(v: Map<Value, Value>) = VMap(v.toMutableMap())
     }
 }

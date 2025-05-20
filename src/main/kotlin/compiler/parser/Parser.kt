@@ -337,9 +337,12 @@ class Parser(inputTokens: List<Token>) {
                     ?: consume(T_ELSE)?.also { elseFound = true }
                     ?: fail("missing close brace")
                 consume(T_ARROW) ?: fail("missing arrow")
-                pStatement()?.also { result ->
+                if (asStatement) pStatement()?.also { result ->
                     options.add(Pair(option, result))
                 } ?: fail("missing block")
+                else pExpression()?.also { result ->
+                    options.add(Pair(option, result))
+                } ?: fail("missing expression")
             }
             consume(T_BRACE_CLOSE)
             if (!asStatement && !elseFound) fail("no else in when expression")

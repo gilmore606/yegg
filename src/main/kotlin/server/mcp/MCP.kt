@@ -1,10 +1,8 @@
 package com.dlfsystems.server.mcp
 
+import com.dlfsystems.server.Log
 import com.dlfsystems.server.Yegg
-import com.dlfsystems.vm.Context
 import com.dlfsystems.util.systemEpoch
-import com.dlfsystems.value.Value
-import com.dlfsystems.vm.Executable
 import kotlinx.coroutines.*
 import java.util.*
 
@@ -15,35 +13,43 @@ import java.util.*
 object MCP {
 
     private const val WAIT_FOR_TASKS_MS = 10L
-    private val taskMap = TreeMap<Task.ID, Task>()
+
+    private val timeMap = TreeMap<TimeID, Task>()
+    private val taskMap = HashMap<Task.ID, Task>()
+
     private var job: Job? = null
 
-    // Schedule an executable to run some seconds in the future.
+    // Schedule a task to run some seconds in the future.
     fun schedule(
-        c: Context,
-        exe: Executable,
-        args: List<Value>,
+        task: Task,
         secondsInFuture: Int = 0
-    ): Task.ID {
-        val task = Task(systemEpoch() + secondsInFuture, c, exe, args)
+    ) {
+        task.setTime(secondsInFuture)
+        timeMap[task.timeID] = task
         taskMap[task.id] = task
-        return task.id
     }
 
     // Cancel a scheduled task.
-    fun cancel(taskID: Task.ID) { taskMap.remove(taskID) }
+    fun cancel(taskID: Task.ID) {
+        taskMap[taskID]?.also { task ->
+            taskMap.remove(task.id)
+            timeMap.remove(task.timeID)
+        }
+    }
 
     // Move a scheduled task to immediate execution.
     fun resume(taskID: Task.ID) {
         taskMap[taskID]?.also { task ->
-            taskMap.remove(taskID)
-            val newTask = Task(systemEpoch(), task.c, task.exe, task.args)
-            taskMap[newTask.id] = newTask
+            timeMap.remove(task.timeID)
+            task.setTime(0)
+            timeMap[task.timeID] = task
         } ?: throw IllegalArgumentException("Task $taskID does not exist")
     }
 
     // Is the given taskID a valid scheduled task?
     fun isValidTask(taskID: Task.ID) = taskMap.containsKey(taskID)
+
+    fun taskList() = taskMap.values.toList()
 
     // Start processing all queued tasks.
     fun start() {
@@ -61,8 +67,15 @@ object MCP {
     private suspend fun runTasks() {
         while (true) {
             getNextTask()?.also { task ->
+                Log.d("Executing ${task.id} $task")
+                timeMap.remove(task.timeID)
                 taskMap.remove(task.id)
-                runTask(task)
+                val result = task.execute()
+                if (result is Task.Result.Suspend) {
+                    task.setTime(result.seconds)
+                    timeMap[task.timeID] = task
+                    taskMap[task.id] = task
+                }
             } ?: run {
                 delay(WAIT_FOR_TASKS_MS)
             }
@@ -70,25 +83,12 @@ object MCP {
     }
 
     private fun getNextTask(): Task? {
-        if (taskMap.isEmpty()) return null
-        val nextTask = taskMap[taskMap.firstKey()]
-        if (nextTask!!.atEpoch > systemEpoch()) return null
-        return nextTask
-    }
-
-    private fun runTask(task: Task) {
-        try {
-            task.exe.execute(task.c, task.args)
-        } catch (e: SuspendException) {
-            // TODO: how tf is this gonna work
-            // TODO: the resumed task will assume it can return values back through the stack, but those calls no longer exist
-            // TODO: reevaluate calling/returning through callstack
-            // schedule(task.apply { atEpoch = systemEpoch() + e.seconds })
-        } catch (e: Exception) {
-            task.c.connection?.sendText(e.toString())
-            task.c.connection?.sendText(task.c.stackDump())
+        if (timeMap.isEmpty()) return null
+        timeMap[timeMap.firstKey()]?.also { nextTask ->
+            if (nextTask.atEpoch > systemEpoch()) return null
+            return nextTask
         }
+        return null
     }
+
 }
-
-

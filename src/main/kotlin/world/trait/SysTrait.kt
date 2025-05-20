@@ -1,8 +1,9 @@
 package com.dlfsystems.world.trait
 
-import com.dlfsystems.app.Log
+import com.dlfsystems.server.Log
 import com.dlfsystems.server.parser.Command
 import com.dlfsystems.server.Yegg
+import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.util.systemEpoch
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
@@ -21,11 +22,12 @@ class SysTrait : Trait("sys") {
         when (propName) {
             "time" -> return propTime()
             "connectedUsers" -> return propConnectedUsers()
+            "tasks" -> return propTasks()
         }
         return super.getProp(obj, propName)
     }
 
-    override fun callVerb(c: Context, verbName: String, args: List<Value>): Value? {
+    override fun callStaticVerb(c: Context, verbName: String, args: List<Value>): Value? {
         when (verbName) {
             "connectUser" -> return verbConnectUser(c, args)
             "disconnectUser" -> return verbDisconnectUser(c, args)
@@ -42,14 +44,17 @@ class SysTrait : Trait("sys") {
             "dumpDatabase" -> return verbDumpDatabase(args)
             "shutdownServer" -> return verbShutdownServer(args)
         }
-        return super.callVerb(c, verbName, args)
+        return super.callStaticVerb(c, verbName, args)
     }
 
     // $sys.time -> n
     private fun propTime() = VInt(systemEpoch())
 
     // $sys.connectedUsers -> [#obj, #obj...]
-    private fun propConnectedUsers() = VList(Yegg.connectedUsers.keys.map { it.vThis }.toMutableList())
+    private fun propConnectedUsers() = VList.make(Yegg.connectedUsers.keys.map { it.vThis })
+
+    // $sys.tasks ->
+    private fun propTasks() = VList.make(MCP.taskList().map { it.vID })
 
     // $sys.connectUser("username", "password") -> true if connected
     private fun verbConnectUser(c: Context, args: List<Value>): VBool {
@@ -80,8 +85,8 @@ class SysTrait : Trait("sys") {
 
     // $sys.notifyConn("text")
     private fun verbNotifyConn(c: Context, args: List<Value>): VVoid {
-        if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for notifyConn")
-        c.connection?.id?.id?.also { Yegg.notifyConn(it, (args[0] as VString).v) }
+        if (args.size != 1) throw IllegalArgumentException("Bad args for notifyConn")
+        c.connection?.id?.id?.also { Yegg.notifyConn(it, args[0].asString()) }
         return VVoid
     }
 

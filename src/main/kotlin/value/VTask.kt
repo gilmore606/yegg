@@ -20,10 +20,7 @@ data class VTask(val v: Task.ID): Value() {
     // Valid tasks are true
     override fun isTrue() = MCP.isValidTask(v)
 
-    // Tasks compare by ID, which compares by scheduled time
     override fun cmpEq(a2: Value) = (a2 is VTask && v == a2.v)
-    override fun cmpGe(a2: Value) = (a2 is VTask && v >= a2.v)
-    override fun cmpGt(a2: Value) = (a2 is VTask && v > a2.v)
 
     override fun getProp(name: String): Value? {
         when (name) {
@@ -32,7 +29,7 @@ data class VTask(val v: Task.ID): Value() {
         return null
     }
 
-    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
         when (name) {
             "cancel" -> return verbCancel(args)
             "resume" -> return verbResume(args)

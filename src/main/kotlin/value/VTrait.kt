@@ -3,6 +3,7 @@ package com.dlfsystems.value
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.trait.Trait
+import com.dlfsystems.world.trait.Verb
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -37,7 +38,9 @@ data class VTrait(val v: Trait.ID?): Value() {
         VString("$" + Yegg.world.getTrait(v)?.name)
     } ?: VString(asString())
 
-    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
-        return getTrait()?.callVerb(c, name, args)
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
+        return getTrait()?.callStaticVerb(c, name, args)
     }
+
+    override fun getVerb(c: Context, name: String): Verb? = getTrait()?.getVerb(name)
 }

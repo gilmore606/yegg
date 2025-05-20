@@ -75,7 +75,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         return false
     }
 
-    override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
         when (name) {
             "join" -> return verbJoin(args)
             "push" -> return verbPush(args)

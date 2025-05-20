@@ -25,7 +25,7 @@ class Coder(val ast: Node) {
     // Nodes will then call Coder.code() and Coder.value() to output their compiled code.
     fun generate() {
         ast.code(this)
-        if (Yegg.optimizeCompiler) Optimizer(this).optimize()
+        if (Yegg.conf.optimizeCompiler) Optimizer(this).optimize()
     }
 
     // Write an opcode into memory.

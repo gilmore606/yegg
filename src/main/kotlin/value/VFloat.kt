@@ -48,22 +48,12 @@ data class VFloat(val v: Float): Value() {
 
     override fun getProp(name: String): Value? {
         when (name) {
-            "asInt" -> return propAsInt()
-            "asString" -> return propAsString()
-            "floor" -> return propFloor()
-            "ceil" -> return propCeil()
+            "asInt" -> return VInt(v.toInt())
+            "asString" -> return VString(asString())
+            "floor" -> return VFloat(floor(v))
+            "ceil" -> return VFloat(ceil(v))
         }
         return null
     }
-
-
-    // Custom props
-
-    private fun propAsInt() = VInt(v.toInt())
-    private fun propAsString() = VString(asString())
-    private fun propFloor() = VFloat(floor(v))
-    private fun propCeil() = VFloat(ceil(v))
-
-    // Custom verbs
 
 }

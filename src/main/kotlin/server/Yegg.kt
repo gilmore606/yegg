@@ -1,24 +1,28 @@
 package com.dlfsystems.server
 
-import com.dlfsystems.app.Log
 import com.dlfsystems.server.mcp.MCP
+import com.dlfsystems.server.parser.Connection
 import com.dlfsystems.value.*
 import com.dlfsystems.world.World
 import com.dlfsystems.world.Obj
-import io.viascom.nanoid.NanoId
 import kotlinx.coroutines.*
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.system.exitProcess
 
 object Yegg {
 
-    var worldName = "Minimal"
-    var serverAddress = "127.0.0.1"
-    var serverPort = 8888
-    var logLevel = Log.Level.DEBUG
-    var logToConsole = true
-    var optimizeCompiler = true
+    @Serializable
+    class Conf(
+        val worldName: String,
+        val serverAddress: String,
+        val serverPort: Int,
+        val logLevel: Log.Level,
+        val logToConsole: Boolean,
+        val optimizeCompiler: Boolean,
+    )
+    private const val CONFIG_PATH = "yegg.json"
 
     private const val CONNECT_MSG = "** Connected **"
     private const val DISCONNECT_MSG = "** Disconnected **"
@@ -31,15 +35,15 @@ object Yegg {
     val vNullObj = VObj(null)
     val vNullTrait = VTrait(null)
     val vZero = VInt(0)
-    val vNullStr = VString("")
+    val vEmptyStr = VString("")
+    val vEmptyList = VList.make(emptyList())
+    val vEmptyMap = VMap.make(emptyMap())
 
+    lateinit var conf: Conf
     lateinit var world: World
 
     private val connections = mutableSetOf<Connection>()
     val connectedUsers = mutableMapOf<Obj, Connection>()
-
-    const val ID_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    fun newID() = NanoId.generateOptimized(8, ID_CHARS, 61, 16)
 
     private val coroutineScope = CoroutineScope(
         SupervisorJob() +
@@ -49,17 +53,21 @@ object Yegg {
 
     fun launch(block: suspend CoroutineScope.() -> Unit) = coroutineScope.launch(block = block)
 
-    suspend fun onYeggThread(block: suspend CoroutineScope.() -> Unit) =
+    suspend fun onThread(block: suspend CoroutineScope.() -> Unit) =
         withContext(coroutineScope.coroutineContext, block)
 
 
     // Start the server.
     fun start() {
-        Log.start(worldName)
-        loadWorld()
-        MCP.start()
-        Telnet.start()
-        Log.i("Server started.")
+        println("Loading from ${System.getProperty("user.dir")}")
+        launch {
+            conf = JSON.decodeFromString(File(CONFIG_PATH).readText(Charsets.UTF_8))
+            Log.start(conf.worldName)
+            loadWorld()
+            MCP.start()
+            Telnet.start()
+            Log.i("Server started.")
+        }
     }
 
     // Shut down the server.
@@ -72,6 +80,7 @@ object Yegg {
     }
 
     private fun loadWorld() {
+        val worldName = conf.worldName
         val file = File("$worldName.yegg")
         if (file.exists()) {
             Log.i("Loading database from ${file.path}...")
@@ -138,3 +147,7 @@ object Yegg {
     }
 
 }
+
+// Switch execution to the Yegg server thread.
+// Use this to modify the World state from other threads.
+suspend fun onYeggThread(block: suspend CoroutineScope.() -> Unit) = Yegg.onThread(block)

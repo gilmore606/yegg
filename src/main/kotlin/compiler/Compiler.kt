@@ -1,12 +1,10 @@
 package com.dlfsystems.compiler
 
-import com.dlfsystems.server.Yegg
 import com.dlfsystems.compiler.ast.Node
 import com.dlfsystems.compiler.lexer.Lexer
 import com.dlfsystems.compiler.lexer.Token
 import com.dlfsystems.compiler.parser.Parser
 import com.dlfsystems.vm.*
-import com.dlfsystems.world.trait.Verb
 
 object Compiler {
 
@@ -45,21 +43,5 @@ object Compiler {
                 .withInfo(code, symbols, tokens, ast)
         }
     }
-
-    fun eval(c: Context, source: String, verbose: Boolean = false): String {
-        var verb: Verb? = null
-        try {
-            verb = Verb("eval", Yegg.world.sys.id).apply { program(source) }
-            val vmOut = verb.call(c, Yegg.vNullObj, listOf()).toString()
-            return if (verbose) dumpText(verb.code, vmOut) else vmOut
-        } catch (e: CompileException) {
-            return if (verbose) dumpText(verb?.code, "") else e.toString()
-        } catch (e: Exception) {
-            return if (verbose) dumpText(verb?.code, "") else "$e\n${c.stackDump()}"
-        }
-    }
-
-    private fun dumpText(code: List<VMWord>?, result: String?): String =
-        "CODE:\n${code?.dumpText()}\nRESULT:\n$result\n"
 
 }
