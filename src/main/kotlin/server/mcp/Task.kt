@@ -11,8 +11,7 @@ import com.dlfsystems.vm.*
 import com.dlfsystems.vm.VMException.Type.*
 import kotlinx.serialization.Serializable
 
-
-data class Task(val c: Context) {
+class Task(val c: Context) {
 
     @Serializable
     data class ID(val id: String) { override fun toString() = id }
