@@ -1,8 +1,9 @@
 package com.dlfsystems.world.trait
 
 import com.dlfsystems.app.Log
-import com.dlfsystems.server.Command
+import com.dlfsystems.server.parser.Command
 import com.dlfsystems.server.Yegg
+import com.dlfsystems.util.systemEpoch
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
@@ -45,7 +46,7 @@ class SysTrait : Trait("sys") {
     }
 
     // $sys.time -> n
-    private fun propTime() = VInt((System.currentTimeMillis() / 1000L).toInt())
+    private fun propTime() = VInt(systemEpoch())
 
     // $sys.connectedUsers -> [#obj, #obj...]
     private fun propConnectedUsers() = VList(Yegg.connectedUsers.keys.map { it.vThis }.toMutableList())

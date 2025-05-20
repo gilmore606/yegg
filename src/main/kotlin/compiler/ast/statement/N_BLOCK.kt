@@ -1,4 +1,4 @@
-package com.dlfsystems.compiler.ast
+package com.dlfsystems.compiler.ast.statement
 
 import com.dlfsystems.compiler.Coder
 

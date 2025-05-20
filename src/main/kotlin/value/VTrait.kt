@@ -2,13 +2,13 @@ package com.dlfsystems.value
 
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.vm.Context
-import com.dlfsystems.world.trait.TraitID
+import com.dlfsystems.world.trait.Trait
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 @SerialName("VTrait")
-data class VTrait(val v: TraitID?): Value() {
+data class VTrait(val v: Trait.ID?): Value() {
 
     @SerialName("yType")
     override val type = Type.TRAIT
@@ -33,14 +33,9 @@ data class VTrait(val v: TraitID?): Value() {
         return getTrait()?.setProp(name, value) ?: false
     }
 
-
-    // Custom props
-
     private fun propAsString() = v?.let { v ->
         VString("$" + Yegg.world.getTrait(v)?.name)
     } ?: VString(asString())
-
-    // Custom verbs
 
     override fun callVerb(c: Context, name: String, args: List<Value>): Value? {
         return getTrait()?.callVerb(c, name, args)

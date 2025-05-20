@@ -1,14 +1,18 @@
 package com.dlfsystems.server
 
+import com.dlfsystems.app.Log
 import com.dlfsystems.compiler.Compiler
+import com.dlfsystems.server.mcp.MCP
+import com.dlfsystems.server.parser.CommandMatch
+import com.dlfsystems.server.parser.Preposition
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 
-data class ConnectionID(val id: String) { override fun toString() = id }
 
 class Connection(private val sendText: (String) -> Unit) {
 
-    val id = ConnectionID(Yegg.newID())
+    data class ID(val id: String) { override fun toString() = id }
+    val id = ID(Yegg.newID())
 
     var buffer = mutableListOf<String>()
     var programming: Pair<String, String>? = null
@@ -20,6 +24,7 @@ class Connection(private val sendText: (String) -> Unit) {
 
     fun receiveText(text: String) {
         // TODO: rework program-buffer in-DB with actual suspend/readLines
+        Log.d("> $text")
         programming?.also { verb ->
             if (text == ".") {
                 val result = Yegg.world.programVerb(verb.first, verb.second, buffer.joinToString("\n"))
@@ -30,7 +35,7 @@ class Connection(private val sendText: (String) -> Unit) {
         } ?: run {
             if (text.startsWith(";")) {
                 val code = text.substringAfter(";")
-                sendText(Compiler.eval(Context(this), code))
+                sendText(Compiler.eval(Context(this), "return $code"))
             } else if (text.startsWith("@")) {
                 // TODO: get rid of these hardcoded @meta commands
                 parseMeta(text)
@@ -95,10 +100,10 @@ class Connection(private val sendText: (String) -> Unit) {
             vThis = match.obj?.vThis ?: Yegg.vNullObj
             vUser = connection?.user?.vThis ?: Yegg.vNullObj
         }
-        try {
-            match.trait.callVerb(c, match.verb, match.args)
-        } catch (e: Exception) {
-            sendText(e.toString())
+        Yegg.world.getTrait(match.trait.id)?.verbs?.get(match.verb)?.also { verb ->
+            MCP.schedule(c, verb, match.args)
+        } ?: run {
+            sendText("ERR: No verb ${match.verb} found for command")
             sendText(c.stackDump())
         }
     }

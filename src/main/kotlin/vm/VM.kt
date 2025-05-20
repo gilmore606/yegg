@@ -2,23 +2,24 @@
 
 package com.dlfsystems.vm
 
+import com.dlfsystems.server.mcp.MCP
+import com.dlfsystems.server.mcp.SuspendException
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.value.Value
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.VMException.Type.*
-import com.dlfsystems.world.trait.Verb
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 
 // A stack machine for executing a verb.
 
-class VM(val verb: Verb) {
+class VM(val exe: Executable) {
 
     // Program Counter: index of the opcode we're about to execute (or argument we're about to fetch).
     private var pc: Int = 0
     // The local stack.
     private val stack = ArrayDeque<Value>()
+    private fun dumpStack() = stack.joinToString(",") { "$it" }
+
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
@@ -33,16 +34,15 @@ class VM(val verb: Verb) {
     private inline fun popTwo() = listOf(stack.removeFirst(), stack.removeFirst())
     private inline fun popThree() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
     private inline fun popFour() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
-    private inline fun next() = verb.code[pc++]
+    private inline fun next() = exe.code[pc++]
 
     fun execute(
         c: Context,
         args: List<Value> = listOf(),
-        entryPoint: Int? = null,
         withVars: Map<String, Value>? = null
     ): Value {
 
-        pc = entryPoint?.let { verb.entryPoints[it] } ?: 0
+        pc = 0
 
         withVars?.forEach { (name, value) -> initVar(name, value) }
         initVar("args", VList.make(args))
@@ -52,13 +52,13 @@ class VM(val verb: Verb) {
         try {
             return executeCode(c)
         } catch (e: Exception) {
-            throw (e as? VMException ?: VMException(E_SYS, e.message ?: e.stackTraceToString()))
+            throw (e as? VMException ?: VMException(E_SYS, "${e.message} (mem $pc)\n${e.stackTraceToString()}"))
                 .withLocation(lineNum, charNum)
         }
     }
 
     private fun initVar(name: String, value: Value) {
-        verb.symbols[name]?.also { variables[it] = value }
+        exe.symbols[name]?.also { variables[it] = value }
     }
 
     private fun executeCode(c: Context): Value {
@@ -66,7 +66,7 @@ class VM(val verb: Verb) {
         val stackLimit = Yegg.world.getSysInt("stackLimit")
         var ticksLeft = c.ticksLeft
 
-        while (pc < verb.code.size) {
+        while (pc < exe.code.size) {
 
             if (--ticksLeft < 0) fail(E_LIMIT, "tick limit exceeded")
             if (stack.size > stackLimit) fail(E_LIMIT, "stack depth exceeded")
@@ -79,7 +79,7 @@ class VM(val verb: Verb) {
             when (word.opcode) {
 
                 O_DISCARD -> {
-                    pop()
+                    if (stack.isNotEmpty()) pop()
                 }
 
                 // Value ops
@@ -100,17 +100,17 @@ class VM(val verb: Verb) {
                     push(VMap(entries))
                 }
                 O_FUNVAL -> {
-                    val entryPointIndex = next().intFromV
+                    val block = next().intFromV
                     // Capture variables from scope
                     val withVars = buildMap {
                         (pop() as VList).v.map { (it as VString).v }.forEach { varName ->
-                            verb.symbols[varName]?.also {
+                            exe.symbols[varName]?.also {
                                 variables[it]?.also { put(varName, it) }
                             }
                         }
                     }
                     val args = (pop() as VList).v.map { (it as VString).v }
-                    push(VFun(verb.name, verb.traitID, c.vThis, entryPointIndex, args, withVars))
+                    push(exe.getLambda(block, c.vThis, args, withVars))
                 }
 
                 // Index/range ops
@@ -151,12 +151,12 @@ class VM(val verb: Verb) {
                     if (addr >= 0) pc = addr else return VVoid  // Unresolved jump dest means end-of-code
                 }
                 O_RETURN -> {
-                    if (stack.isEmpty()) fail(E_SYS, "no return value on stack!")
-                    if (stack.size > 1) fail(E_SYS, "stack polluted on return!")
+                    if (stack.isEmpty()) return VVoid
+                    if (stack.size > 1) fail(E_SYS, "stack polluted on return!  ${dumpStack()}")
                     return pop()
                 }
                 O_RETURNNULL -> {
-                    if (stack.isNotEmpty()) fail(E_SYS, "stack polluted on return!")
+                    if (stack.isNotEmpty()) fail(E_SYS, "stack polluted on returnnull!  ${dumpStack()}")
                     return VVoid
                 }
                 O_RETVAL -> {
@@ -172,36 +172,55 @@ class VM(val verb: Verb) {
 
                 // Verb ops
 
-                O_CALL -> {
+                O_CALL, O_VCALL, O_VCALLST -> {
                     val argCount = next().intFromV
-                    val (a2, a1) = popTwo()
+                    val a2 = if (word.opcode == O_CALL) pop() else next().value
+                    val a1 = pop()
                     val args = mutableListOf<Value>()
                     repeat(argCount) { args.add(0, pop()) }
                     if (a2 is VString) {
                         c.ticksLeft = ticksLeft
                         c.callsLeft--
-                        a1.callVerb(c, a2.v, args)?.also { push(it) }
-                            ?: fail(E_VERBNF, "verb not found")
+                        a1.callVerb(c, a2.v, args)?.also {
+                            if (word.opcode != O_VCALLST) push(it)
+                        } ?: fail(E_VERBNF, "verb not found")
                         c.callsLeft++
                         ticksLeft = c.ticksLeft
                     } else fail(E_VERBNF, "verb name must be string")
                 }
-                O_FUNCALL -> {
+                O_FUNCALL, O_FUNCALLST -> {
                     val name = (next().value as VString).v
                     val argCount = next().intFromV
                     val args = mutableListOf<Value>()
                     repeat (argCount) { args.add(0, pop()) }
-                    verb.symbols[name]?.also { variableID ->
+                    exe.symbols[name]?.also { variableID ->
+                        var result: Value? = null
                         // Look for variable with VFun
                         variables[variableID]?.let { subject ->
                             if (subject is VFun) {
-                                push(subject.verbInvoke(c, args))
-                            } else fail(E_TYPE, "cannot invoke ${subject?.type} as fun")
+                                result = subject.verbInvoke(c, args)
+                            } else fail(E_TYPE, "cannot invoke ${subject.type} as fun")
                         // Look for $sys.verb
                         } ?: Yegg.world.sys.callVerb(c, name, args)?.also {
-                            push(it)
+                            result = it
                         } ?: fail(E_VARNF, "no such fun or variable")
+                        result?.also { if (word.opcode != O_FUNCALLST) push(it) }
                     }
+                }
+
+                // Task ops
+
+                O_SUSPEND -> {
+                    val a = pop()
+                    throw SuspendException((a as VInt).v)
+                }
+                O_FORK -> {
+                    val (a2, a1) = popTwo()
+                    val taskID = MCP.schedule(Context(c.connection).apply {
+                        vThis = c.vThis
+                        vUser = c.vUser
+                    }, a2 as VFun, listOf(), (a1 as VInt).v)
+                    push(VTask(taskID))
                 }
 
                 // Variable ops
@@ -232,7 +251,7 @@ class VM(val verb: Verb) {
                     if (a2 !is VList) fail(E_TYPE, "cannot destructure from non-list")
                     if ((a2 as VList).v.size < (a1 as VList).v.size) fail(E_RANGE, "missing args")
                     a1.v.forEachIndexed { i, vn ->
-                        verb.symbols[(vn as VString).v]?.also { variables[it] = a2.v[i] }
+                        exe.symbols[(vn as VString).v]?.also { variables[it] = a2.v[i] }
                     }
                 }
 
@@ -253,8 +272,9 @@ class VM(val verb: Verb) {
 
                 // Property ops
 
-                O_GETPROP -> {
-                    val (a2, a1) = popTwo()
+                O_GETPROP, O_VGETPROP -> {
+                    val a2 = if (word.opcode == O_VGETPROP) next().value!! else pop()
+                    val a1 = pop()
                     if (a2 is VString) {
                         a1.getProp(a2.v)?.also { push(it) }
                             ?: fail(E_PROPNF, "property not found")
@@ -265,8 +285,8 @@ class VM(val verb: Verb) {
                     if (!a2.setProp((a3 as VString).v, a1))
                         fail(E_PROPNF, "property not found")
                 }
-                O_GETTRAIT -> {
-                    val a1 = pop()
+                O_TRAIT, O_VTRAIT -> {
+                    val a1 = if (word.opcode == O_VTRAIT) next().value!! else pop()
                     if (a1 is VString) {
                         Yegg.world.getTrait(a1.v)?.also { push(it.vTrait) }
                             ?: fail (E_TRAITNF, "trait not found")
@@ -319,6 +339,20 @@ class VM(val verb: Verb) {
                     a1.plus(a2)?.also { push(it) }
                         ?: fail(E_TYPE, "cannot add ${a1.type} and ${a2.type}")
                 }
+                O_ADDVAL -> {
+                    val a1 = pop()
+                    val a2 = next().value!!
+                    a1.plus(a2)?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot add ${a1.type} and ${a2.type}")
+                }
+                O_CONCAT -> {
+                    val (a2, a1) = popTwo()
+                    val a3 = next().value!!
+                    a1.plus(a2)?.also { a12 ->
+                        a12.plus(a3)?.also { push(it) }
+                            ?: fail(E_TYPE, "cannot add ${a12.type} and ${a3.type}")
+                    } ?: fail(E_TYPE, "cannot add ${a1.type} and ${a2.type}")
+                }
                 O_MULT -> {
                     val (a2, a1) = popTwo()
                     a1.multiply(a2)?.also { push(it) }
@@ -347,52 +381,4 @@ class VM(val verb: Verb) {
         return if (stack.isEmpty()) VVoid else pop()
     }
 
-}
-
-// An atom of VM opcode memory.
-// Can hold an Opcode, a Value, or an int representing a memory address (for jumps).
-@Serializable
-data class VMWord(
-    @SerialName("l") val lineNum: Int,
-    @SerialName("c") val charNum: Int,
-    @SerialName("o") val opcode: Opcode? = null,
-    @SerialName("v") val value: Value? = null,
-    @SerialName("a") var address: Int? = null,
-) {
-    // In compilation, an address word may be written before the address it points to is known.
-    // fillAddress is called to set it once calculated.
-    fun fillAddress(newAddress: Int) { address = newAddress }
-
-    override fun toString() = opcode?.toString() ?: value?.toString() ?: address?.let { "<$it>" } ?: "!!NULL!!"
-
-    fun isInt(equals: Int? = null): Boolean {
-        if (value !is VInt) return false
-        if (equals == null) return true
-        return (value.v == equals)
-    }
-
-    // If this is known to be an int opcode arg, just get the int value.
-    val intFromV: Int
-        get() = (value as VInt).v
-}
-
-fun List<VMWord>.dumpText(): String {
-    if (isEmpty()) return "<not programmed>\n"
-    var s = ""
-    var pc = 0
-    while (pc < size) {
-        val cell = get(pc)
-        s += "<$pc> "
-        s += cell.toString()
-        cell.opcode?.also { opcode ->
-            repeat (opcode.argCount) {
-                pc++
-                val arg = get(pc)
-                s += " $arg"
-            }
-        }
-        s += "\n"
-        pc++
-    }
-    return s
 }

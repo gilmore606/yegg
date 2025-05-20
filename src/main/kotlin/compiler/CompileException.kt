@@ -1,6 +1,7 @@
 package com.dlfsystems.compiler
 
 import com.dlfsystems.compiler.ast.Node
+import com.dlfsystems.compiler.lexer.Token
 import com.dlfsystems.vm.VMWord
 
 

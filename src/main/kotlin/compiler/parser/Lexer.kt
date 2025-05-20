@@ -1,6 +1,7 @@
-package com.dlfsystems.compiler
+package com.dlfsystems.compiler.lexer
 
-import com.dlfsystems.compiler.TokenType.*
+import com.dlfsystems.compiler.CompileException
+import com.dlfsystems.compiler.lexer.TokenType.*
 import com.dlfsystems.server.Yegg
 
 // Take an input string and produce a stream of tokens.
@@ -183,7 +184,7 @@ class Lexer(val source: String) {
     private fun isIdentifierChar(c: Char) = (c in 'a'..'z') || (c in 'A'..'Z') || (c in '0'..'9') || (c == '_')
 
     // Is this a legal char for an internal ID string?
-    private fun isIDChar(c: Char) = Yegg.idChars.contains(c)
+    private fun isIDChar(c: Char) = Yegg.ID_CHARS.contains(c)
 
     // Begin a new accumulating token of (possibly) type.  Start with acc if given.
     private fun begin(type: TokenType, acc: Char? = null) {

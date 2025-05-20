@@ -1,4 +1,4 @@
-package com.dlfsystems.server
+package com.dlfsystems.server.parser
 
 import kotlinx.serialization.Serializable
 

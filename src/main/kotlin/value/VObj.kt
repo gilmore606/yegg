@@ -2,19 +2,18 @@ package com.dlfsystems.value
 
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.world.Obj
-import com.dlfsystems.world.ObjID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 @SerialName("VObj")
-data class VObj(val v: ObjID?): Value() {
+data class VObj(val v: Obj.ID?): Value() {
 
     @SerialName("yType")
     override val type = Type.OBJ
 
     override fun toString() = "#${v.toString().takeLast(5)}"
-    override fun asString() = "OBJ" // TODO: use name from passed context?
+    override fun asString() = "OBJ" // TODO: use name
 
     override fun isTrue() = v != null
 
@@ -42,13 +41,8 @@ data class VObj(val v: ObjID?): Value() {
         return false
     }
 
-
-    // Custom props
-
     private fun propAsString() = VString(toString())
 
     private fun propTraits(obj: Obj) = VList(obj.traits.mapNotNull { Yegg.world.getTrait(it)?.vTrait }.toMutableList())
-
-    // Custom verbs
 
 }

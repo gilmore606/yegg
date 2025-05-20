@@ -8,10 +8,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class World(val name: String) {
 
-    private val traits: MutableMap<TraitID, Trait> = mutableMapOf()
-    private val traitIDs: MutableMap<String, TraitID> = mutableMapOf()
+    private val traits: MutableMap<Trait.ID, Trait> = mutableMapOf()
+    private val traitIDs: MutableMap<String, Trait.ID> = mutableMapOf()
 
-    private val objs: MutableMap<ObjID, Obj> = mutableMapOf()
+    private val objs: MutableMap<Obj.ID, Obj> = mutableMapOf()
 
     fun getUserLogin(name: String, password: String): Obj? {
         getTrait("user")?.objects?.forEach { obj ->
@@ -29,8 +29,8 @@ data class World(val name: String) {
     }
 
     fun getTrait(named: String) = traits[traitIDs[named]]
-    fun getTrait(id: TraitID?) = id?.let { traits[it] }
-    fun getObj(id: ObjID?) = id?.let { objs[it] }
+    fun getTrait(id: Trait.ID?) = id?.let { traits[it] }
+    fun getObj(id: Obj.ID?) = id?.let { objs[it] }
 
     val sys: Trait
         get() = getTrait("sys")!!
@@ -42,7 +42,7 @@ data class World(val name: String) {
             return when (name) {
                 "sys" -> SysTrait()
                 "user" -> UserTrait()
-                else -> NTrait(name)
+                else -> Trait.NTrait(name)
             }.also {
                 traits[it.id] = it
                 traitIDs[it.name] = it.id
@@ -79,11 +79,11 @@ data class World(val name: String) {
         }
     }
 
-    fun applyTrait(traitID: TraitID, objID: ObjID) {
+    fun applyTrait(traitID: Trait.ID, objID: Obj.ID) {
         traits[traitID]?.applyTo(objs[objID]!!)
     }
 
-    fun dispelTrait(traitID: TraitID, objID: ObjID) {
+    fun dispelTrait(traitID: Trait.ID, objID: Obj.ID) {
         traits[traitID]?.removeFrom(objs[objID]!!)
     }
 

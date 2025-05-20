@@ -1,38 +1,41 @@
 package com.dlfsystems.world.trait
 
 import com.dlfsystems.server.Yegg
-import com.dlfsystems.compiler.Compiler
-import com.dlfsystems.server.Command
-import com.dlfsystems.server.Command.Arg
-import com.dlfsystems.server.CommandMatch
-import com.dlfsystems.server.Preposition
+import com.dlfsystems.server.parser.Command
+import com.dlfsystems.server.parser.Command.Arg
+import com.dlfsystems.server.parser.CommandMatch
+import com.dlfsystems.server.parser.Preposition
 import com.dlfsystems.util.matchesWildcard
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
-import com.dlfsystems.world.ObjID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // A collection of verbs and props, which can apply to an Obj.
 
 @Serializable
-@SerialName("TraitID")
-data class TraitID(val id: String) { override fun toString() = id }
-
-@Serializable
 sealed class Trait(val name: String) {
 
-    val id = TraitID(Yegg.newID())
+    @Serializable
+    @SerialName("NTrait")
+    // A "normal" dynamically defined trait.  We need this subclass for serialization.
+    class NTrait(private val n: String) : Trait(n)
+
+    @Serializable
+    @SerialName("TraitID")
+    data class ID(val id: String) { override fun toString() = id }
+
+    val id = ID(Yegg.newID())
     val vTrait = VTrait(id)
 
-    val traits: MutableList<TraitID> = mutableListOf()
+    val traits: MutableList<ID> = mutableListOf()
 
     val commands: MutableSet<Command> = mutableSetOf()
     val verbs: MutableMap<String, Verb> = mutableMapOf()
     val props: MutableMap<String, Value> = mutableMapOf()
 
-    val objects: MutableSet<ObjID> = mutableSetOf()
+    val objects: MutableSet<Obj.ID> = mutableSetOf()
 
     fun applyTo(obj: Obj) {
         obj.traits.forEach {
@@ -48,7 +51,7 @@ sealed class Trait(val name: String) {
         obj.dispelTrait(this)
     }
 
-    fun hasTrait(trait: TraitID): Boolean = (trait in traits) ||
+    fun hasTrait(trait: ID): Boolean = (trait in traits) ||
             (traits.firstOrNull { Yegg.world.getTrait(it)?.hasTrait(trait) ?: false } != null)
 
     fun setCommand(command: Command) {
@@ -125,8 +128,3 @@ sealed class Trait(val name: String) {
     }
 
 }
-
-@Serializable
-@SerialName("NTrait")
-// A "normal" dynamically defined trait.  We need this subclass for serialization.
-class NTrait(private val n: String) : Trait(n)

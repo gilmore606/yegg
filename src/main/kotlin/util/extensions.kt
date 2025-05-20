@@ -14,3 +14,5 @@ fun String.matchesWildcard(pattern: String): Boolean {
     if (mySuffix == suffix.substring(0, mySuffix.length)) return true
     return false
 }
+
+fun systemEpoch() = (System.currentTimeMillis() / 1000L).toInt()

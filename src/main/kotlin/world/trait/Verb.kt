@@ -9,18 +9,19 @@ import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VM
 import com.dlfsystems.vm.VMWord
 import com.dlfsystems.vm.dumpText
+import com.dlfsystems.vm.Executable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 @Serializable
 class Verb(
     val name: String,
-    val traitID: TraitID,
-) {
+    val traitID: Trait.ID,
+): Executable {
     var source = ""
-    @Transient var code: List<VMWord> = listOf()
-    @Transient var symbols: Map<String, Int> = mapOf()
-    @Transient var entryPoints: List<Int> = listOf()
+    @Transient override var code: List<VMWord> = listOf()
+    @Transient override var symbols: Map<String, Int> = mapOf()
+    @Transient override var blocks: List<Executable.Block> = listOf()
 
     fun program(source: String) {
         this.source = source
@@ -28,15 +29,17 @@ class Verb(
         Log.i("programmed $name with code ${code.dumpText()}")
     }
 
+    override fun execute(c: Context, args: List<Value>) = call(c, c.vThis, args)
+
     fun call(
         c: Context, vThis: VObj,
-        args: List<Value>, entryPoint: Int? = null,
+        args: List<Value>,
         withVars: Map<String, Value>? = null
     ): Value {
         if (code.isEmpty()) recompile()
         val vm = VM(this)
         c.push(vThis, Yegg.world.getTrait(traitID)!!.vTrait, name, args, vm)
-        val r = vm.execute(c, args, entryPoint, withVars)
+        val r = vm.execute(c, args, withVars)
         c.pop()
         return r
     }
@@ -45,7 +48,7 @@ class Verb(
         Compiler.compile(source).also {
             code = it.code
             symbols = it.symbols
-            entryPoints = it.entryPoints
+            blocks = it.blocks
         }
     }
 
