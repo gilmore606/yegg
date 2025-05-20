@@ -2,7 +2,6 @@ package com.dlfsystems.compiler.lexer
 
 import com.dlfsystems.compiler.CompileException
 import com.dlfsystems.compiler.lexer.TokenType.*
-import com.dlfsystems.server.Yegg
 import com.dlfsystems.util.NanoID
 
 // Take an input string and produce a stream of tokens.

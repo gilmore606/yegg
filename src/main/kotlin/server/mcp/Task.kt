@@ -38,6 +38,12 @@ data class Task(val c: Context) {
         data class Suspend(val seconds: Int): Result()
     }
 
+    // Execute the top stack frame.
+    // On a Suspend, return Suspend upward to MCP.
+    // On a Call, push a new stack frame.
+    // On a Return, pop a stack frame, and save the return value to pass to the next iteration (the previous frame).
+    // Continue until the stack is empty.
+
     fun execute(): Result {
         try {
             var vReturn: Value? = null

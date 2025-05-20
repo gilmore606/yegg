@@ -22,11 +22,10 @@ data class VFun(
     override fun toString() = "VFUN"
     override fun asString() = toString()
 
-    override val code = withCode // no need to copy, it was made on demand
-    override val symbols = buildMap { withSymbols.forEach { put(it.key, it.value) } }
-    override val blocks = buildList { addAll(withBlocks) }
+    override val code = withCode
+    override val symbols = withSymbols
+    override val blocks = withBlocks
 
-    // Populate captured scope vars and passed args.
     override fun getInitialVars(args: List<Value>) = buildMap {
         vars.forEach { (name, v) -> put(name, v) }
         if ((args.size < argNames.size) || (args.size > argNames.size && args.size > 1))

@@ -67,5 +67,7 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
 
     companion object {
         val keyTypes = listOf(Type.STRING, Type.INT, Type.OBJ, Type.TRAIT)
+
+        fun make(v: Map<Value, Value>) = VMap(v.toMutableMap())
     }
 }

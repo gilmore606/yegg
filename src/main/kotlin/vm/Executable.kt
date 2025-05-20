@@ -1,6 +1,5 @@
 package com.dlfsystems.vm
 
-import com.dlfsystems.app.Log
 import com.dlfsystems.value.VFun
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
@@ -15,6 +14,7 @@ interface Executable {
     val symbols: Map<String, Int>
     val blocks: List<Block>
 
+    // Create a VFun for the given code block and execution parameters.
     fun getLambda(
         block: Int,
         vThis: VObj,
@@ -30,13 +30,15 @@ interface Executable {
                 address = it - offset
             ) } ?: word
         }
-        Log.d("LAMBDA CODE:\n${lambdaCode.dumpText()}\n")
+        // Rewrite block borders with offset
         val offsetBlocks = blocks.map { Block(it.start - offset, it.end - offset) }
         return VFun(lambdaCode, symbols, offsetBlocks, vThis, args, withVars)
     }
 
+    // Populate captured scope vars and passed args into initial variable values.
     fun getInitialVars(args: List<Value>): Map<String, Value> = emptyMap()
 
+    // Compile for execution, if needed.
     fun jitCompile() { }
 
 }

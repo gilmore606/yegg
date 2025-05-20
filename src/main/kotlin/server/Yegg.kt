@@ -12,6 +12,7 @@ import kotlin.system.exitProcess
 
 object Yegg {
 
+    // TODO: load from config
     var worldName = "Minimal"
     var serverAddress = "127.0.0.1"
     var serverPort = 8888
@@ -31,6 +32,8 @@ object Yegg {
     val vNullTrait = VTrait(null)
     val vZero = VInt(0)
     val vEmptyStr = VString("")
+    val vEmptyList = VList.make(emptyList())
+    val vEmptyMap = VMap.make(emptyMap())
 
     lateinit var world: World
 
@@ -135,4 +138,6 @@ object Yegg {
 
 }
 
+// Switch execution to the Yegg server thread.
+// Use this to modify the World state from other threads.
 suspend fun onYeggThread(block: suspend CoroutineScope.() -> Unit) = Yegg.onThread(block)
