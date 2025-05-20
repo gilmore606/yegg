@@ -20,7 +20,7 @@ data class Task(val c: Context) {
     val vID = VTask(id)
 
     // TimeID includes the schedule time, and changes with every rescheduling.
-    var timeID = TimeID("")
+    var timeID = TimeID(0L)
     var atEpoch = 0
 
     fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
@@ -29,7 +29,7 @@ data class Task(val c: Context) {
 
     fun setTime(secondsInFuture: Int) {
         atEpoch = systemEpoch() + secondsInFuture
-        timeID = TimeID.generateID(atEpoch * 1000L)
+        timeID = TimeID(atEpoch * 1000L)
     }
 
 
