@@ -93,11 +93,12 @@ data class VString(var v: String): Value() {
             "indexOf" -> return verbIndexOf(args)
             "replace" -> return verbReplace(args)
             "capitalize" -> return verbCapitalize(args)
+            "trim" -> return verbTrim(args)
         }
         return null
     }
 
-    private fun verbSplit(args: List<Value>): Value {
+    private fun verbSplit(args: List<Value>): VList {
         requireArgCount(args, 0, 1)
         return VList(
             v.split(
@@ -106,36 +107,41 @@ data class VString(var v: String): Value() {
         )
     }
 
-    private fun verbContains(args: List<Value>): Value {
+    private fun verbContains(args: List<Value>): VBool {
         requireArgCount(args, 1, 1)
         return VBool(v.contains(args[0].asString()))
     }
 
-    private fun verbStartsWith(args: List<Value>): Value {
+    private fun verbStartsWith(args: List<Value>): VBool {
         requireArgCount(args, 1, 1)
         return VBool(v.startsWith(args[0].asString()))
     }
 
-    private fun verbEndsWith(args: List<Value>): Value {
+    private fun verbEndsWith(args: List<Value>): VBool {
         requireArgCount(args, 1, 1)
         return VBool(v.endsWith(args[0].asString()))
     }
 
-    private fun verbIndexOf(args: List<Value>): Value {
+    private fun verbIndexOf(args: List<Value>): VInt {
         requireArgCount(args, 1, 1)
         val s = args[0].asString()
         return if (v.contains(s)) VInt(v.indexOf(s)) else VInt(-1)
     }
 
-    private fun verbReplace(args: List<Value>): Value {
+    private fun verbReplace(args: List<Value>): VString {
         requireArgCount(args, 2, 3)
         val ignoreCase = args.size == 2 || args[3].isTrue()
         return VString(v.replace(args[0].asString(), args[1].asString(), ignoreCase))
     }
 
-    private fun verbCapitalize(args: List<Value>): Value {
+    private fun verbCapitalize(args: List<Value>): VString {
         requireArgCount(args, 0, 0)
         return VString(v.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
+    }
+
+    private fun verbTrim(args: List<Value>): VString {
+        requireArgCount(args, 0, 0)
+        return VString(v.trim())
     }
 
 }

@@ -27,9 +27,14 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
 
     override fun getProp(name: String): Value? {
         when (name) {
-            "length" -> return VInt(v.size)
+            "size" -> return VInt(v.size)
             "isEmpty" -> return if (v.isEmpty()) Yegg.vTrue else Yegg.vFalse
             "isNotEmpty" -> return if (v.isEmpty()) Yegg.vFalse else Yegg.vTrue
+            "first" -> return if (v.isEmpty()) VVoid else v.first()
+            "last" -> return if (v.isEmpty()) VVoid else v.last()
+            "random" -> return if (v.isEmpty()) VVoid else v.random()
+            "reversed" -> return VList(v.reversed().toMutableList())
+            "shuffled" -> return VList(v.shuffled().toMutableList())
         }
         return null
     }
@@ -82,11 +87,21 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
             "pop" -> return verbPop(args)
             "contains" -> return verbContains(args)
             "indexOf" -> return verbIndexOf(args)
+            "lastIndexOf" -> return verbLastIndexOf(args)
+            "add" -> return verbAdd(args)
+            "addAll" -> return verbAddAll(args)
+            "remove" -> return verbRemove(args)
+            "removeAt" -> return verbRemoveAt(args)
+            "removeAll" -> return verbRemoveAll(args)
+            "clear" -> return verbClear(args)
+            "set" -> return verbSet(args)
+            "reverse" -> return verbReverse(args)
+            "shuffle" -> return verbShuffle(args)
         }
         return null
     }
 
-    private fun verbJoin(args: List<Value>): Value {
+    private fun verbJoin(args: List<Value>): VString {
         requireArgCount(args, 0, 1)
         return VString(
             v.joinToString(
@@ -95,7 +110,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         )
     }
 
-    private fun verbPush(args: List<Value>): Value {
+    private fun verbPush(args: List<Value>): VVoid {
         requireArgCount(args, 1, 1)
         v.add(0, args[0])
         return VVoid
@@ -107,14 +122,88 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         return v.removeAt(0)
     }
 
-    private fun verbContains(args: List<Value>): Value {
+    private fun verbContains(args: List<Value>): VBool {
         requireArgCount(args, 1, 1)
         return VBool(v.contains(args[0]))
     }
 
-    private fun verbIndexOf(args: List<Value>): Value {
+    private fun verbIndexOf(args: List<Value>): VInt {
         requireArgCount(args, 1, 1)
         return if (v.contains(args[0])) VInt(v.indexOf(args[0])) else VInt(-1)
+    }
+
+    private fun verbLastIndexOf(args: List<Value>): VInt {
+        requireArgCount(args, 1, 1)
+        return if (v.contains(args[0])) VInt(v.lastIndexOf(args[0])) else VInt(-1)
+    }
+
+    private fun verbAdd(args: List<Value>): VVoid {
+        requireArgCount(args, 1, 2)
+        if (args.size == 1) {
+            v.add(args[0])
+            return VVoid
+        }
+        val pos = positionArg(args[0])
+        v.add(pos, args[1])
+        return VVoid
+    }
+
+    private fun verbAddAll(args: List<Value>): VVoid {
+        requireArgCount(args, 1, 1)
+        if (args[0].type != Type.LIST) fail(E_TYPE, "${args[0].type} is not LIST")
+        v.addAll((args[0] as VList).v)
+        return VVoid
+    }
+
+    private fun verbRemove(args: List<Value>): VVoid {
+        requireArgCount(args, 1, 1)
+        v.remove(args[0])
+        return VVoid
+    }
+
+    private fun verbRemoveAt(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        val pos = positionArg(args[0])
+        return v.removeAt(pos)
+    }
+
+    private fun verbRemoveAll(args: List<Value>): VVoid {
+        requireArgCount(args, 1, 1)
+        if (args[0].type != Type.LIST) fail(E_TYPE, "${args[0].type} is not LIST")
+        v.removeAll((args[0] as VList).v)
+        return VVoid
+    }
+
+    private fun verbClear(args: List<Value>): VVoid {
+        requireArgCount(args, 0, 0)
+        v.clear()
+        return VVoid
+    }
+
+    private fun verbSet(args: List<Value>): VVoid {
+        requireArgCount(args, 2, 2)
+        val pos = positionArg(args[0])
+        v.set(pos, args[1])
+        return VVoid
+    }
+
+    private fun verbReverse(args: List<Value>): VVoid {
+        requireArgCount(args, 0, 0)
+        v.reverse()
+        return VVoid
+    }
+
+    private fun verbShuffle(args: List<Value>): VVoid {
+        requireArgCount(args, 0, 0)
+        v.shuffle()
+        return VVoid
+    }
+
+    private fun positionArg(arg: Value): Int {
+        if (arg.type != Type.INT) fail(E_TYPE, "invalid ${arg.type} list position")
+        val pos = (arg as VInt).v
+        if (pos < 0 || pos >= v.size) fail(E_RANGE, "$pos out of bounds 0..${v.lastIndex}")
+        return pos
     }
 
     companion object {
