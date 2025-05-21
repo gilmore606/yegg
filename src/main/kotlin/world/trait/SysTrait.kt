@@ -10,6 +10,7 @@ import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.random.Random
 
 // A special trait which exists in every world.
 // Provides environment properties, server control, and primitive functions.
@@ -37,6 +38,8 @@ class SysTrait : Trait("sys") {
             "create" -> return verbCreate(args)
             "destroy" -> return verbDestroy(args)
             "move" -> return verbMove(args)
+            "random" -> return verbRandom(args)
+            "chance" -> return verbChance(args)
             "setCommand" -> return verbSetCommand(args)
             "removeCommand" -> return verbRemoveCommand(args)
             "getCommands" -> return verbGetCommands(args)
@@ -128,6 +131,34 @@ class SysTrait : Trait("sys") {
             Yegg.world.moveObj(subject, args[1] as VObj)
         } ?: throw IllegalArgumentException("invalid obj")
         return VVoid
+    }
+
+    // $sys.random() -> float from 0.0 until 1.0
+    // $sys.random(x) -> int from 0 until x (exc)
+    // $sys.random(x, y) -> int from x to y (inc)
+    private fun verbRandom(args: List<Value>): Value {
+        when (args.size) {
+            0 -> return VFloat(Random.nextFloat())
+            1 -> {
+                val x = (args[0] as? VInt)?.v ?: throw IllegalArgumentException("Bad arg to random")
+                return VInt(Random.nextInt(x))
+            }
+            2 -> {
+                val x = (args[0] as? VInt)?.v ?: throw IllegalArgumentException("Bad arg to random")
+                val y = (args[1] as? VInt)?.v ?: throw IllegalArgumentException("Bad arg to random")
+                return VInt(Random.nextInt(x, y + 1))
+            }
+        }
+        throw IllegalArgumentException("Too many args to random")
+    }
+
+    // $sys.chance() -> 50-50 true/false
+    // $sys.chance(float) -> true float fraction of the time
+    private fun verbChance(args: List<Value>): Value {
+        if (args.isEmpty()) return VBool(Random.nextBoolean())
+        if (args.size != 1) throw IllegalArgumentException("Bad args for chance")
+        val x = (args[0] as? VFloat)?.v ?: throw IllegalArgumentException("Bad arg to chance")
+        return VBool(Random.nextFloat() < x)
     }
 
     // $sys.setCommand($trait, "co*mmand/cmd arg prep arg = cmdVerb") -> "cmdVerb"
