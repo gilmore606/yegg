@@ -23,9 +23,9 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
 
     override fun getProp(name: String): Value? {
         when (name) {
-            "length" -> return propLength()
-            "keys" -> return propKeys()
-            "values" -> return propValues()
+            "size" -> return VInt(v.size)
+            "keys" -> return VList(v.keys.toMutableList())
+            "values" -> return VList(v.values.toMutableList())
         }
         return null
     }
@@ -46,22 +46,37 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
         when (name) {
             "hasKey" -> return verbHasKey(args)
             "hasValue" -> return verbHasValue(args)
+            "putAll" -> return verbPutAll(args)
+            "remove" -> return verbRemove(args)
         }
         return null
     }
 
-    private fun propLength() = VInt(v.size)
-    private fun propKeys() = VList(v.keys.toMutableList())
-    private fun propValues() = VList(v.values.toMutableList())
-
-    private fun verbHasKey(args: List<Value>): Value {
+    private fun verbHasKey(args: List<Value>): VBool {
         requireArgCount(args, 1, 1)
         return VBool(v.containsKey(args[0]))
     }
 
-    private fun verbHasValue(args: List<Value>): Value {
+    private fun verbHasValue(args: List<Value>): VBool {
         requireArgCount(args, 1, 1)
         return VBool(v.containsValue(args[0]))
+    }
+
+    private fun verbPutAll(args: List<Value>): VVoid {
+        requireArgCount(args, 1, 1)
+        if (args[0].type != Type.MAP) fail(E_TYPE, "${args[0].type} is not map")
+        v.putAll((args[0] as VMap).v)
+        return VVoid
+    }
+
+    private fun verbRemove(args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        if (v.containsKey(args[0])) {
+            val removed = v[args[0]]
+            v.remove(args[0])
+            return removed!!
+        }
+        return VVoid
     }
 
 

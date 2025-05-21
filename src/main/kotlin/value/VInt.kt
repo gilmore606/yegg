@@ -52,6 +52,8 @@ data class VInt(val v: Int): Value() {
         when (name) {
             "asFloat" -> return VFloat(v.toFloat())
             "asString" -> return VString(asString())
+            "isEven" -> return VBool(v % 2 == 0)
+            "isOdd" -> return VBool(v % 2 != 0)
         }
         return null
     }

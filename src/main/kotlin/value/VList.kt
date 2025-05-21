@@ -85,11 +85,14 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
             "join" -> return verbJoin(args)
             "push" -> return verbPush(args)
             "pop" -> return verbPop(args)
+            "deque" -> return verbDeque(args)
             "contains" -> return verbContains(args)
             "indexOf" -> return verbIndexOf(args)
             "lastIndexOf" -> return verbLastIndexOf(args)
             "add" -> return verbAdd(args)
             "addAll" -> return verbAddAll(args)
+            "setAdd" -> return verbSetAdd(args)
+            "setAddAll" -> return verbSetAddAll(args)
             "remove" -> return verbRemove(args)
             "removeAt" -> return verbRemoveAt(args)
             "removeAll" -> return verbRemoveAll(args)
@@ -122,6 +125,12 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         return v.removeAt(0)
     }
 
+    private fun verbDeque(args: List<Value>): Value {
+        requireArgCount(args, 0, 0)
+        if (v.isEmpty()) fail(E_RANGE, "cannot deque empty list")
+        return v.removeAt(v.lastIndex)
+    }
+
     private fun verbContains(args: List<Value>): VBool {
         requireArgCount(args, 1, 1)
         return VBool(v.contains(args[0]))
@@ -152,6 +161,19 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         requireArgCount(args, 1, 1)
         if (args[0].type != Type.LIST) fail(E_TYPE, "${args[0].type} is not LIST")
         v.addAll((args[0] as VList).v)
+        return VVoid
+    }
+
+    private fun verbSetAdd(args: List<Value>): VVoid {
+        requireArgCount(args, 1, 1)
+        if (!v.contains(args[0])) v.add(args[0])
+        return VVoid
+    }
+
+    private fun verbSetAddAll(args: List<Value>): VVoid {
+        requireArgCount(args, 1, 1)
+        if (args[0].type != Type.LIST) fail(E_TYPE, "${args[0].type} is not LIST")
+        (args[0] as VList).v.forEach { if (!v.contains(it)) v.add(it) }
         return VVoid
     }
 
