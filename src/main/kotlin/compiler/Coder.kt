@@ -16,6 +16,8 @@ class Coder(val ast: Node) {
     val forwardJumps = HashMap<String, MutableSet<Int>>()
     // Addresses stored to be used as future jump destinations.
     val backJumps = HashMap<String, Int>()
+    // Stack of lists of 'break' addresses to be used as future jump destinations.
+    val breakJumps = ArrayDeque<MutableSet<Int>>()
     // Entry points to literal VFuns.
     val blocks = mutableListOf<Executable.Block>()
 
@@ -100,6 +102,27 @@ class Coder(val ast: Node) {
         val fullname = "$name${from.id}"
         val dest = backJumps[fullname]
         mem.add(VMWord(from.lineNum, from.charNum, address = dest))
+    }
+
+    // Enter a break-able loop; make a list to store addresses which jump to the break point.
+    fun pushBreakStack() {
+        breakJumps.addFirst(mutableSetOf())
+    }
+
+    // Write a placeholder address for a break.
+    fun jumpBreak(from: Node) {
+        if (breakJumps.isEmpty()) throw CompileException("break outside of breakable loop", from.lineNum, from.charNum)
+        val address = mem.size
+        breakJumps[0].add(address)
+        mem.add(VMWord(from.lineNum, from.charNum, address = -1))
+    }
+
+    // Exit a break-able loop; set the current address on all breaks in this loop (and pop the break stack).
+    fun setBreakJump() {
+        val dest = mem.size
+        breakJumps.removeFirst().forEach { loc ->
+            mem[loc].fillAddress(dest)
+        }
     }
 
 }

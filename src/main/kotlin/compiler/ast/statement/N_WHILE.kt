@@ -11,6 +11,7 @@ class N_WHILE(val check: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
     override fun kids() = listOf(check, body)
 
     override fun code(coder: Coder) {
+        coder.pushBreakStack()
         coder.setBackJump(this, "whileStart")
         check.code(coder)
         coder.code(this, O_IF)
@@ -19,5 +20,6 @@ class N_WHILE(val check: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
         coder.code(this, O_JUMP)
         coder.jumpBack(this, "whileStart")
         coder.setForwardJump(this, "whileEnd")
+        coder.setBreakJump()
     }
 }

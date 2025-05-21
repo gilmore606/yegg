@@ -59,7 +59,6 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_FOR("for", true),
     T_IF("if", true),
     T_IN("in", true),
-    T_NULL("null", true),
     T_OR("or", true),
     T_RETURN("return", true),
     T_TRUE("true", true),
@@ -68,6 +67,8 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_WHEN("when", true),
     T_SUSPEND("suspend", true),
     T_FORK("fork", true),
+    T_BREAK("break", true),
+    T_CONTINUE("continue", true),
 
     T_EOF("EOF");
 }

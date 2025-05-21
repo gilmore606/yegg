@@ -11,6 +11,7 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
     override fun kids() = listOf(assign, check, increment, body)
 
     override fun code(coder: Coder) {
+        coder.pushBreakStack()
         assign.code(coder)
         coder.setBackJump(this, "forStart")
         check.code(coder)
@@ -21,6 +22,7 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
         coder.code(this, O_JUMP)
         coder.jumpBack(this, "forStart")
         coder.setForwardJump(this, "forEnd")
+        coder.setBreakJump()
     }
 }
 
@@ -33,6 +35,7 @@ class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEM
     override fun kids() = listOf(index, internalIndex, source, internalSource, body)
 
     override fun code(coder: Coder) {
+        coder.pushBreakStack()
         coder.code(this, O_VAL)
         coder.value(this, 0)
         coder.code(this, O_SETVAR)
@@ -57,17 +60,19 @@ class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEM
         coder.code(this, O_CMP_LE)
         coder.code(this, O_IF)
         coder.jumpBack(this, "forStart")
+        coder.setBreakJump()
     }
 }
 
 class N_FORRANGE(val index: N_IDENTIFIER, val from: N_EXPR, val to: N_EXPR, val body: N_STATEMENT): N_STATEMENT() {
-    private val internalTo = N_IDENTIFIER(makeID().toString())
+    private val internalTo = N_IDENTIFIER(makeID())
 
     override fun toText(depth: Int) = tab(depth) + "for ($index in $from..$to) " + body.toText(depth + 1)
     override fun toText() = toText(0)
     override fun kids() = listOf(index, from, to, internalTo, body)
 
     override fun code(coder: Coder) {
+        coder.pushBreakStack()
         to.code(coder)
         coder.code(this, O_SETVAR)
         coder.value(this, internalTo.variableID!!)
@@ -85,5 +90,6 @@ class N_FORRANGE(val index: N_IDENTIFIER, val from: N_EXPR, val to: N_EXPR, val 
         coder.code(this, O_CMP_LT)
         coder.code(this, O_IF)
         coder.jumpBack(this, "forStart")
+        coder.setBreakJump()
     }
 }
