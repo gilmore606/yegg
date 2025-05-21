@@ -5,6 +5,7 @@ import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.util.*
 
 @Serializable
 @SerialName("VString")
@@ -90,6 +91,8 @@ data class VString(var v: String): Value() {
             "startsWith" -> return verbStartsWith(args)
             "endsWith" -> return verbEndsWith(args)
             "indexOf" -> return verbIndexOf(args)
+            "replace" -> return verbReplace(args)
+            "capitalize" -> return verbCapitalize(args)
         }
         return null
     }
@@ -122,6 +125,17 @@ data class VString(var v: String): Value() {
         requireArgCount(args, 1, 1)
         val s = args[0].asString()
         return if (v.contains(s)) VInt(v.indexOf(s)) else VInt(-1)
+    }
+
+    private fun verbReplace(args: List<Value>): Value {
+        requireArgCount(args, 2, 3)
+        val ignoreCase = args.size == 2 || args[3].isTrue()
+        return VString(v.replace(args[0].asString(), args[1].asString(), ignoreCase))
+    }
+
+    private fun verbCapitalize(args: List<Value>): Value {
+        requireArgCount(args, 0, 0)
+        return VString(v.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
     }
 
 }
