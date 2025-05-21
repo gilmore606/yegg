@@ -97,7 +97,6 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
             "removeAt" -> return verbRemoveAt(args)
             "removeAll" -> return verbRemoveAll(args)
             "clear" -> return verbClear(args)
-            "set" -> return verbSet(args)
             "reverse" -> return verbReverse(args)
             "shuffle" -> return verbShuffle(args)
         }
@@ -199,13 +198,6 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
     private fun verbClear(args: List<Value>): VVoid {
         requireArgCount(args, 0, 0)
         v.clear()
-        return VVoid
-    }
-
-    private fun verbSet(args: List<Value>): VVoid {
-        requireArgCount(args, 2, 2)
-        val pos = positionArg(args[0])
-        v.set(pos, args[1])
         return VVoid
     }
 
