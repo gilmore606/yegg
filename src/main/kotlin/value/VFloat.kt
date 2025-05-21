@@ -1,11 +1,9 @@
 package com.dlfsystems.value
 
+import com.dlfsystems.vm.Context
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.pow
-import kotlin.math.sqrt
+import kotlin.math.*
 
 @Serializable
 @SerialName("VFloat")
@@ -54,8 +52,35 @@ data class VFloat(val v: Float): Value() {
             "floor" -> return VFloat(floor(v))
             "ceil" -> return VFloat(ceil(v))
             "sqrt" -> return VFloat(sqrt(v))
+            "abs" -> return VFloat(abs(v))
         }
         return null
+    }
+
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
+        when (name) {
+            "atMost" -> return verbAtMost(args)
+            "atLeast" -> return verbAtLeast(args)
+        }
+        return null
+    }
+
+    private fun verbAtMost(args: List<Value>): VFloat {
+        requireArgCount(args, 1, 1)
+        return when (args[0].type) {
+            Type.FLOAT -> if ((args[0] as VFloat).v >= v) this else args[0] as VFloat
+            Type.INT -> if ((args[0] as VInt).v >= v) this else VFloat((args[0] as VInt).v.toFloat())
+            else -> throw IllegalArgumentException("${args[0].type} is not numeric")
+        }
+    }
+
+    private fun verbAtLeast(args: List<Value>): VFloat {
+        requireArgCount(args, 1, 1)
+        return when (args[0].type) {
+            Type.FLOAT -> if ((args[0] as VFloat).v <= v) this else args[0] as VFloat
+            Type.INT -> if ((args[0] as VInt).v <= v) this else VFloat((args[0] as VInt).v.toFloat())
+            else -> throw IllegalArgumentException("${args[0].type} is not numeric")
+        }
     }
 
 }

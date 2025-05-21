@@ -40,6 +40,8 @@ class SysTrait : Trait("sys") {
             "move" -> return verbMove(args)
             "random" -> return verbRandom(args)
             "chance" -> return verbChance(args)
+            "min" -> return verbMin(args)
+            "max" -> return verbMax(args)
             "setCommand" -> return verbSetCommand(args)
             "removeCommand" -> return verbRemoveCommand(args)
             "getCommands" -> return verbGetCommands(args)
@@ -159,6 +161,54 @@ class SysTrait : Trait("sys") {
         if (args.size != 1) throw IllegalArgumentException("Bad args for chance")
         val x = (args[0] as? VFloat)?.v ?: throw IllegalArgumentException("Bad arg to chance")
         return VBool(Random.nextFloat() < x)
+    }
+
+    // $sys.min(v1, v2, v3...) -> lowest INT/FLOAT value in args (or list, if only arg is list)
+    private fun verbMin(args: List<Value>): Value {
+        if (args.size < 1) throw IllegalArgumentException("Bad args for min")
+        var numbers = args
+        if (args.size == 1) {
+            if (args[0].type == Value.Type.LIST) numbers = (args[0] as VList).v
+        }
+        if (numbers[0].numericValue() == null) throw IllegalArgumentException("Bad args for min")
+        var min = numbers[0]
+        var minval = numbers[0].numericValue()!!
+        numbers.forEach {
+            it.numericValue()?.also { itval ->
+                if (itval < minval) {
+                    min = it
+                    minval = itval
+                }
+            }
+        }
+        return min
+    }
+
+    // $sys.max(v1, v2, v3...) -> highest INT/FLOAT value in args (or list, if only arg is list)
+    private fun verbMax(args: List<Value>): Value {
+        if (args.size < 1) throw IllegalArgumentException("Bad args for max")
+        var numbers = args
+        if (args.size == 1) {
+            if (args[0].type == Value.Type.LIST) numbers = (args[0] as VList).v
+        }
+        if (numbers[0].numericValue() == null) throw IllegalArgumentException("Bad args for max")
+        var max = numbers[0]
+        var maxval = numbers[0].numericValue()!!
+        numbers.forEach {
+            it.numericValue()?.also { itval ->
+                if (itval > maxval) {
+                    max = it
+                    maxval = itval
+                }
+            }
+        }
+        return max
+    }
+
+    private fun Value.numericValue(): Float? = when (type) {
+        Value.Type.INT -> (this as VInt).v.toFloat()
+        Value.Type.FLOAT -> (this as VFloat).v
+        else -> null
     }
 
     // $sys.setCommand($trait, "co*mmand/cmd arg prep arg = cmdVerb") -> "cmdVerb"
