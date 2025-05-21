@@ -108,8 +108,9 @@ data class VString(var v: String): Value() {
     }
 
     private fun verbContains(args: List<Value>): VBool {
-        requireArgCount(args, 1, 1)
-        return VBool(v.contains(args[0].asString()))
+        requireArgCount(args, 1, 2)
+        val ignoreCase = !(args.size == 1 || args[1].isFalse())
+        return VBool(v.contains(args[0].asString(), ignoreCase))
     }
 
     private fun verbStartsWith(args: List<Value>): VBool {
@@ -130,7 +131,7 @@ data class VString(var v: String): Value() {
 
     private fun verbReplace(args: List<Value>): VString {
         requireArgCount(args, 2, 3)
-        val ignoreCase = args.size == 2 || args[3].isTrue()
+        val ignoreCase = !(args.size == 2 || args[2].isFalse())
         return VString(v.replace(args[0].asString(), args[1].asString(), ignoreCase))
     }
 
