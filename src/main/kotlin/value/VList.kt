@@ -33,8 +33,8 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
             "first" -> return if (v.isEmpty()) VVoid else v.first()
             "last" -> return if (v.isEmpty()) VVoid else v.last()
             "random" -> return if (v.isEmpty()) VVoid else v.random()
-            "reversed" -> return VList(v.reversed().toMutableList())
-            "shuffled" -> return VList(v.shuffled().toMutableList())
+            "reversed" -> return make(v.reversed())
+            "shuffled" -> return make(v.shuffled())
         }
         return null
     }
