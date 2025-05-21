@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.pow
+import kotlin.math.sqrt
 
 @Serializable
 @SerialName("VFloat")
@@ -52,6 +53,7 @@ data class VFloat(val v: Float): Value() {
             "asString" -> return VString(asString())
             "floor" -> return VFloat(floor(v))
             "ceil" -> return VFloat(ceil(v))
+            "sqrt" -> return VFloat(sqrt(v))
         }
         return null
     }

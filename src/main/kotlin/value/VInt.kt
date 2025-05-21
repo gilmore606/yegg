@@ -1,5 +1,6 @@
 package com.dlfsystems.value
 
+import com.jogamp.opengl.math.FloatUtil.sqrt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.math.pow
@@ -54,6 +55,7 @@ data class VInt(val v: Int): Value() {
             "asString" -> return VString(asString())
             "isEven" -> return VBool(v % 2 == 0)
             "isOdd" -> return VBool(v % 2 != 0)
+            "sqrt" -> return VFloat(sqrt(v.toFloat()))
         }
         return null
     }
