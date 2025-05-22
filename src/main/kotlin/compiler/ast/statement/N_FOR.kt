@@ -11,13 +11,14 @@ class N_FORLOOP(val assign: N_STATEMENT, val check: N_EXPR, val increment: N_STA
     override fun kids() = listOf(assign, check, increment, body)
 
     override fun code(coder: Coder) {
-        coder.pushBreakStack()
+        coder.pushLoopStack()
         assign.code(coder)
         coder.setBackJump(this, "forStart")
         check.code(coder)
         coder.code(this, O_IF)
         coder.jumpForward(this, "forEnd")
         body.code(coder)
+        coder.setContinueJump()
         increment.code(coder)
         coder.code(this, O_JUMP)
         coder.jumpBack(this, "forStart")
@@ -35,7 +36,7 @@ class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEM
     override fun kids() = listOf(index, internalIndex, source, internalSource, body)
 
     override fun code(coder: Coder) {
-        coder.pushBreakStack()
+        coder.pushLoopStack()
         coder.code(this, O_VAL)
         coder.value(this, 0)
         coder.code(this, O_SETVAR)
@@ -50,6 +51,7 @@ class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEM
         coder.code(this, O_SETVAR)
         coder.value(this, index.variableID!!)
         body.code(coder)
+        coder.setContinueJump()
         coder.code(this, O_INCVAR)
         coder.value(this, internalIndex.variableID!!)
         coder.code(this, O_GETVAR)
@@ -72,7 +74,7 @@ class N_FORRANGE(val index: N_IDENTIFIER, val from: N_EXPR, val to: N_EXPR, val 
     override fun kids() = listOf(index, from, to, internalTo, body)
 
     override fun code(coder: Coder) {
-        coder.pushBreakStack()
+        coder.pushLoopStack()
         to.code(coder)
         coder.code(this, O_SETVAR)
         coder.value(this, internalTo.variableID!!)
@@ -81,6 +83,7 @@ class N_FORRANGE(val index: N_IDENTIFIER, val from: N_EXPR, val to: N_EXPR, val 
         coder.value(this, index.variableID!!)
         coder.setBackJump(this, "forStart")
         body.code(coder)
+        coder.setContinueJump()
         coder.code(this, O_INCVAR)
         coder.value(this, index.variableID!!)
         coder.code(this, O_GETVAR)

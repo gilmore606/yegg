@@ -14,10 +14,12 @@ class Coder(val ast: Node) {
 
     // Addresses to be filled in with a named jump point once coded.
     val forwardJumps = HashMap<String, MutableSet<Int>>()
-    // Addresses stored to be used as future jump destinations.
+    // Addresses stored to be used as future jumps.
     val backJumps = HashMap<String, Int>()
-    // Stack of lists of 'break' addresses to be used as future jump destinations.
+    // Stack of lists of 'break' addresses to be used as future jumps.
     val breakJumps = ArrayDeque<MutableSet<Int>>()
+    // Stack of lists of 'continue' addresses to be used as future jumps.
+    val continueJumps = ArrayDeque<MutableSet<Int>>()
     // Entry points to literal VFuns.
     val blocks = mutableListOf<Executable.Block>()
 
@@ -104,25 +106,44 @@ class Coder(val ast: Node) {
         mem.add(VMWord(from.lineNum, from.charNum, address = dest))
     }
 
-    // Enter a break-able loop; make a list to store addresses which jump to the break point.
-    fun pushBreakStack() {
+    // Enter a loop; make lists to store addresses which jump to the break/continue points.
+    // After calling this a loop MUST call setBreakJump and setContinueJump at some point!
+    fun pushLoopStack() {
         breakJumps.addFirst(mutableSetOf())
+        continueJumps.addFirst(mutableSetOf())
     }
 
     // Write a placeholder address for a break.
     fun jumpBreak(from: Node) {
-        if (breakJumps.isEmpty()) throw CompileException("break outside of breakable loop", from.lineNum, from.charNum)
+        if (breakJumps.isEmpty()) throw CompileException("break outside of loop", from.lineNum, from.charNum)
         val address = mem.size
         breakJumps[0].add(address)
         mem.add(VMWord(from.lineNum, from.charNum, address = -1))
     }
 
-    // Exit a break-able loop; set the current address on all breaks in this loop (and pop the break stack).
+    // Write the current continue address for a continue jump.
+    fun jumpContinue(from: Node) {
+        if (continueJumps.isEmpty()) throw CompileException("continue outside of loop", from.lineNum, from.charNum)
+        val address = mem.size
+        continueJumps[0].add(address)
+        mem.add(VMWord(from.lineNum, from.charNum, address = -1))
+    }
+
+    // Set the current address on all breaks in this loop.
     fun setBreakJump() {
         val dest = mem.size
         breakJumps.removeFirst().forEach { loc ->
             mem[loc].fillAddress(dest)
         }
     }
+
+    // Set the current address on all continues in this loop.
+    fun setContinueJump() {
+        val dest = mem.size
+        continueJumps.removeFirst().forEach { loc ->
+            mem[loc].fillAddress(dest)
+        }
+    }
+
 
 }
