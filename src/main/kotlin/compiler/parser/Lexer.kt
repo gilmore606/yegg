@@ -127,7 +127,7 @@ class Lexer(val source: String) {
                     emit(T_DOTDOT)
                 }
                 in '0'..'9' -> accumulate(c)
-                else -> emit(T_FLOAT, c)
+                else -> fail("incomplete float")
             }
             T_OBJREF -> {
                 if (isIDChar(c)) accumulate(c) else emit(T_OBJREF, c)

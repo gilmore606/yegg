@@ -5,6 +5,7 @@ import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.util.*
 
 @Serializable
 @SerialName("VString")
@@ -90,11 +91,19 @@ data class VString(var v: String): Value() {
             "startsWith" -> return verbStartsWith(args)
             "endsWith" -> return verbEndsWith(args)
             "indexOf" -> return verbIndexOf(args)
+            "replace" -> return verbReplace(args)
+            "capitalize" -> return verbCapitalize(args)
+            "trim" -> return verbTrim(args)
+            "matches" -> return verbMatches(args)
+            "matchesIn" -> return verbMatchesIn(args)
+            "matchFirst" -> return verbMatchFirst(args)
+            "matchAll" -> return verbMatchAll(args)
+            "match" -> return verbMatch(args)
         }
         return null
     }
 
-    private fun verbSplit(args: List<Value>): Value {
+    private fun verbSplit(args: List<Value>): VList {
         requireArgCount(args, 0, 1)
         return VList(
             v.split(
@@ -103,25 +112,86 @@ data class VString(var v: String): Value() {
         )
     }
 
-    private fun verbContains(args: List<Value>): Value {
-        requireArgCount(args, 1, 1)
-        return VBool(v.contains(args[0].asString()))
+    private fun verbContains(args: List<Value>): VBool {
+        requireArgCount(args, 1, 2)
+        val ignoreCase = !(args.size == 1 || args[1].isFalse())
+        return VBool(v.contains(args[0].asString(), ignoreCase))
     }
 
-    private fun verbStartsWith(args: List<Value>): Value {
+    private fun verbStartsWith(args: List<Value>): VBool {
         requireArgCount(args, 1, 1)
         return VBool(v.startsWith(args[0].asString()))
     }
 
-    private fun verbEndsWith(args: List<Value>): Value {
+    private fun verbEndsWith(args: List<Value>): VBool {
         requireArgCount(args, 1, 1)
         return VBool(v.endsWith(args[0].asString()))
     }
 
-    private fun verbIndexOf(args: List<Value>): Value {
+    private fun verbIndexOf(args: List<Value>): VInt {
         requireArgCount(args, 1, 1)
         val s = args[0].asString()
         return if (v.contains(s)) VInt(v.indexOf(s)) else VInt(-1)
+    }
+
+    private fun verbReplace(args: List<Value>): VString {
+        requireArgCount(args, 2, 3)
+        val ignoreCase = !(args.size == 2 || args[2].isFalse())
+        return VString(v.replace(args[0].asString(), args[1].asString(), ignoreCase))
+    }
+
+    private fun verbCapitalize(args: List<Value>): VString {
+        requireArgCount(args, 0, 0)
+        return VString(v.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
+    }
+
+    private fun verbTrim(args: List<Value>): VString {
+        requireArgCount(args, 0, 0)
+        return VString(v.trim())
+    }
+
+    // "regex".matches(string) -> bool
+    // Returns true if we match the full string.
+    private fun verbMatches(args: List<Value>): VBool {
+        requireArgCount(args, 1, 1)
+        val regex = v.toRegex()
+        return VBool(regex.matches(args[0].asString()))
+    }
+
+    // "regex".matchesIn(string) -> bool
+    // Returns true if we match on any substring of string.
+    private fun verbMatchesIn(args: List<Value>): VBool {
+        requireArgCount(args, 1, 1)
+        val regex = v.toRegex()
+        return VBool(regex.find(args[0].asString()) != null)
+    }
+
+    // "regex".matchFirst(string) -> string
+    // Returns first substring matching (or empty string).
+    private fun verbMatchFirst(args: List<Value>): VString {
+        requireArgCount(args, 1, 1)
+        val regex = v.toRegex()
+        return VString(regex.find(args[0].asString())?.value ?: "")
+    }
+
+    // "regex".matchAll(string) -> list
+    // Returns all substrings matching.
+    private fun verbMatchAll(args: List<Value>): VList {
+        requireArgCount(args, 1, 1)
+        val regex = v.toRegex()
+        return VList.make(regex.findAll(args[0].asString()).toList().map { VString(it.value) })
+    }
+
+    // "regex".match(string) -> list
+    // Returns list of all groups captured by match.
+    private fun verbMatch(args: List<Value>): VList {
+        requireArgCount(args, 1, 1)
+        val regex = v.toRegex()
+        return VList.make(
+            regex.matchEntire(args[0].asString())
+                ?.destructured?.toList()?.map { VString(it) }
+                ?: emptyList()
+        )
     }
 
 }
