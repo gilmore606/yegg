@@ -142,8 +142,9 @@ class Optimizer(private val coder: Coder) {
         val nulls = mutableListOf<VMWord>()
         opcodes.forEachIndexed { i, t ->
             if (t == null) nulls.add(mem[pc + i])
-            else if (i > 0 && (pc + i) in jumpMap.keys) hit = false  // Miss if we overlap a jump dest
-            else if (mem[pc + i].opcode != t) hit = false  // Miss if opcode doesn't match
+            else if (mem[pc + i].opcode != t) hit = false
+            // Miss if we're going to wipe out a jump dest
+            else if (i > 0 && ((pc + i) in jumpMap.keys)) hit = false
         }
         if (hit && (check?.invoke(nulls) != false)) {
             pc += opcodes.size
