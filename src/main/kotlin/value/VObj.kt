@@ -43,6 +43,6 @@ data class VObj(val v: Obj.ID?): Value() {
 
     private fun propAsString() = VString(toString())
 
-    private fun propTraits(obj: Obj) = VList(obj.traits.mapNotNull { Yegg.world.getTrait(it)?.vTrait }.toMutableList())
+    private fun propTraits(obj: Obj) = VList.make(obj.traits.mapNotNull { Yegg.world.traits[it]?.vTrait })
 
 }

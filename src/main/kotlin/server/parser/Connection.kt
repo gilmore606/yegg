@@ -106,7 +106,7 @@ class Connection(private val sendText: (String) -> Unit) {
     }
 
     private fun runCommand(match: CommandMatch) {
-        Yegg.world.getTrait(match.trait.id)?.getVerb(match.verb)?.also { verb ->
+        Yegg.world.traits[match.trait.id]?.getVerb(match.verb)?.also { verb ->
             MCP.schedule(Task.make(
                 exe = verb,
                 args = match.args,

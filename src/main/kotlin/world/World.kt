@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class World(val name: String) {
 
-    private val traits: MutableMap<Trait.ID, Trait> = mutableMapOf()
+    val traits: MutableMap<Trait.ID, Trait> = mutableMapOf()
     private val traitIDs: MutableMap<String, Trait.ID> = mutableMapOf()
 
     private val objs: MutableMap<Obj.ID, Obj> = mutableMapOf()
@@ -29,7 +29,6 @@ data class World(val name: String) {
     }
 
     fun getTrait(named: String) = traits[traitIDs[named]]
-    fun getTrait(id: Trait.ID?) = id?.let { traits[it] }
     fun getObj(id: Obj.ID?) = id?.let { objs[it] }
 
     val sys: Trait
@@ -54,7 +53,7 @@ data class World(val name: String) {
     fun createObj() = Obj().also { objs[it.id] = it }
 
     fun destroyObj(obj: Obj) {
-        obj.traits.forEach { getTrait(it)?.removeFrom(obj) }
+        obj.traits.forEach { traits[it]?.removeFrom(obj) }
         obj.contents.v.forEach {
             moveObj(getObj((it as VObj).v)!!, obj.location)
         }

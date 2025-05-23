@@ -49,7 +49,7 @@ class Obj {
         props[name]?.also { return it }
 
         traits.forEach {
-            Yegg.world.getTrait(it)?.getProp(this, name)?.also { return it }
+            Yegg.world.traits[it]?.getProp(this, name)?.also { return it }
         }
         return null
     }
@@ -65,13 +65,13 @@ class Obj {
     fun hasProp(name: String): Boolean {
         if (name in props.keys) return true
         traits.forEach { traitID ->
-            if (name in (Yegg.world.getTrait(traitID)?.props?.keys ?: listOf())) return true
+            if (name in (Yegg.world.traits[traitID]?.props?.keys ?: listOf())) return true
         }
         return false
     }
 
     fun matchCommand(cmdstr: String, argstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
-        traits.mapNotNull { Yegg.world.getTrait(it) }.forEach { trait ->
+        traits.mapNotNull { Yegg.world.traits[it] }.forEach { trait ->
             trait.matchCommand(this, cmdstr, argstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
         }
         return null

@@ -40,7 +40,7 @@ sealed class Trait(val name: String) {
 
     fun applyTo(obj: Obj) {
         obj.traits.forEach {
-            if (Yegg.world.getTrait(it)?.hasTrait(this.id) == true)
+            if (Yegg.world.traits[it]?.hasTrait(this.id) == true)
                 throw IllegalArgumentException("obj already inherits trait")
         }
         objects.add(obj.id)
@@ -53,7 +53,7 @@ sealed class Trait(val name: String) {
     }
 
     fun hasTrait(trait: ID): Boolean = (trait in traits) ||
-            (traits.firstOrNull { Yegg.world.getTrait(it)?.hasTrait(trait) ?: false } != null)
+            (traits.firstOrNull { Yegg.world.traits[it]?.hasTrait(trait) ?: false } != null)
 
     fun setCommand(command: Command) {
         commands.removeIf { it.verb == command.verb }
@@ -80,7 +80,7 @@ sealed class Trait(val name: String) {
 
     open fun getProp(obj: Obj?, propName: String): Value? {
         return when (propName) {
-            "objects" -> return VList(objects.mapNotNull { Yegg.world.getObj(it)?.vThis }.toMutableList())
+            "objects" -> return VList.make(objects.mapNotNull { Yegg.world.getObj(it)?.vThis })
             else -> props.getOrDefault(propName, null)
         }
     }
@@ -118,7 +118,7 @@ sealed class Trait(val name: String) {
             }
         }
 
-        traits.mapNotNull { Yegg.world.getTrait(it) }.forEach { parent ->
+        traits.mapNotNull { Yegg.world.traits[it] }.forEach { parent ->
             parent.matchCommand(obj, cmdstr, argstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
         }
 
