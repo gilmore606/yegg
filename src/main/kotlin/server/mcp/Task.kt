@@ -32,9 +32,9 @@ class Task(val c: Context) {
     }
 
 
-    sealed class Result {
-        data object Finished: Result()
-        data class Suspend(val seconds: Int): Result()
+    sealed interface Result {
+        data object Finished: Result
+        @JvmInline value class Suspend(val seconds: Int): Result
     }
 
     // Execute the top stack frame.
