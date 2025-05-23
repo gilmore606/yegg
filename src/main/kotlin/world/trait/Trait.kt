@@ -23,9 +23,9 @@ sealed class Trait(val name: String) {
     // A "normal" dynamically defined trait.  We need this subclass for serialization.
     class NTrait(private val n: String) : Trait(n)
 
-    @Serializable
+    @Serializable @JvmInline
     @SerialName("TraitID")
-    data class ID(val id: String) { override fun toString() = id }
+    value class ID(val id: String) { override fun toString() = id }
 
     val id = ID(NanoID.newID())
     val vTrait = VTrait(id)

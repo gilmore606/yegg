@@ -13,8 +13,8 @@ import kotlinx.serialization.Serializable
 
 class Task(val c: Context) {
 
-    @Serializable
-    data class ID(val id: String) { override fun toString() = id }
+    @Serializable @JvmInline
+    value class ID(val id: String) { override fun toString() = id }
     val id = ID(NanoID.newID())
     val vID = VTask(id)
 

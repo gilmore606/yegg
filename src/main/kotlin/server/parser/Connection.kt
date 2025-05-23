@@ -11,7 +11,8 @@ import com.dlfsystems.world.trait.Verb
 
 class Connection(private val sendText: (String) -> Unit) {
 
-    data class ID(val id: String) { override fun toString() = id }
+    @JvmInline
+    value class ID(val id: String) { override fun toString() = id }
     val id = ID(NanoID.newID())
 
     var buffer = mutableListOf<String>()

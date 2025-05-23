@@ -18,9 +18,9 @@ import kotlinx.serialization.Serializable
 @SerialName("Obj")
 class Obj {
 
-    @Serializable
+    @Serializable @JvmInline
     @SerialName("ObjID")
-    data class ID(val id: String) { override fun toString() = id }
+    value class ID(val id: String) { override fun toString() = id }
 
     val id = ID(NanoID.newID())
     val vThis = VObj(id)
