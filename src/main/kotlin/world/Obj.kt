@@ -55,7 +55,6 @@ class Obj {
 
     // Remove trait from this object.
     fun removeTrait(trait: Trait) {
-        if (trait.id !in traits) throw IllegalArgumentException("obj does not have trait")
         trait.unapplyFrom(this)
         traits.remove(trait.id)
     }

@@ -95,12 +95,12 @@ object Yegg {
         } else {
             Log.i("No database $worldName found, initializing new world.")
             world = World(worldName).apply {
-                addTrait("sys").apply {
+                createTrait("sys")!!.apply {
                     addProp("tickLimit", VInt(100000))
                     addProp("stackLimit", VInt(100))
                     addProp("callLimit", VInt(50))
                 }
-                addTrait("user").apply {
+                createTrait("user")!!.apply {
                     addProp("username", VString(""))
                     addProp("password", VString(""))
                 }

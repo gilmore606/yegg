@@ -34,7 +34,8 @@ class SysTrait : Trait("sys") {
             "disconnectUser" -> return verbDisconnectUser(c, args)
             "notify" -> return verbNotify(args)
             "notifyConn" -> return verbNotifyConn(c, args)
-            "addTrait" -> return verbAddTrait(args)
+            "createTrait" -> return verbCreateTrait(args)
+            "destroyTrait" -> return verbDestroyTrait(args)
             "create" -> return verbCreate(args)
             "destroy" -> return verbDestroy(args)
             "move" -> return verbMove(args)
@@ -49,6 +50,7 @@ class SysTrait : Trait("sys") {
             "dumpDatabase" -> return verbDumpDatabase(args)
             "shutdownServer" -> return verbShutdownServer(args)
             "addProp" -> return verbAddProp(args)
+            "removeProp" -> return verbRemoveProp(args)
         }
         return super.callStaticVerb(c, verbName, args)
     }
@@ -96,10 +98,17 @@ class SysTrait : Trait("sys") {
         return VVoid
     }
 
-    // $sys.addTrait("newTrait")
-    private fun verbAddTrait(args: List<Value>): VVoid {
-        if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for addTrait")
-        Yegg.world.addTrait(args[0].asString())
+    // $sys.createTrait("newTrait")
+    private fun verbCreateTrait(args: List<Value>): VVoid {
+        if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for createTrait")
+        Yegg.world.createTrait(args[0].asString())
+        return VVoid
+    }
+
+    // $sys.destroyTrait("trait")
+    private fun verbDestroyTrait(args: List<Value>): VVoid {
+        if (args.size != 1) throw IllegalArgumentException("Bad args for destroyTrait")
+        Yegg.world.destroyTrait(args[0].asString())
         return VVoid
     }
 
@@ -279,4 +288,13 @@ class SysTrait : Trait("sys") {
         return VVoid
     }
 
+    // $sys.removeProp($trait, "propName")
+    private fun verbRemoveProp(args: List<Value>): VVoid {
+        if (args.size != 2) throw IllegalArgumentException("Bad args for removeProp")
+        if (args[0].type != Value.Type.TRAIT) throw IllegalArgumentException("first arg is ${args[0].type} not TRAIT")
+        if (args[1].type != Value.Type.STRING) throw IllegalArgumentException("second arg is ${args[1].type} not STRING")
+        (args[0] as VTrait).trait()?.removeProp(args[1].asString())
+            ?: throw IllegalArgumentException("invalid trait")
+        return VVoid
+    }
 }

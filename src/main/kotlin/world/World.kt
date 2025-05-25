@@ -35,18 +35,29 @@ data class World(val name: String) {
     fun getSysValue(name: String): Value = sys.getProp(name) ?: VVoid
     fun getSysInt(name: String): Int = (sys.getProp(name) as VInt).v
 
-    fun addTrait(name: String): Trait {
-        if (traits.values.none { it.name == name }) {
-            return when (name) {
+    fun createTrait(traitName: String): Trait? {
+        getTrait(traitName)?.also {
+            throw IllegalArgumentException("Trait with id $traitName already exists")
+        } ?: run {
+            return when (traitName) {
                 "sys" -> SysTrait()
                 "user" -> UserTrait()
-                else -> Trait.NTrait(name)
+                else -> Trait.NTrait(traitName)
             }.also {
                 traits[it.id] = it
                 traitIDs[it.name] = it.id
             }
         }
-        throw IllegalArgumentException("Trait with id $name already exists")
+        return null
+    }
+
+    fun destroyTrait(traitName: String) {
+        getTrait(traitName)?.also { trait ->
+            if (trait.children.isNotEmpty()) throw IllegalArgumentException("Can't destroy trait with descendant traits")
+            trait.removeSelf()
+            traits.remove(trait.id)
+            traitIDs.remove(traitName)
+        } ?: throw IllegalArgumentException("No trait $traitName exists")
     }
 
     fun createObj() = Obj().also { objs[it.id] = it }

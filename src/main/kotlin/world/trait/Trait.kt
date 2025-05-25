@@ -34,38 +34,50 @@ sealed class Trait(val name: String) {
     val id = ID(NanoID.newID())
     val vTrait = VTrait(id)
 
-    val traits: MutableList<ID> = mutableListOf()
-    val childTraits: MutableList<ID> = mutableListOf()
+    // Traits we inherit from.
+    val parents: MutableList<ID> = mutableListOf()
+    // Traits which inherit from us.
+    val children: MutableList<ID> = mutableListOf()
 
     val commands: MutableSet<Command> = mutableSetOf()
     val verbs: MutableMap<String, Verb> = mutableMapOf()
+
+    // All props we define directly OR inherit.
     val props: MutableMap<String, Propval> = mutableMapOf()
 
+    // All objects which inherit this trait (directly or transitively).
     val objects: MutableSet<Obj.ID> = mutableSetOf()
+
 
     // Traits
 
+    // Clean up everything about this trait, prior to destroying it.
+    fun removeSelf() {
+        parents.forEach { it.trait()!!.children.remove(id) }
+        objects.forEach { it.obj()!!.removeTrait(this) }
+    }
+
     // Add parent trait to this trait.
     fun addTrait(otrait: Trait) {
-        traits.forEach {
+        parents.forEach {
             if (it.trait()!!.inherits(otrait.id)) throw IllegalArgumentException("trait already inherits $otrait")
         }
-        traits.add(otrait.id)
-        otrait.childTraits.add(id)
+        parents.add(otrait.id)
+        otrait.children.add(id)
         objects.forEach { otrait.applyTo(it.obj()!!) }
     }
 
     // Remove parent trait from this trait.
     fun removeTrait(otrait: Trait) {
-        if (otrait.id !in traits) throw IllegalArgumentException("trait does not have trait")
-        traits.remove(otrait.id)
-        otrait.childTraits.remove(id)
+        if (otrait.id !in parents) throw IllegalArgumentException("trait does not have trait")
+        parents.remove(otrait.id)
+        otrait.children.remove(id)
         objects.forEach { otrait.unapplyFrom(it.obj()!!) }
     }
 
     fun inherits(otrait: ID): Boolean {
         if (otrait == id) return true
-        traits.forEach { if (it.trait()!!.inherits(otrait)) return true }
+        parents.forEach { if (it.trait()!!.inherits(otrait)) return true }
         return false
     }
 
@@ -78,7 +90,7 @@ sealed class Trait(val name: String) {
                 obj.addProp(it, this)
             }
         }
-        traits.forEach { it.trait()!!.applyTo(obj) }
+        parents.forEach { it.trait()!!.applyTo(obj) }
     }
 
     fun unapplyFrom(obj: Obj, forDestroy: Boolean = false) {
@@ -86,7 +98,7 @@ sealed class Trait(val name: String) {
         if (!forDestroy) nativeProps().forEach {
             obj.removeProp(it)
         }
-        traits.forEach { it.trait()!!.unapplyFrom(obj) }
+        parents.forEach { it.trait()!!.unapplyFrom(obj) }
     }
 
     // Props
@@ -96,7 +108,7 @@ sealed class Trait(val name: String) {
     fun addProp(propName: String, value: Value) {
         if (hasProp(propName)) throw IllegalArgumentException("trait already has prop $propName")
         props[propName] = Propval(this.id, value)
-        childTraits.forEach { it.trait()!!.addInheritedProp(propName, this) }
+        children.forEach { it.trait()!!.addInheritedProp(propName, this) }
         objects.forEach { it.obj()!!.addProp(propName, this) }
     }
 
@@ -108,7 +120,7 @@ sealed class Trait(val name: String) {
         if (!props.containsKey(propName)) throw IllegalArgumentException("trait has no property $propName")
         if (props[propName]!!.traitID != id) throw IllegalArgumentException("prop $propName is not owned by trait")
         props.remove(propName)
-        childTraits.forEach { it.trait()!!.removeInheritedProp(propName) }
+        children.forEach { it.trait()!!.removeInheritedProp(propName) }
         objects.forEach { it.obj()!!.also { if (it.props[propName]!!.traitID == id) it.removeProp(propName) } }
     }
 
@@ -186,7 +198,7 @@ sealed class Trait(val name: String) {
             }
         }
 
-        traits.mapNotNull { Yegg.world.traits[it] }.forEach { parent ->
+        parents.mapNotNull { it.trait() }.forEach { parent ->
             parent.matchCommand(obj, cmdstr, argstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
         }
 
