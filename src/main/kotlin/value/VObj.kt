@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.dlfsystems.value
 
 import com.dlfsystems.server.Yegg
@@ -12,6 +14,8 @@ data class VObj(val v: Obj.ID?): Value() {
     @SerialName("yType")
     override val type = Type.OBJ
 
+    inline fun obj() = Yegg.world.objs[v]
+
     override fun toString() = "#${v.toString().takeLast(5)}"
     override fun asString() = "OBJ" // TODO: use name
 
@@ -22,7 +26,7 @@ data class VObj(val v: Obj.ID?): Value() {
     override fun plus(a2: Value) = if (a2 is VString) VString(v.toString() + a2.v) else null
 
     override fun getProp(name: String): Value? {
-        Yegg.world.getObj(v)?.also { obj ->
+        obj()?.also { obj ->
             when (name) {
                 "asString" -> return propAsString()
                 "traits" -> return propTraits(obj)
@@ -35,7 +39,7 @@ data class VObj(val v: Obj.ID?): Value() {
     }
 
     override fun setProp(name: String, value: Value): Boolean {
-        Yegg.world.getObj(v)?.also { obj ->
+        obj()?.also { obj ->
             return obj.setProp(name, value)
         }
         return false
@@ -43,6 +47,6 @@ data class VObj(val v: Obj.ID?): Value() {
 
     private fun propAsString() = VString(toString())
 
-    private fun propTraits(obj: Obj) = VList.make(obj.traits.mapNotNull { Yegg.world.traits[it]?.vTrait })
+    private fun propTraits(obj: Obj) = VList.make(obj.traits.mapNotNull { it.trait()?.vTrait })
 
 }
