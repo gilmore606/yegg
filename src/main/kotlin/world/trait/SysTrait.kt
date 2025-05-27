@@ -115,6 +115,7 @@ class SysTrait : Trait("sys") {
     // $sys.create($trait1, $trait2...) -> #obj
     private fun verbCreate(args: List<Value>): VObj {
         val obj = Yegg.world.createObj()
+        Yegg.world.getTrait("root")?.also { obj.addTrait(it) }
         try {
             args.forEach {
                 if (it !is VTrait) throw IllegalArgumentException("Non-trait passed to create")

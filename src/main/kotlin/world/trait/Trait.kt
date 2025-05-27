@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.dlfsystems.world.trait
 
 import com.dlfsystems.server.Yegg

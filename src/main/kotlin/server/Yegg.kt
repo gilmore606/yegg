@@ -104,6 +104,10 @@ object Yegg {
                     addProp("username", VString(""))
                     addProp("password", VString(""))
                 }
+                createTrait("root")!!.apply {
+                    addProp("name", VString("thing"))
+                    addProp("aliases", VList.make(listOf(VString("thing"))))
+                }
             }
         }
     }
