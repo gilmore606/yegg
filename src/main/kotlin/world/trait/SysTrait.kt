@@ -36,6 +36,11 @@ class SysTrait : Trait("sys") {
             "notifyConn" -> return verbNotifyConn(c, args)
             "createTrait" -> return verbCreateTrait(args)
             "destroyTrait" -> return verbDestroyTrait(args)
+            "addParent" -> return verbAddParent(args)
+            "removeParent" -> return verbRemoveParent(args)
+            "addProp" -> return verbAddProp(args)
+            "removeProp" -> return verbRemoveProp(args)
+            "clearProp" -> return verbClearProp(args)
             "create" -> return verbCreate(args)
             "destroy" -> return verbDestroy(args)
             "move" -> return verbMove(args)
@@ -45,12 +50,9 @@ class SysTrait : Trait("sys") {
             "max" -> return verbMax(args)
             "setCommand" -> return verbSetCommand(args)
             "removeCommand" -> return verbRemoveCommand(args)
-            "getCommands" -> return verbGetCommands(args)
             "removeVerb" -> return verbRemoveVerb(args)
             "dumpDatabase" -> return verbDumpDatabase(args)
             "shutdownServer" -> return verbShutdownServer(args)
-            "addProp" -> return verbAddProp(args)
-            "removeProp" -> return verbRemoveProp(args)
         }
         return super.callStaticVerb(c, verbName, args)
     }
@@ -134,6 +136,28 @@ class SysTrait : Trait("sys") {
         (args[0] as VObj).obj()?.also { subject ->
             Yegg.world.destroyObj(subject)
         } ?: throw IllegalArgumentException("invalid obj")
+        return VVoid
+    }
+
+    // $sys.addParent($trait, $parentTrait) / (obj, $parentTrait)
+    private fun verbAddParent(args: List<Value>): VVoid {
+        if (args.size != 2 || args[1] !is VTrait) throw IllegalArgumentException("Bad args for addParent")
+        when (args[0]) {
+            is VTrait -> (args[0] as VTrait).trait()!!.addTrait((args[1] as VTrait).trait()!!)
+            is VObj -> (args[0] as VObj).obj()!!.addTrait((args[1] as VTrait).trait()!!)
+            else -> throw IllegalArgumentException("cannot addParent to ${args[0].type}")
+        }
+        return VVoid
+    }
+
+    // $sys.removeParent($trait, $parentTrait) / (obj, $parentTrait)
+    private fun verbRemoveParent(args: List<Value>): VVoid {
+        if (args.size != 2 || args[1] !is VTrait) throw IllegalArgumentException("Bad args for removeParent")
+        when (args[0]) {
+            is VTrait -> (args[0] as VTrait).trait()!!.removeTrait((args[1] as VTrait).trait()!!)
+            is VObj -> (args[0] as VObj).obj()!!.removeTrait((args[1] as VTrait).trait()!!)
+            else -> throw IllegalArgumentException("cannot removeParent from ${args[0].type}")
+        }
         return VVoid
     }
 
@@ -246,15 +270,6 @@ class SysTrait : Trait("sys") {
         throw IllegalArgumentException("invalid trait")
     }
 
-    // $sys.getCommands($trait) -> ["co*mmand arg...", ...]
-    private fun verbGetCommands(args: List<Value>): VList {
-        if (args.size != 1 || args[0] !is VTrait) throw IllegalArgumentException("Bad args for getCommands")
-        Yegg.world.traits[(args[0] as VTrait).v]?.also { trait ->
-            return VList(trait.commands.map { VString(it.toString()) }.toMutableList())
-        }
-        throw IllegalArgumentException("invalid trait")
-    }
-
     // $sys.removeVerb($trait, "verb")
     private fun verbRemoveVerb(args: List<Value>): VVoid {
         if (args.size != 2 || args[0] !is VTrait || args[1] !is VString) throw IllegalArgumentException("Bad args for removeVerb")
@@ -296,6 +311,19 @@ class SysTrait : Trait("sys") {
         if (args[1].type != Value.Type.STRING) throw IllegalArgumentException("second arg is ${args[1].type} not STRING")
         (args[0] as VTrait).trait()?.removeProp(args[1].asString())
             ?: throw IllegalArgumentException("invalid trait")
+        return VVoid
+    }
+
+    // $sys.clearProp($trait, "propName") / (obj, "propName")
+    private fun verbClearProp(args: List<Value>): VVoid {
+        if (args.size != 2 || args[1].type != Value.Type.STRING) throw IllegalArgumentException("Bad args for clearProp")
+        when (args[0]) {
+            is VTrait -> (args[0] as VTrait).trait()!!.clearProp(args[1].asString())
+            is VObj -> {
+
+            }
+            else -> throw IllegalArgumentException("cannot clearProp on ${args[0].type}")
+        }
         return VVoid
     }
 }

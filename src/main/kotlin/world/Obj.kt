@@ -1,5 +1,3 @@
-@file:Suppress("NOTHING_TO_INLINE")
-
 package com.dlfsystems.world
 
 import com.dlfsystems.server.parser.CommandMatch
@@ -47,7 +45,7 @@ class Obj {
     // Add trait to this object.
     fun addTrait(trait: Trait) {
         traits.forEach {
-            if (it.trait()!!.inherits(trait.id)) throw IllegalArgumentException("obj already has trait")
+            if (it.trait()!!.inheritsTrait(trait.id)) throw IllegalArgumentException("obj already has trait")
         }
         traits.add(trait.id)
         trait.applyTo(this)
@@ -55,24 +53,42 @@ class Obj {
 
     // Remove trait from this object.
     fun removeTrait(trait: Trait) {
-        trait.unapplyFrom(this)
+        if (!traits.contains(trait.id)) throw IllegalArgumentException("obj doesn't have trait")
         traits.remove(trait.id)
+        trait.unapplyFrom(this)
+    }
+
+    fun inheritsTrait(traitID: Trait.ID): Boolean {
+        if (traitID in traits) return true
+        for (t in traits) {
+            if (t.trait()!!.inheritsTrait(traitID)) return true
+        }
+        return false
     }
 
     // Props
 
-    fun addProp(propName: String, trait: Trait) {
-        if (!props.containsKey(propName)) props[propName] = Propval(trait.id)
+    fun hasProp(propName: String) = props.containsKey(propName)
+
+    fun addProp(propName: String, traitID: Trait.ID) {
+        props[propName] = Propval(traitID)
     }
 
-    fun removeProp(propName: String) { props.remove(propName) }
+    fun removeProp(propName: String) {
+        props.remove(propName)
+    }
 
-    inline fun getProp(propName: String): Value? = props[propName]?.get(propName)
+    fun getProp(propName: String) = when (propName) {
+        "location" -> location
+        "contents" -> contents
+        "traits" -> VList.make(traits.map { it.trait()!!.vTrait })
+        else -> props[propName]?.get(propName)
+    }
 
-    inline fun setProp(propName: String, value: Value): Boolean =
+    fun setProp(propName: String, value: Value): Boolean =
         props[propName]?.let { it.v = value ; true } ?: false
 
-    inline fun clearProp(propName: String): Boolean =
+    fun clearProp(propName: String): Boolean =
         props[propName]?.let { it.v = null ; true } ?: false
 
     // Commands

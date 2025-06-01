@@ -2,6 +2,7 @@
 
 package com.dlfsystems.world.trait
 
+import com.dlfsystems.server.Log
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.server.parser.Command
 import com.dlfsystems.server.parser.Command.Arg
@@ -47,39 +48,78 @@ sealed class Trait(val name: String) {
     // All props we define directly OR inherit.
     val props: MutableMap<String, Propval> = mutableMapOf()
 
-    // All objects which inherit this trait (directly or transitively).
+    // All objects which inherit this trait directly.
     val objects: MutableSet<Obj.ID> = mutableSetOf()
 
+
+    // Execute action on all objects inheriting this trait (directly or transitively).
+    private fun forEachDescendantObj(action: (Obj)->Unit) {
+        objects.forEach { action.invoke(it.obj()!!) }
+        children.forEach {
+            it.trait()!!.forEachDescendantObj(action)
+        }
+    }
+
+    // Execute action on this trait, and all traits inheriting this trait (directly or transitively).
+    private fun forEachDescendantTrait(action: (Trait)->Unit) {
+        action.invoke(this)
+        children.forEach {
+            it.trait()!!.forEachDescendantTrait(action)
+        }
+    }
 
     // Traits
 
     // Clean up everything about this trait, prior to destroying it.
     fun removeSelf() {
+        forEachDescendantObj { obj ->
+            obj.removeTrait(this)
+        }
         parents.forEach { it.trait()!!.children.remove(id) }
-        objects.forEach { it.obj()!!.removeTrait(this) }
     }
 
     // Add parent trait to this trait.
-    fun addTrait(otrait: Trait) {
+    fun addTrait(parent: Trait) {
         parents.forEach {
-            if (it.trait()!!.inherits(otrait.id)) throw IllegalArgumentException("trait already inherits $otrait")
+            if (it.trait()!!.inheritsTrait(parent.id)) throw IllegalArgumentException("trait already inherits $parent")
         }
-        parents.add(otrait.id)
-        otrait.children.add(id)
-        objects.forEach { otrait.applyTo(it.obj()!!) }
+        parents.add(parent.id)
+        parent.children.add(id)
+        // Add parent props to this trait
+        parent.props.forEach { (name, parentval) ->
+            if (!props.containsKey(name)) props[name] = Propval(parentval.traitID)
+        }
+        // Add parent props to all inheriting objects
+        forEachDescendantObj { obj ->
+            parent.props.forEach { (name, parentval) ->
+                if (!obj.props.containsKey(name)) {
+                    obj.addProp(name, parentval.traitID)
+                }
+            }
+        }
     }
 
     // Remove parent trait from this trait.
-    fun removeTrait(otrait: Trait) {
-        if (otrait.id !in parents) throw IllegalArgumentException("trait does not have trait")
-        parents.remove(otrait.id)
-        otrait.children.remove(id)
-        objects.forEach { otrait.unapplyFrom(it.obj()!!) }
+    fun removeTrait(parent: Trait) {
+        if (parent.id !in parents) throw IllegalArgumentException("trait does not have trait")
+        parents.remove(parent.id)
+        parent.children.remove(id)
+        // Remove orphaned props from this trait (and inheriting objects)
+        parent.props.keys.forEach { name ->
+            props[name]?.also { propval ->
+                if (!this.inheritsTrait(propval.traitID)) {
+                    props.remove(name)
+                    forEachDescendantObj { obj ->
+                        obj.removeProp(name)
+                    }
+                }
+            }
+        }
     }
 
-    fun inherits(otrait: ID): Boolean {
+    fun inheritsTrait(otrait: ID): Boolean {
         if (otrait == id) return true
-        parents.forEach { if (it.trait()!!.inherits(otrait)) return true }
+        parents.forEach { if (it.trait()!!.inheritsTrait(otrait)) return true }
         return false
     }
 
@@ -87,63 +127,114 @@ sealed class Trait(val name: String) {
 
     fun applyTo(obj: Obj) {
         objects.add(obj.id)
-        nativeProps().forEach {
-            if (!obj.props.containsKey(it)) {
-                obj.addProp(it, this)
+        props.forEach { (name, propval) ->
+            if (!obj.props.containsKey(name)) {
+                obj.addProp(name, propval.traitID)
             }
         }
-        parents.forEach { it.trait()!!.applyTo(obj) }
     }
 
     fun unapplyFrom(obj: Obj, forDestroy: Boolean = false) {
         objects.remove(obj.id)
-        if (!forDestroy) nativeProps().forEach {
-            obj.removeProp(it)
+        if (forDestroy) return  // no need to remove orphan props, obj is being destroyed
+        // TODO: check this more efficiently, this is expensive
+        obj.props.forEach { (name, propval) ->
+            if (!obj.inheritsTrait(propval.traitID)) obj.removeProp(name)
         }
-        parents.forEach { it.trait()!!.unapplyFrom(obj) }
     }
 
     // Props
 
-    private fun nativeProps() = props.keys.filter { props[it]!!.traitID == id }
-
     fun addProp(propName: String, value: Value) {
-        if (hasProp(propName)) throw IllegalArgumentException("trait already has prop $propName")
-        props[propName] = Propval(this.id, value)
-        children.forEach { it.trait()!!.addInheritedProp(propName, this) }
-        objects.forEach { it.obj()!!.addProp(propName, this) }
-    }
-
-    private fun addInheritedProp(propName: String, fromTrait: Trait) {
-        props[propName] = Propval(fromTrait.id)
+        forEachDescendantTrait { trait ->
+            if (trait.props.containsKey(propName)) throw IllegalArgumentException("trait $trait already has prop $propName")
+        }
+        forEachDescendantTrait { trait ->
+            trait.props[propName] = Propval(this.id)
+        }
+        props[propName]!!.v = value
+        forEachDescendantObj { obj ->
+            if (!obj.hasProp(propName)) obj.addProp(propName, this.id)
+        }
     }
 
     fun removeProp(propName: String) {
         if (!props.containsKey(propName)) throw IllegalArgumentException("trait has no property $propName")
-        if (props[propName]!!.traitID != id) throw IllegalArgumentException("prop $propName is not owned by trait")
-        props.remove(propName)
-        children.forEach { it.trait()!!.removeInheritedProp(propName) }
-        objects.forEach { it.obj()!!.also { if (it.props[propName]!!.traitID == id) it.removeProp(propName) } }
-    }
-
-    fun removeInheritedProp(propName: String) {
-        props.remove(propName)
-    }
-
-    inline fun hasProp(propName: String): Boolean = props.containsKey(propName)
-
-    open fun getProp(propName: String): Value? {
-        return when (propName) {
-            "objects" -> return VList.make(objects.mapNotNull { it.obj()?.vThis })
-            else -> props[propName]?.get(propName)
+        if (getPropOwner(propName) != id) throw IllegalArgumentException("prop $propName is not owned by trait")
+        forEachDescendantTrait { trait ->
+            trait.props.remove(propName)
+        }
+        forEachDescendantObj { obj ->
+            obj.removeProp(propName)
         }
     }
 
-    inline fun setProp(propName: String, value: Value): Boolean =
-        props[propName]?.let { it.v = value ; true } ?: false
+    open fun getProp(propName: String): Value? = when (propName) {
+        "objects" -> VList.make(objects.mapNotNull { it.obj()?.vThis })
+        "parents" -> VList.make(parents.mapNotNull { it.trait()?.vTrait })
+        "children" -> VList.make(children.mapNotNull { it.trait()?.vTrait })
+        "commands" -> VList.make(commands.map { VList.make(listOf(VString(it.spec), VString(it.verb))) })
+        "verbs" -> VList.make(verbs.keys.map { VString(it) })
+        else -> props[propName]?.get(propName)
+    }
 
-    inline fun clearProp(propName: String): Boolean =
-        props[propName]?.let { it.v = null ; true } ?: false
+    fun setProp(propName: String, value: Value): Boolean {
+        props[propName]?.also { oldval ->
+            if (oldval.traitID == this.id || oldval.v != null) {
+                props[propName] = Propval(oldval.traitID, value)
+            } else {
+                val oldTraitID = oldval.traitID
+                props[propName] = Propval(oldTraitID, value)
+                // Prop is now uncleared; set new traitID on all inheriting traits + objs
+                forEachDescendantTrait { trait ->
+                    if (trait != this) {
+                        if (trait.props[propName]!!.traitID == oldTraitID) {
+                            val oldValue = trait.props[propName]!!.v
+                            trait.props[propName] = Propval(this.id, oldValue)
+                        }
+                    }
+                }
+                forEachDescendantObj { obj ->
+                    if (obj.props[propName]!!.traitID == oldTraitID) {
+                        val oldValue = obj.props[propName]!!.v
+                        obj.props[propName] = Propval(this.id, oldValue)
+                    }
+                }
+            }
+            return true
+        }
+        return false
+    }
+
+    fun clearProp(propName: String) {
+        if (!props.containsKey(propName)) throw IllegalArgumentException("trait has no property $propName")
+        val newParentID = getPropOwner(propName)!!
+        if (newParentID == id) throw IllegalArgumentException("prop $propName is owned by trait, and can't be cleared on it")
+        if (props[propName]!!.v == null) return  // already clear
+        props[propName]!!.v = null
+        forEachDescendantTrait { trait ->
+            val oldPropval = trait.props[propName]!!
+            if (oldPropval.traitID == id) {
+                trait.props[propName] = Propval(newParentID, oldPropval.v)
+            }
+        }
+        forEachDescendantObj { obj ->
+            val oldPropval = obj.props[propName]!!
+            if (oldPropval.traitID == id) {
+                obj.props[propName] = Propval(newParentID, oldPropval.v)
+            }
+        }
+    }
+
+    // Find trait in our ancestry which defines a prop.
+    private fun getPropOwner(propName: String): ID? {
+        if (!props.containsKey(propName)) return null
+        parents.forEach { parent ->
+            val fromParent = parent.trait()!!.getPropOwner(propName)
+            if (fromParent != null) return fromParent
+        }
+        return id
+    }
 
     // Verbs
 
