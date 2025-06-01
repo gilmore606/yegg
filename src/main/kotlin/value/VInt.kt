@@ -9,6 +9,7 @@ import kotlin.math.*
 @SerialName("VInt")
 data class VInt(val v: Int): Value() {
     override fun equals(other: Any?) = other is VInt && v == other.v
+    override fun hashCode() = javaClass.hashCode()
 
     @SerialName("yType")
     override val type = Type.INT

@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.dlfsystems.value
 
 import com.dlfsystems.server.Yegg
@@ -11,6 +13,7 @@ import kotlinx.serialization.Serializable
 @SerialName("VTrait")
 data class VTrait(val v: Trait.ID?): Value() {
     override fun equals(other: Any?) = other is VTrait && v == other.v
+    override fun hashCode() = javaClass.hashCode()
 
     @SerialName("yType")
     override val type = Type.TRAIT

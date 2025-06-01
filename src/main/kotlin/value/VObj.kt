@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 @SerialName("VObj")
 data class VObj(val v: Obj.ID?): Value() {
     override fun equals(other: Any?) = other is VObj && v == other.v
+    override fun hashCode() = javaClass.hashCode()
 
     @SerialName("yType")
     override val type = Type.OBJ

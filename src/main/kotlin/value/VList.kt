@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 @SerialName("VList")
 data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
     override fun equals(other: Any?) = other is VList && v == other.v
+    override fun hashCode() = javaClass.hashCode()
 
     @SerialName("yType")
     override val type = Type.LIST

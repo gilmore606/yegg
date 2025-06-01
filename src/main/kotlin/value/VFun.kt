@@ -17,6 +17,7 @@ data class VFun(
     val vars: Map<String, Value>,
 ): Value(), Executable {
     override fun equals(other: Any?) = false
+    override fun hashCode() = javaClass.hashCode()
 
     @SerialName("yType")
     override val type = Type.FUN
