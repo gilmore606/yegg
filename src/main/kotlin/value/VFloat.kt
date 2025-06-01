@@ -47,24 +47,20 @@ data class VFloat(val v: Float): Value() {
         else -> null
     }
 
-    override fun getProp(name: String): Value? {
-        when (name) {
-            "asInt" -> return VInt(v.toInt())
-            "asString" -> return VString(asString())
-            "floor" -> return VFloat(floor(v))
-            "ceil" -> return VFloat(ceil(v))
-            "sqrt" -> return VFloat(sqrt(v))
-            "abs" -> return VFloat(abs(v))
-        }
-        return null
+    override fun getProp(name: String) = when (name) {
+        "asInt" -> VInt(v.toInt())
+        "asString" -> VString(asString())
+        "floor" -> VFloat(floor(v))
+        "ceil" -> VFloat(ceil(v))
+        "sqrt" -> VFloat(sqrt(v))
+        "abs" -> VFloat(abs(v))
+        else -> null
     }
 
-    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
-        when (name) {
-            "atMost" -> return verbAtMost(args)
-            "atLeast" -> return verbAtLeast(args)
-        }
-        return null
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>) = when (name) {
+        "atMost" -> verbAtMost(args)
+        "atLeast" -> verbAtLeast(args)
+        else -> null
     }
 
     private fun verbAtMost(args: List<Value>): VFloat {

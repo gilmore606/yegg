@@ -27,20 +27,15 @@ data class VString(var v: String): Value() {
     override fun cmpGt(a2: Value) = (a2 is VString) && (v > a2.v)
     override fun cmpGe(a2: Value) = (a2 is VString) && (v >= a2.v)
 
-    override fun plus(a2: Value): Value? {
-        a2.asString()?.also { return VString(v + it) }
-        return null
-    }
+    override fun plus(a2: Value) = VString(v + a2.asString())
 
-    override fun getProp(name: String): Value? {
-        when (name) {
-            "length" -> return VInt(v.length)
-            "asInt" -> return VInt(v.toInt())
-            "asFloat" -> return VFloat(v.toFloat())
-            "isEmpty" -> return if (v.isEmpty()) Yegg.vTrue else Yegg.vFalse
-            "isNotEmpty" -> return if (v.isNotEmpty()) Yegg.vTrue else Yegg.vFalse
-        }
-        return null
+    override fun getProp(name: String) = when (name) {
+        "length" -> VInt(v.length)
+        "asInt" -> VInt(v.toInt())
+        "asFloat" -> VFloat(v.toFloat())
+        "isEmpty" -> if (v.isEmpty()) Yegg.vTrue else Yegg.vFalse
+        "isNotEmpty" -> if (v.isNotEmpty()) Yegg.vTrue else Yegg.vFalse
+        else -> null
     }
 
     override fun getIndex(index: Value): Value? {

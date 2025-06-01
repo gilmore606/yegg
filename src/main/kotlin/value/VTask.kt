@@ -24,19 +24,15 @@ data class VTask(val v: Task.ID): Value() {
 
     override fun cmpEq(a2: Value) = (a2 is VTask && v == a2.v)
 
-    override fun getProp(name: String): Value? {
-        when (name) {
-            "isValid" -> return if (MCP.isValidTask(v)) Yegg.vTrue else Yegg.vFalse
-        }
-        return null
+    override fun getProp(name: String) = when (name) {
+        "isValid" -> if (MCP.isValidTask(v)) Yegg.vTrue else Yegg.vFalse
+        else -> null
     }
 
-    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
-        when (name) {
-            "cancel" -> return verbCancel(args)
-            "resume" -> return verbResume(args)
-        }
-        return null
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>) = when (name) {
+        "cancel" -> verbCancel(args)
+        "resume" -> verbResume(args)
+        else -> null
     }
 
     private fun verbCancel(args: List<Value>): Value {
