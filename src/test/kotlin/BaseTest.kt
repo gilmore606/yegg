@@ -1,12 +1,10 @@
 package com.dlfsystems
 
-import com.dlfsystems.server.Connection
+import com.dlfsystems.server.TestConnection
 import com.dlfsystems.server.Yegg
-import com.dlfsystems.server.onYeggThread
-import com.dlfsystems.value.Value
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import kotlin.test.Test
@@ -15,7 +13,7 @@ import kotlin.test.assertContains
 class BaseTest {
 
     companion object {
-        val scope = TestScope()
+        val scope = CoroutineScope(Dispatchers.IO)
 
         @BeforeClass @JvmStatic fun setup() {
             Yegg.start(testMode = true)
@@ -28,14 +26,15 @@ class BaseTest {
 
 
     @Test
-    fun `variables`() = runTest {
-            val source = """
-                foo = 1
-                foo = 2
-                notifyConn(foo)
-            """
-            assertContains(runYegg(source), "2")
-        }
+    fun `variables`() = runBlocking {
+        val source = """
+            foo = 1
+            foo = 2
+            notifyConn(foo)
+        """
+        val output = runAsVerb(source)
+        assertContains(output, "2")
+    }
 
     @Test
     fun `math`() {
@@ -46,12 +45,12 @@ class BaseTest {
     }
 
 
-    private suspend fun runYegg(source: String, args: List<Value> = listOf()): String {
-        var output = ""
-        val conn = Connection { scope.launch { output += "$it\n" } }
-        onYeggThread { conn.sendText(";;$source") }
-        delay(100L)
-        return output
+    private suspend fun runAsVerb(source: String): String {
+        val conn = TestConnection(scope)
+        conn.start()
+        conn.runVerb(source)
+        conn.stop()
+        return conn.output
     }
 
 }
