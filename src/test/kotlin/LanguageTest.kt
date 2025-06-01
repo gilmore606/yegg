@@ -8,9 +8,9 @@ import kotlinx.coroutines.runBlocking
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import kotlin.test.Test
-import kotlin.test.assertContains
+import kotlin.test.assertEquals
 
-class BaseTest {
+class LanguageTest {
 
     companion object {
         val scope = CoroutineScope(Dispatchers.IO)
@@ -52,28 +52,26 @@ class BaseTest {
             }
             notifyConn("All done.")
         """
-        val output = runAsVerb(source)
-        assertContains(output, "beef is 18 15.0 270.0")
-        assertContains(output, "pork is 9 15.7 141.3")
-        assertContains(output, "cheese is 4 16.4 65.6")
-        assertContains(output, "\"rat\", \"fox\", \"otter\"")
-    }
 
-    @Test
-    fun `math`() {
-        val source = """
-            [a1, a2] = args
-            return a1 * a2
-        """
+        runForOutput(source, """
+            beef is 18 15.0 270.0
+            pork is 9 15.7 141.3
+            cheese is 4 16.4 65.6
+            "rat", "fox", "otter"
+        """)
     }
 
 
-    private suspend fun runAsVerb(source: String): String {
+    private suspend fun runForOutput(source: String, expected: String) {
         val conn = TestConnection(scope)
         conn.start()
-        conn.runVerb(source)
+        conn.runVerb(source.trimIndent())
         conn.stop()
-        return conn.output
+
+        val expectedLines = expected.trimIndent().split("\n")
+        expectedLines.forEachIndexed { n, expectedLine ->
+            assertEquals(expectedLine, conn.output[n])
+        }
     }
 
 }
