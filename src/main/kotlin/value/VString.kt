@@ -10,6 +10,7 @@ import java.util.*
 @Serializable
 @SerialName("VString")
 data class VString(var v: String): Value() {
+    override fun equals(other: Any?) = other is VString && v == other.v
 
     @SerialName("yType")
     override val type = Type.STRING

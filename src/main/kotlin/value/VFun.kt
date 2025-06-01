@@ -16,6 +16,7 @@ data class VFun(
     val argNames: List<String>,
     val vars: Map<String, Value>,
 ): Value(), Executable {
+    override fun equals(other: Any?) = false
 
     @SerialName("yType")
     override val type = Type.FUN

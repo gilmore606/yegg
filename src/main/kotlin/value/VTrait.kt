@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("VTrait")
 data class VTrait(val v: Trait.ID?): Value() {
+    override fun equals(other: Any?) = other is VTrait && v == other.v
 
     @SerialName("yType")
     override val type = Type.TRAIT
