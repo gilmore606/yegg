@@ -12,6 +12,12 @@ plugins {
 group = "com.dlfsystems"
 version = "0.0.1"
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xmulti-dollar-interpolation")
+    }
+}
+
 application {
     mainClass = "com.dlfsystems.ApplicationKt"
 

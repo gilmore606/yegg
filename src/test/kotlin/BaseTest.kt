@@ -26,14 +26,37 @@ class BaseTest {
 
 
     @Test
-    fun `variables`() = runBlocking {
-        val source = """
-            foo = 1
-            foo = 2
-            notifyConn(foo)
+    fun `Run a bunch of fiddly code`() = runBlocking {
+        val source = $$"""
+            foo = 18
+            bar = 15.0
+            baz = ["beef", "pork", "cheese"]
+            if (baz == bar) fail "ACK!"
+            for (x in baz) {
+                notifyConn("$x is $foo $bar ${bar * foo}")
+                bar += 0.7
+                foo = foo / 2
+            }
+            fooMap = ["rat": 12, "fox": 3, "otter": 9]
+            notifyConn("${fooMap.keys}")
+            for (i=0;i<fooMap.keys.length;i++) {
+                notifyConn("run $i")
+                j = 0
+                poo = 1
+                animal = fooMap.keys[i]
+                while (j < fooMap[fooMap.keys[i]]) {
+                    poo++
+                    j++
+                }
+                notifyConn("$animal $poo")
+            }
+            notifyConn("All done.")
         """
         val output = runAsVerb(source)
-        assertContains(output, "2")
+        assertContains(output, "beef is 18 15.0 270.0")
+        assertContains(output, "pork is 9 15.7 141.3")
+        assertContains(output, "cheese is 4 16.4 65.6")
+        assertContains(output, "\"rat\", \"fox\", \"otter\"")
     }
 
     @Test
