@@ -27,18 +27,16 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         else -> null
     }
 
-    override fun getProp(name: String): Value? {
-        when (name) {
-            "size" -> return VInt(v.size)
-            "isEmpty" -> return if (v.isEmpty()) Yegg.vTrue else Yegg.vFalse
-            "isNotEmpty" -> return if (v.isEmpty()) Yegg.vFalse else Yegg.vTrue
-            "first" -> return if (v.isEmpty()) VVoid else v.first()
-            "last" -> return if (v.isEmpty()) VVoid else v.last()
-            "random" -> return if (v.isEmpty()) VVoid else v.random()
-            "reversed" -> return make(v.reversed())
-            "shuffled" -> return make(v.shuffled())
-        }
-        return null
+    override fun getProp(name: String) = when (name) {
+        "size" -> VInt(v.size)
+        "isEmpty" -> if (v.isEmpty()) Yegg.vTrue else Yegg.vFalse
+        "isNotEmpty" -> if (v.isEmpty()) Yegg.vFalse else Yegg.vTrue
+        "first" -> if (v.isEmpty()) VVoid else v.first()
+        "last" -> if (v.isEmpty()) VVoid else v.last()
+        "random" -> if (v.isEmpty()) VVoid else v.random()
+        "reversed" -> make(v.reversed())
+        "shuffled" -> make(v.shuffled())
+        else -> null
     }
 
     override fun getIndex(index: Value): Value? {
@@ -82,27 +80,25 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         return false
     }
 
-    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
-        when (name) {
-            "join" -> return verbJoin(args)
-            "push" -> return verbPush(args)
-            "pop" -> return verbPop(args)
-            "deque" -> return verbDeque(args)
-            "contains" -> return verbContains(args)
-            "indexOf" -> return verbIndexOf(args)
-            "lastIndexOf" -> return verbLastIndexOf(args)
-            "add" -> return verbAdd(args)
-            "addAll" -> return verbAddAll(args)
-            "setAdd" -> return verbSetAdd(args)
-            "setAddAll" -> return verbSetAddAll(args)
-            "remove" -> return verbRemove(args)
-            "removeAt" -> return verbRemoveAt(args)
-            "removeAll" -> return verbRemoveAll(args)
-            "clear" -> return verbClear(args)
-            "reverse" -> return verbReverse(args)
-            "shuffle" -> return verbShuffle(args)
-        }
-        return null
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>) = when (name) {
+        "join" -> verbJoin(args)
+        "push" -> verbPush(args)
+        "pop" -> verbPop(args)
+        "deque" -> verbDeque(args)
+        "contains" -> verbContains(args)
+        "indexOf" -> verbIndexOf(args)
+        "lastIndexOf" -> verbLastIndexOf(args)
+        "add" -> verbAdd(args)
+        "addAll" -> verbAddAll(args)
+        "setAdd" -> verbSetAdd(args)
+        "setAddAll" -> verbSetAddAll(args)
+        "remove" -> verbRemove(args)
+        "removeAt" -> verbRemoveAt(args)
+        "removeAll" -> verbRemoveAll(args)
+        "clear" -> verbClear(args)
+        "reverse" -> verbReverse(args)
+        "shuffle" -> verbShuffle(args)
+        else -> null
     }
 
     private fun verbJoin(args: List<Value>): VString {

@@ -51,24 +51,20 @@ data class VInt(val v: Int): Value() {
         else -> null
     }
 
-    override fun getProp(name: String): Value? {
-        when (name) {
-            "asFloat" -> return VFloat(v.toFloat())
-            "asString" -> return VString(asString())
-            "isEven" -> return VBool(v % 2 == 0)
-            "isOdd" -> return VBool(v % 2 != 0)
-            "sqrt" -> return VFloat(sqrt(v.toFloat()))
-            "abs" -> return VInt(abs(v))
-        }
-        return null
+    override fun getProp(name: String) = when (name) {
+        "asFloat" -> VFloat(v.toFloat())
+        "asString" -> VString(asString())
+        "isEven" -> VBool(v % 2 == 0)
+        "isOdd" -> VBool(v % 2 != 0)
+        "sqrt" -> VFloat(sqrt(v.toFloat()))
+        "abs" -> VInt(abs(v))
+        else -> null
     }
 
-    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
-        when (name) {
-            "atMost" -> return verbAtMost(args)
-            "atLeast" -> return verbAtLeast(args)
-        }
-        return null
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>) = when (name) {
+        "atMost" -> verbAtMost(args)
+        "atLeast" -> verbAtLeast(args)
+        else -> null
     }
 
     private fun verbAtMost(args: List<Value>): VInt {

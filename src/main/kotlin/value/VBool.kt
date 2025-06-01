@@ -24,12 +24,10 @@ data class VBool(val v: Boolean): Value() {
 
     override fun plus(a2: Value) = if (a2 is VString) VString(v.toString() + a2.v) else null
 
-    override fun getProp(name: String): Value? {
-        when (name) {
-            "asInt" -> return propAsInt()
-            "asString" -> return propAsString()
-        }
-        return null
+    override fun getProp(name: String) = when (name) {
+        "asInt" -> propAsInt()
+        "asString" -> propAsString()
+        else -> null
     }
 
     private fun propAsInt() = VInt(if (v) 1 else 0)

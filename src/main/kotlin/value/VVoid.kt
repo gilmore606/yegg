@@ -15,18 +15,9 @@ data object VVoid: Value() {
 
     override fun cmpEq(a2: Value): Boolean = a2 is VVoid
 
-    override fun getProp(name: String): Value? {
-        when (name) {
-            "asString" -> return propAsString()
-        }
-        return null
+    override fun getProp(name: String) = when (name) {
+        "asString" -> VString(asString())
+        else -> null
     }
-
-
-    // Custom props
-
-    private fun propAsString() = VString(asString())
-
-    // Custom verbs
 
 }

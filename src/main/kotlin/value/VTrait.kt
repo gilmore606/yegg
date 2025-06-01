@@ -27,16 +27,13 @@ data class VTrait(val v: Trait.ID?): Value() {
 
     override fun cmpEq(a2: Value) = (a2 is VTrait) && (v == a2.v)
 
-    override fun getProp(name: String): Value? {
-        when (name) {
-            "asString" -> return propAsString()
-        }
-        return trait()?.getProp(name)
+    override fun getProp(name: String) = when (name) {
+        "asString" -> propAsString()
+        else -> trait()?.getProp(name)
     }
 
-    override fun setProp(name: String, value: Value): Boolean {
-        return trait()?.setProp(name, value) ?: false
-    }
+    override fun setProp(name: String, value: Value) =
+        trait()?.setProp(name, value) ?: false
 
     private fun propAsString() = v?.let { v ->
         VString("$" + Yegg.world.traits[v]?.name)

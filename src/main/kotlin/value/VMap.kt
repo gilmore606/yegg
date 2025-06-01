@@ -23,13 +23,11 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
         else -> null
     }
 
-    override fun getProp(name: String): Value? {
-        when (name) {
-            "size" -> return VInt(v.size)
-            "keys" -> return VList(v.keys.toMutableList())
-            "values" -> return VList(v.values.toMutableList())
-        }
-        return null
+    override fun getProp(name: String) = when (name) {
+        "size" -> VInt(v.size)
+        "keys" -> VList.make(v.keys.toList())
+        "values" -> VList.make(v.values.toList())
+        else -> null
     }
 
     override fun getIndex(i: Value): Value? {
@@ -44,14 +42,12 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
         return true
     }
 
-    override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
-        when (name) {
-            "hasKey" -> return verbHasKey(args)
-            "hasValue" -> return verbHasValue(args)
-            "putAll" -> return verbPutAll(args)
-            "remove" -> return verbRemove(args)
-        }
-        return null
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>) = when (name) {
+        "hasKey" -> verbHasKey(args)
+        "hasValue" -> verbHasValue(args)
+        "putAll" -> verbPutAll(args)
+        "remove" -> verbRemove(args)
+        else -> null
     }
 
     private fun verbHasKey(args: List<Value>): VBool {

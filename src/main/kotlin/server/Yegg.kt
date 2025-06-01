@@ -57,7 +57,6 @@ object Yegg {
         withContext(coroutineScope.coroutineContext, block)
 
 
-    // Start the server.
     fun start() {
         println("Loading from ${System.getProperty("user.dir")}")
         launch {
@@ -70,7 +69,6 @@ object Yegg {
         }
     }
 
-    // Shut down the server.
     fun shutdownServer() {
         Log.i("Server shutting down.")
         Telnet.stop()
@@ -85,7 +83,6 @@ object Yegg {
         if (file.exists()) {
             Log.i("Loading database from ${file.path}...")
             try {
-                // Deserialize the world
                 world = JSON.decodeFromString<World>(file.readText())
                 Log.i("Loaded ${world.name}.")
             } catch (e: Exception) {
