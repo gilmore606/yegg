@@ -27,7 +27,7 @@ class LanguageTest {
 
     @Test
     fun `Run a bunch of fiddly code`() = runBlocking {
-        val source = $$"""
+        runForOutput($$"""
             foo = 18
             bar = 15.0
             baz = ["beef", "pork", "cheese"]
@@ -39,8 +39,7 @@ class LanguageTest {
             }
             fooMap = ["rat": 12, "fox": 3, "otter": 9]
             notifyConn("${fooMap.keys}")
-            for (i=0;i<fooMap.keys.length;i++) {
-                notifyConn("run $i")
+            for (i=0;i<fooMap.keys.size;i++) {
                 j = 0
                 poo = 1
                 animal = fooMap.keys[i]
@@ -51,13 +50,24 @@ class LanguageTest {
                 notifyConn("$animal $poo")
             }
             notifyConn("All done.")
-        """
-
-        runForOutput(source, """
+        """, """
             beef is 18 15.0 270.0
             pork is 9 15.7 141.3
             cheese is 4 16.4 65.6
             "rat", "fox", "otter"
+            rat 13
+            fox 4
+            otter 10
+            All done.
+        """)
+    }
+
+    @Test
+    fun `Math operator precedence`() = runBlocking {
+        runForOutput($$"""
+            notifyConn(14 * 10 + (71 - 3 ^ 3))
+        """, """
+            184
         """)
     }
 
@@ -66,12 +76,13 @@ class LanguageTest {
         val conn = TestConnection(scope)
         conn.start()
         conn.runVerb(source.trimIndent())
-        conn.stop()
 
         val expectedLines = expected.trimIndent().split("\n")
         expectedLines.forEachIndexed { n, expectedLine ->
             assertEquals(expectedLine, conn.output[n])
         }
+
+        conn.stop()
     }
 
 }

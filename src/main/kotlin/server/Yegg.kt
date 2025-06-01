@@ -139,7 +139,6 @@ object Yegg {
     }
 
     fun notifyConn(connID: String, text: String) {
-        Log.d("NOTIFY for $connID: $text")
         connections.firstOrNull { it.id.id == connID }?.sendText(text)
     }
 
