@@ -18,60 +18,83 @@ import kotlinx.serialization.Serializable
 @SerialName("Obj")
 class Obj {
 
-    @Serializable
+    @Serializable @JvmInline
     @SerialName("ObjID")
-    data class ID(val id: String) { override fun toString() = id }
+    value class ID(val id: String) {
+        override fun toString() = id
+        inline fun obj() = Yegg.world.objs[this]
+    }
 
     val id = ID(NanoID.newID())
     val vThis = VObj(id)
 
     val traits: MutableList<Trait.ID> = mutableListOf()
 
-    val props: MutableMap<String, Value> = mutableMapOf()
+    // One entry per property, from all traits.  If value is null, default comes from traitID.
+    val props: MutableMap<String, Propval> = mutableMapOf()
 
     var location: VObj = Yegg.vNullObj
     val locationObj: Obj?
-        get() = location.v?.let { Yegg.world.getObj(it) }
+        get() = location.v?.obj()
     var contents: VList = VList()
     val contentsObjs: List<Obj>
-        get() = contents.v.mapNotNull { (it as VObj).v?.let { Yegg.world.getObj(it) }}
+        get() = contents.v.mapNotNull { (it as VObj).obj() }
 
-    fun acquireTrait(trait: Trait) {
-        traits.add(trait.id)
-    }
+    // Traits
 
-    fun dispelTrait(trait: Trait) {
-        trait.props.keys.forEach { props.remove(it) }
-        traits.remove(trait.id)
-    }
-
-    fun getProp(name: String): Value? {
-        props[name]?.also { return it }
-
+    // Add trait to this object.
+    fun addTrait(trait: Trait) {
         traits.forEach {
-            Yegg.world.getTrait(it)?.getProp(this, name)?.also { return it }
+            if (it.trait()!!.inheritsTrait(trait.id)) throw IllegalArgumentException("obj already has trait")
         }
-        return null
+        traits.add(trait.id)
+        trait.applyTo(this)
     }
 
-    fun setProp(name: String, value: Value): Boolean {
-        if (hasProp(name)) {
-            props[name] = value
-            return true
+    // Remove trait from this object.
+    fun removeTrait(trait: Trait) {
+        if (!traits.contains(trait.id)) throw IllegalArgumentException("obj doesn't have trait")
+        traits.remove(trait.id)
+        trait.unapplyFrom(this)
+    }
+
+    fun inheritsTrait(traitID: Trait.ID): Boolean {
+        if (traitID in traits) return true
+        for (t in traits) {
+            if (t.trait()!!.inheritsTrait(traitID)) return true
         }
         return false
     }
 
-    fun hasProp(name: String): Boolean {
-        if (name in props.keys) return true
-        traits.forEach { traitID ->
-            if (name in (Yegg.world.getTrait(traitID)?.props?.keys ?: listOf())) return true
-        }
-        return false
+    // Props
+
+    fun hasProp(propName: String) = props.containsKey(propName)
+
+    fun addProp(propName: String, traitID: Trait.ID) {
+        props[propName] = Propval(traitID)
     }
+
+    fun removeProp(propName: String) {
+        props.remove(propName)
+    }
+
+    fun getProp(propName: String) = when (propName) {
+        "location" -> location
+        "contents" -> contents
+        "traits" -> VList.make(traits.map { it.trait()!!.vTrait })
+        else -> props[propName]?.get(propName)
+    }
+
+    fun setProp(propName: String, value: Value): Boolean =
+        props[propName]?.let { it.v = value ; true } ?: false
+
+    fun clearProp(propName: String): Boolean =
+        props[propName]?.let { it.v = null ; true } ?: false
+
+    // Commands
 
     fun matchCommand(cmdstr: String, argstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
-        traits.mapNotNull { Yegg.world.getTrait(it) }.forEach { trait ->
+        traits.mapNotNull { it.trait() }.forEach { trait ->
             trait.matchCommand(this, cmdstr, argstr, dobjstr, dobj, prep, iobjstr, iobj)?.also { return it }
         }
         return null

@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("VBool")
 data class VBool(val v: Boolean): Value() {
+    override fun equals(other: Any?) = other is VBool && v == other.v
+    override fun hashCode() = javaClass.hashCode()
 
     @SerialName("yType")
     override val type = Type.BOOL

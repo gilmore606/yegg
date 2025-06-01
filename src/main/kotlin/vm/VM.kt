@@ -61,10 +61,10 @@ class VM(
     }
 
 
-    sealed class Result {
-        data class Return(val v: Value) : Result()
-        data class Call(val exe: Executable, val args: List<Value>, val vThis: VObj = Yegg.vNullObj): Result()
-        data class Suspend(val seconds: Int): Result()
+    sealed interface Result {
+        @JvmInline value class Return(val v: Value) : Result
+        data class Call(val exe: Executable, val args: List<Value>, val vThis: VObj = Yegg.vNullObj): Result
+        @JvmInline value class Suspend(val seconds: Int): Result
     }
 
     // If passed a vReturn, push it to the stack.

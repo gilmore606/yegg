@@ -79,6 +79,8 @@ class Parser(inputTokens: List<Token>) {
     // Parse any statement type we find next.
     private fun pStatement(): N_STATEMENT? {
         pBlock()?.also { return it }
+        pBreak()?.also { return it }
+        pContinue()?.also { return it }
         pIfElse()?.also { return it }
         pForLoop()?.also { return it }
         pWhile()?.also { return it }
@@ -106,6 +108,16 @@ class Parser(inputTokens: List<Token>) {
             1 -> node(statements[0])
             else -> node(N_BLOCK(statements))
         }
+    }
+
+    private fun pBreak(): N_STATEMENT? {
+        consume(T_BREAK) ?: return null
+        return node(N_BREAK())
+    }
+
+    private fun pContinue(): N_STATEMENT? {
+        consume(T_CONTINUE) ?: return null
+        return node(N_CONTINUE())
     }
 
     // Parse: if <expr> <statement> [else <statement>]

@@ -6,7 +6,8 @@ import com.dlfsystems.util.NanoID
 
 // A node in the syntax tree.
 
-data class NodeID(val id: String) { override fun toString() = id }
+@JvmInline
+value class NodeID(val id: String) { override fun toString() = id }
 
 abstract class Node {
     val id: NodeID = NodeID(makeID())

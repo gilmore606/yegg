@@ -11,7 +11,8 @@ import com.dlfsystems.world.trait.Verb
 
 class Connection(private val sendText: (String) -> Unit) {
 
-    data class ID(val id: String) { override fun toString() = id }
+    @JvmInline
+    value class ID(val id: String) { override fun toString() = id }
     val id = ID(NanoID.newID())
 
     var buffer = mutableListOf<String>()
@@ -105,7 +106,7 @@ class Connection(private val sendText: (String) -> Unit) {
     }
 
     private fun runCommand(match: CommandMatch) {
-        Yegg.world.getTrait(match.trait.id)?.getVerb(match.verb)?.also { verb ->
+        Yegg.world.traits[match.trait.id]?.getVerb(match.verb)?.also { verb ->
             MCP.schedule(Task.make(
                 exe = verb,
                 args = match.args,

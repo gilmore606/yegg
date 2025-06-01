@@ -10,6 +10,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("VTask")
 data class VTask(val v: Task.ID): Value() {
+    override fun equals(other: Any?) = other is VTask && v == other.v
+    override fun hashCode() = javaClass.hashCode()
 
     @SerialName("yType")
     override val type = Type.TASK

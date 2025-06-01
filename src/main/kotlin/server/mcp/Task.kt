@@ -13,8 +13,8 @@ import kotlinx.serialization.Serializable
 
 class Task(val c: Context) {
 
-    @Serializable
-    data class ID(val id: String) { override fun toString() = id }
+    @Serializable @JvmInline
+    value class ID(val id: String) { override fun toString() = id }
     val id = ID(NanoID.newID())
     val vID = VTask(id)
 
@@ -32,9 +32,9 @@ class Task(val c: Context) {
     }
 
 
-    sealed class Result {
-        data object Finished: Result()
-        data class Suspend(val seconds: Int): Result()
+    sealed interface Result {
+        data object Finished: Result
+        @JvmInline value class Suspend(val seconds: Int): Result
     }
 
     // Execute the top stack frame.

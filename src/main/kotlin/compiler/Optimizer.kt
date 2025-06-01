@@ -30,7 +30,7 @@ class Optimizer(private val coder: Coder) {
         while (pc < mem.size) {
             // If we've reached a jump dest, record its new address
             if (jumpMap.containsKey(pc)) jumpMap[pc] = outMem.size
-            // If we've reached an entry point, record its new address
+            // If we've reached a block boundary, record its new address
             coder.blocks.forEachIndexed { n, it ->
                 if (it.start == pc) blockStarts[n] = outMem.size
                 if (it.end == pc) blockEnds[n] = outMem.size
@@ -115,9 +115,15 @@ class Optimizer(private val coder: Coder) {
         }
 
         // Replace all jump dests
+        val alreadyFilled = mutableSetOf<Int>()
         jumpMap.keys.forEach { old ->
-            outMem.forEach { word ->
-                if (word.address == old) word.address = jumpMap[old]
+            outMem.forEachIndexed { pc, word ->
+                if (!alreadyFilled.contains(pc)) {
+                    if (word.address == old) {
+                        word.address = jumpMap[old]
+                        alreadyFilled.add(pc)
+                    }
+                }
             }
         }
         // Replace all block addresses
@@ -136,8 +142,9 @@ class Optimizer(private val coder: Coder) {
         val nulls = mutableListOf<VMWord>()
         opcodes.forEachIndexed { i, t ->
             if (t == null) nulls.add(mem[pc + i])
-            else if ((pc + i) in jumpMap.keys) hit = false  // Miss if we overlap a jump dest
             else if (mem[pc + i].opcode != t) hit = false
+            // Miss if we're going to wipe out a jump dest
+            else if (i > 0 && ((pc + i) in jumpMap.keys)) hit = false
         }
         if (hit && (check?.invoke(nulls) != false)) {
             pc += opcodes.size
