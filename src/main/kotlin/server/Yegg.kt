@@ -95,14 +95,18 @@ object Yegg {
         } else {
             Log.i("No database $worldName found, initializing new world.")
             world = World(worldName).apply {
-                addTrait("sys").apply {
-                    props["tickLimit"] = VInt(100000)
-                    props["stackLimit"] = VInt(100)
-                    props["callLimit"] = VInt(50)
+                createTrait("sys")!!.apply {
+                    addProp("tickLimit", VInt(100000))
+                    addProp("stackLimit", VInt(100))
+                    addProp("callLimit", VInt(50))
                 }
-                addTrait("user").apply {
-                    props["username"] = VString("")
-                    props["password"] = VString("")
+                createTrait("user")!!.apply {
+                    addProp("username", VString(""))
+                    addProp("password", VString(""))
+                }
+                createTrait("root")!!.apply {
+                    addProp("name", VString("thing"))
+                    addProp("aliases", VList.make(listOf(VString("thing"))))
                 }
             }
         }

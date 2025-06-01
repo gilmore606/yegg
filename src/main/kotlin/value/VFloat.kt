@@ -8,6 +8,8 @@ import kotlin.math.*
 @Serializable
 @SerialName("VFloat")
 data class VFloat(val v: Float): Value() {
+    override fun equals(other: Any?) = other is VFloat && v == other.v
+    override fun hashCode() = javaClass.hashCode()
 
     @SerialName("yType")
     override val type = Type.FLOAT

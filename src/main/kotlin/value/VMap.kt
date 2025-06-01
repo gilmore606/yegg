@@ -8,6 +8,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("VMap")
 data class VMap(val v: MutableMap<Value, Value>): Value() {
+    override fun equals(other: Any?) = other is VMap && v == other.v
+    override fun hashCode() = javaClass.hashCode()
 
     @SerialName("yType")
     override val type = Type.MAP
