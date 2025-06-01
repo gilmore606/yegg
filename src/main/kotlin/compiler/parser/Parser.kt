@@ -441,7 +441,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse: <expr> +|- <expr>
     private fun pAdd(): N_EXPR? {
-        val next = this::pPower
+        val next = this::pMultiply
         var left = next() ?: return null
         while (nextIs(T_PLUS, T_MINUS)) {
             val operator = consume()
@@ -454,21 +454,9 @@ class Parser(inputTokens: List<Token>) {
         return left
     }
 
-    // Parse: <expr> ^ <expr>
-    private fun pPower(): N_EXPR? {
-        val next = this::pMultiply
-        var left = next() ?: return null
-        consume(T_POWER)?.also {
-            next()?.also { right ->
-                left = node(N_POWER(left, right))
-            }
-        }
-        return left
-    }
-
     // Parse: <expr> *|/|^ <expr>
     private fun pMultiply(): N_EXPR? {
-        val next = this::pInverse
+        val next = this::pPower
         var left = next() ?: return null
         while (nextIs(T_MULTIPLY, T_DIVIDE, T_MODULUS)) {
             val operator = consume()
@@ -478,6 +466,18 @@ class Parser(inputTokens: List<Token>) {
                     T_DIVIDE -> N_DIVIDE(left, right)
                     else -> N_MODULUS(left, right)
                 })
+            }
+        }
+        return left
+    }
+
+    // Parse: <expr> ^ <expr>
+    private fun pPower(): N_EXPR? {
+        val next = this::pInverse
+        var left = next() ?: return null
+        consume(T_POWER)?.also {
+            next()?.also { right ->
+                left = node(N_POWER(left, right))
             }
         }
         return left
