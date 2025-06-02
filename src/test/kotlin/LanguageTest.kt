@@ -6,6 +6,32 @@ import kotlin.test.Test
 class LanguageTest: YeggTest() {
 
     @Test
+    fun `Math operator precedence`() = runBlocking {
+        runForOutput($$"""
+            notifyConn(14 * 10 + 71 / 3 ^ 3)
+            notifyConn(500 - 100 / 2 * 5)
+        """, """
+            142
+            250
+        """)
+    }
+
+    @Test
+    fun `Variables`() = runBlocking {
+        runForOutput($$"""
+            foo = 27
+            foo = 34
+            notifyConn("foo is $foo")
+            bar = foo
+            foo = 13
+            notifyConn("bar is $bar")
+        """, """
+            foo is 34
+            bar is 34
+        """)
+    }
+
+    @Test
     fun `Run a bunch of fiddly code`() = runBlocking {
         runForOutput($$"""
             foo = 18
@@ -39,15 +65,6 @@ class LanguageTest: YeggTest() {
             fox 4
             otter 10
             All done.
-        """)
-    }
-
-    @Test
-    fun `Math operator precedence`() = runBlocking {
-        runForOutput($$"""
-            notifyConn(14 * 10 + (71 - 3 ^ 3))
-        """, """
-            184
         """)
     }
 
