@@ -47,4 +47,21 @@ class TaskTest: YeggTest() {
         """)
     }
 
+    @Test
+    fun `Cancel and resume`() = runBlocking {
+        runForOutput($$"""
+            task1 = fork 10 { notifyConn("MERDE") }
+            task2 = fork 15 { notifyConn("SCHEIB") }
+            task1.cancel()
+            notifyConn("start")
+            task2.resume()
+            suspend(0)
+            notifyConn("end")
+        """, """
+            start
+            SCHEIB
+            end
+        """)
+    }
+
 }

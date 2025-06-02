@@ -128,4 +128,27 @@ class LangTest: YeggTest() {
         """)
     }
 
+    @Test
+    fun `When`() = runBlocking {
+        runForOutput($$"""
+            foo = ""
+            for (i in 1..4) {
+                foo += when (i) {
+                    1 -> "one"
+                    2 -> "two"
+                    3 -> "three"
+                    else -> "???"
+                }
+                when {
+                    foo.contains("two") -> notifyConn("$foo has two")
+                }
+            }
+            notifyConn(foo)
+        """, """
+            onetwo has two
+            onetwothree has two
+            onetwothree???
+        """)
+    }
+
 }
