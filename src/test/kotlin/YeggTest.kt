@@ -8,7 +8,7 @@ import org.junit.AfterClass
 import org.junit.BeforeClass
 import kotlin.test.assertEquals
 
-open class YeggTest {
+abstract class YeggTest {
 
     companion object {
         val scope = CoroutineScope(Dispatchers.IO)
