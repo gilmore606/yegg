@@ -27,7 +27,10 @@ class TestConnection(scope: CoroutineScope) {
                 connection = conn,
             ))
         }
-        delay(100L)
+        // Wait for MCP to finish running all code.
+        while(MCP.taskList().isNotEmpty()) {
+            delay(10L)
+        }
     }
 
 }
