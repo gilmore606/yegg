@@ -32,6 +32,21 @@ class LangTest: YeggTest() {
     }
 
     @Test
+    fun `Strings`() = runBlocking {
+        runForOutput($$"""
+            foo = "eggs"
+            bag = [foo + "tom", foo + "dick", "$foo harry"]
+            bar = bag.join(",")
+            notifyConn("$bar = ${bar.length}")
+            newdick = bar.split(",")[1].replace("eggs", "cheese")
+            notifyConn(newdick)
+        """, """
+            eggstom,eggsdick,eggs harry = 27
+            cheesedick
+        """)
+    }
+
+    @Test
     fun `Lists`() = runBlocking {
         runForOutput($$"""
             foo = ["beef", "pork", "cheese"]
@@ -77,17 +92,34 @@ class LangTest: YeggTest() {
     }
 
     @Test
-    fun `For and while loops`() = runBlocking {
+    fun `If-else`() = runBlocking {
+        runForOutput($$"""
+            for (i in 1..3) {
+                if (i == 1) notifyConn("one")
+                else if (i == 3) { 
+                    notifyConn("three") 
+                } else notifyConn("two")
+            }
+        """, """
+            one
+            two
+            three
+        """)
+    }
+
+    @Test
+    fun `For-while loops`() = runBlocking {
         runForOutput($$"""
             foo = ["beef", "pork", "cheese"]
             for (x in foo) {
                 bar = 0
                 baz = 100
-                for (i=0; i < 10; i++) {
+                for (i=0; i < 99; i++) {
+                    if (i >= 10) break
                     bar += 2
                     while (baz > 20) baz--
                 }
-                if (foo == "pork") continue
+                if (x == "pork") continue
                 notifyConn("$bar $x $baz")
             }
         """, """

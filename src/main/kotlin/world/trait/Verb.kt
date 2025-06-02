@@ -20,7 +20,7 @@ class Verb(val name: String): Executable {
     fun program(source: String) {
         this.source = source
         recompile()
-        Log.d("programmed $name with code ${code.dumpText()}")
+        // Log.d("programmed $name with code ${code.dumpText()}")
     }
 
     override fun jitCompile() { if (code.isEmpty()) recompile() }
