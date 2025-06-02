@@ -50,7 +50,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
     override fun getRange(from: Value, to: Value): Value? {
         if (from is VInt && to is VInt) {
             if (from.v < 0 || to.v >= v.size) fail(E_RANGE, "list range ${from.v}..${to.v} out of bounds")
-            return VList(v.subList(from.v, to.v))
+            return VList(v.subList(from.v, to.v + 1))
         }
         return null
     }
