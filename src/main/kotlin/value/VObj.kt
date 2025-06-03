@@ -6,6 +6,7 @@ import com.dlfsystems.server.Yegg
 import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 import com.dlfsystems.vm.VMException.Type.E_PROPNF
+import com.dlfsystems.vm.VMException.Type.E_INVOBJ
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -69,7 +70,7 @@ data class VObj(val v: Obj.ID?): Value() {
         obj()?.also { obj ->
             if (!obj.hasProp(args[0].asString())) fail(E_PROPNF, "prop not found")
             obj.clearProp(args[0].asString())
-        } ?: fail(E_PROPNF, "cannot clear prop on invalid obj")
+        } ?: fail(E_INVOBJ, "cannot clear prop on invalid obj")
         return VVoid
     }
 

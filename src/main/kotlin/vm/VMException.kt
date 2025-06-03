@@ -30,6 +30,9 @@ class VMException(val type: Type, val m: String): Exception() {
         // Verb not found
         E_VERBNF,
 
+        // Invalid object
+        E_INVOBJ,
+
         // List or map accessed out of range
         E_RANGE,
 
