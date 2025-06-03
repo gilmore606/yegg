@@ -27,4 +27,22 @@ class PropTest: YeggTest() {
         """)
     }
 
+    @Test
+    fun `Props on obj`() = runBlocking {
+        runForOutput($$"""
+            createTrait("thing")
+            o = create($thing)
+            addProp($thing, "weight", 4)
+            notifyConn("it weighs ${o.weight}")
+            o.weight = 12
+            notifyConn("it weighs ${o.weight}")
+            o.clearProp("weight")
+            notifyConn("it weighs ${o.weight}")
+        """, """
+            it weighs 4
+            it weighs 12
+            it weighs 4
+        """)
+    }
+
 }
