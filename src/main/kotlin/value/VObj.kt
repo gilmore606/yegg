@@ -3,7 +3,10 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.server.Yegg
+import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
+import com.dlfsystems.vm.VMException.Type.E_PROPNF
+import com.dlfsystems.vm.VMException.Type.E_INVOBJ
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -50,5 +53,25 @@ data class VObj(val v: Obj.ID?): Value() {
     private fun propAsString() = VString(toString())
 
     private fun propTraits(obj: Obj) = VList.make(obj.traits.mapNotNull { it.trait()?.vTrait })
+
+    override fun callStaticVerb(c: Context, name: String, args: List<Value>) = when (name) {
+        "hasProp" -> verbHasProp(args)
+        "clearProp" -> verbClearProp(args)
+        else -> null
+    }
+
+    private fun verbHasProp(args: List<Value>): VBool {
+        requireArgCount(args, 1, 1)
+        return VBool(obj()?.hasProp(args[0].asString()) ?: false)
+    }
+
+    private fun verbClearProp(args: List<Value>): VVoid {
+        requireArgCount(args, 1, 1)
+        obj()?.also { obj ->
+            if (!obj.hasProp(args[0].asString())) fail(E_PROPNF, "prop not found")
+            obj.clearProp(args[0].asString())
+        } ?: fail(E_INVOBJ, "cannot clear prop on invalid obj")
+        return VVoid
+    }
 
 }

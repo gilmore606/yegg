@@ -28,6 +28,8 @@ object Yegg {
     private const val DISCONNECT_MSG = "** Disconnected **"
     const val HUH_MSG = "I don't understand that."
 
+    private var inTestMode = false
+
     private val JSON = Json { allowStructuredMapKeys = true }
 
     val vTrue = VBool(true)
@@ -57,24 +59,24 @@ object Yegg {
         withContext(coroutineScope.coroutineContext, block)
 
 
-    fun start() {
-        println("Loading from ${System.getProperty("user.dir")}")
+    fun start(testMode: Boolean = false) {
+        inTestMode = testMode
         launch {
             conf = JSON.decodeFromString(File(CONFIG_PATH).readText(Charsets.UTF_8))
-            Log.start(conf.worldName)
-            loadWorld()
+            if (!inTestMode) Log.start(conf.worldName)
+            if (!inTestMode) loadWorld() else createNewWorld("test")
             MCP.start()
-            Telnet.start()
+            if (!inTestMode) Telnet.start()
             Log.i("Server started.")
         }
     }
 
-    fun shutdownServer() {
+    fun stop() {
         Log.i("Server shutting down.")
-        Telnet.stop()
+        if (!inTestMode) Telnet.stop()
         MCP.stop()
-        Log.stop()
-        exitProcess(0)
+        if (!inTestMode) Log.stop()
+        if (!inTestMode) exitProcess(0)
     }
 
     private fun loadWorld() {
@@ -91,20 +93,24 @@ object Yegg {
             }
         } else {
             Log.i("No database $worldName found, initializing new world.")
-            world = World(worldName).apply {
-                createTrait("sys")!!.apply {
-                    addProp("tickLimit", VInt(100000))
-                    addProp("stackLimit", VInt(100))
-                    addProp("callLimit", VInt(50))
-                }
-                createTrait("user")!!.apply {
-                    addProp("username", VString(""))
-                    addProp("password", VString(""))
-                }
-                createTrait("root")!!.apply {
-                    addProp("name", VString("thing"))
-                    addProp("aliases", VList.make(listOf(VString("thing"))))
-                }
+            createNewWorld(worldName)
+        }
+    }
+
+    private fun createNewWorld(worldName: String) {
+        world = World(worldName).apply {
+            createTrait("sys")!!.apply {
+                addProp("tickLimit", VInt(100000))
+                addProp("stackLimit", VInt(100))
+                addProp("callLimit", VInt(50))
+            }
+            createTrait("user")!!.apply {
+                addProp("username", VString(""))
+                addProp("password", VString(""))
+            }
+            createTrait("root")!!.apply {
+                addProp("name", VString("thing"))
+                addProp("aliases", VList.make(listOf(VString("thing"))))
             }
         }
     }

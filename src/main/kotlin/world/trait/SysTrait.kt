@@ -290,7 +290,7 @@ class SysTrait : Trait("sys") {
     // $sys.shutdownServer()
     private fun verbShutdownServer(args: List<Value>): VVoid {
         Log.i("Shutdown requested: $args")
-        Yegg.shutdownServer()
+        Yegg.stop()
         return VVoid
     }
 
