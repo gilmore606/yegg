@@ -1,12 +1,11 @@
 package com.dlfsystems
 
-import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 
 class LangTest: YeggTest() {
 
     @Test
-    fun `Math`() = runBlocking {
+    fun `Math`() = yeggTest {
         runForOutput($$"""
             notifyConn(14 * 10 + 71 / 3 ^ 3)
             notifyConn(500 - 100 / 2 * 5)
@@ -17,7 +16,7 @@ class LangTest: YeggTest() {
     }
 
     @Test
-    fun `Variables`() = runBlocking {
+    fun `Variables`() = yeggTest {
         runForOutput($$"""
             foo = 27
             foo = 34
@@ -32,7 +31,7 @@ class LangTest: YeggTest() {
     }
 
     @Test
-    fun `Strings`() = runBlocking {
+    fun `Strings`() = yeggTest {
         runForOutput($$"""
             foo = "eggs"
             bag = [foo + "tom", foo + "dick", "$foo harry"]
@@ -47,7 +46,7 @@ class LangTest: YeggTest() {
     }
 
     @Test
-    fun `Lists`() = runBlocking {
+    fun `Lists`() = yeggTest {
         runForOutput($$"""
             foo = ["beef", "pork", "cheese"]
             notifyConn(foo[1..2])
@@ -69,7 +68,7 @@ class LangTest: YeggTest() {
     }
 
     @Test
-    fun `Maps`() = runBlocking {
+    fun `Maps`() = yeggTest {
         runForOutput($$"""
             fooMap = ["rat": 12, "fox": 3, "otter": 9]
             notifyConn("${fooMap.keys}")
@@ -92,7 +91,7 @@ class LangTest: YeggTest() {
     }
 
     @Test
-    fun `If-else`() = runBlocking {
+    fun `If-else`() = yeggTest {
         runForOutput($$"""
             for (i in 1..3) {
                 if (i == 1) notifyConn("one")
@@ -108,7 +107,7 @@ class LangTest: YeggTest() {
     }
 
     @Test
-    fun `For-while loops`() = runBlocking {
+    fun `For-while loops`() = yeggTest {
         runForOutput($$"""
             foo = ["beef", "pork", "cheese"]
             for (x in foo) {
@@ -129,7 +128,7 @@ class LangTest: YeggTest() {
     }
 
     @Test
-    fun `When`() = runBlocking {
+    fun `When`() = yeggTest {
         runForOutput($$"""
             foo = ""
             for (i in 1..4) {
@@ -147,6 +146,7 @@ class LangTest: YeggTest() {
         """, """
             onetwo has two
             onetwothree has two
+            onetwothree??? has two
             onetwothree???
         """)
     }
