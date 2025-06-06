@@ -67,6 +67,6 @@ sealed class Value {
     open fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? = null
 
     // Get a verb on this type.  Return null if no such verb.
-    open fun getVerb(c: Context, name: String): Verb? = null
+    open fun getVerb(name: String): Verb? = null
 
 }
