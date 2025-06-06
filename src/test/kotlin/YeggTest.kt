@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 abstract class YeggTest {
 
     companion object {
-        val scope = CoroutineScope(Dispatchers.Default)
+        val scope = CoroutineScope(Dispatchers.Default.limitedParallelism(1))
 
         @BeforeClass @JvmStatic fun setup() {
             Yegg.start(testMode = true)
