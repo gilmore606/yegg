@@ -8,6 +8,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 
 abstract class YeggTest {
@@ -22,6 +23,10 @@ abstract class YeggTest {
         @AfterClass @JvmStatic fun teardown() {
             Yegg.stop()
         }
+    }
+
+    @BeforeTest fun start() {
+        Yegg.resetForTest()
     }
 
     protected fun yeggTest(testBlock: suspend () -> Unit) {

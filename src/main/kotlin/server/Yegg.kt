@@ -71,6 +71,11 @@ object Yegg {
         }
     }
 
+    fun resetForTest() {
+        if (!inTestMode) Log.e("resetForTest() called when not in test mode!")
+        else createNewWorld("test")
+    }
+
     fun stop() {
         Log.i("Server shutting down.")
         if (!inTestMode) Telnet.stop()
