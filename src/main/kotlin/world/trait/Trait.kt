@@ -238,7 +238,13 @@ sealed class Trait(val name: String) {
 
     // Verbs
 
-    fun getVerb(name: String): Verb? = verbs[name]
+    fun getVerb(name: String): Verb? {
+        if (verbs.containsKey(name)) return verbs[name]
+        for (p in parents) {
+            p.trait()!!.getVerb(name)?.also { return it }
+        }
+        return null
+    }
 
     fun programVerb(verbName: String, source: String) {
         verbs[verbName]?.also {

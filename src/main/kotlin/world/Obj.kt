@@ -8,6 +8,7 @@ import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
 import com.dlfsystems.world.trait.Trait
+import com.dlfsystems.world.trait.Verb
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -91,6 +92,15 @@ class Obj {
     fun clearProp(propName: String): Boolean =
         props[propName]?.let { it.v = null ; true } ?: false
 
+    // Verbs
+
+    fun getVerb(name: String): Verb? {
+        for (t in traits) {
+            t.trait()!!.getVerb(name)?.also { return it }
+        }
+        return null
+    }
+
     // Commands
 
     fun matchCommand(cmdstr: String, argstr: String, dobjstr: String, dobj: Obj?, prep: Preposition?, iobjstr: String, iobj: Obj?): CommandMatch? {
@@ -99,4 +109,5 @@ class Obj {
         }
         return null
     }
+
 }
