@@ -1,12 +1,11 @@
 package com.dlfsystems
 
-import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 
 class PropTest: YeggTest() {
 
     @Test
-    fun `Props on trait`() = runBlocking {
+    fun `Props on trait`() = yeggTest {
         runForOutput($$"""
             createTrait("thing")
             addProp($thing, "weight", 4)
@@ -28,7 +27,7 @@ class PropTest: YeggTest() {
     }
 
     @Test
-    fun `Props on obj`() = runBlocking {
+    fun `Props on obj`() = yeggTest {
         runForOutput($$"""
             createTrait("thing")
             o = create($thing)

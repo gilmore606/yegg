@@ -1,12 +1,11 @@
 package com.dlfsystems
 
-import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 
 class TaskTest: YeggTest() {
 
     @Test
-    fun `Suspend`() = runBlocking {
+    fun `Suspend`() = yeggTest {
         runForOutput($$"""
             foo = 20
             startTime = $sys.time
@@ -19,7 +18,7 @@ class TaskTest: YeggTest() {
     }
 
     @Test
-    fun `Fork`() = runBlocking {
+    fun `Fork`() = yeggTest {
         runForOutput($$"""
             foo = 20
             startTime = $sys.time
@@ -48,7 +47,7 @@ class TaskTest: YeggTest() {
     }
 
     @Test
-    fun `Cancel and resume`() = runBlocking {
+    fun `Cancel and resume`() = yeggTest {
         runForOutput($$"""
             task1 = fork 10 { notifyConn("MERDE") }
             task2 = fork 15 { notifyConn("SCHEIB") }
