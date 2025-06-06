@@ -5,7 +5,7 @@ import kotlin.test.Test
 class VerbTest: YeggTest() {
 
     @Test
-    fun `Verbs on objects with traits`() = yeggTest {
+    fun `Verb inheritance on traits`() = yeggTest {
         run($$"""
             createTrait("animal")
             createTrait("dog")
