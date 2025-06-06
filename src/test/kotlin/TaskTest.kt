@@ -5,6 +5,15 @@ import kotlin.test.Test
 class TaskTest: YeggTest() {
 
     @Test
+    fun `Output arrives in order`() = yeggTest {
+        runForOutput($$"""
+            for (i in 0..99) {
+                notifyConn("$i")
+            }
+        """, buildList { repeat(100) { add("$it")} }.joinToString("\n"))
+    }
+
+    @Test
     fun `Suspend`() = yeggTest {
         runForOutput($$"""
             foo = 20
