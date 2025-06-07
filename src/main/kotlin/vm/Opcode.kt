@@ -57,6 +57,10 @@ enum class Opcode(val argCount: Int = 0) {
     // Push result.
     O_FUNCALL(2),
 
+    // Call super.verb() with arg1 stack args.
+    // Push result.
+    O_PASS(1),
+
     // Push variable with ID arg1.
     O_GETVAR(1), // variable ID to fetch
 
@@ -135,6 +139,9 @@ enum class Opcode(val argCount: Int = 0) {
 
     // Call fun but do not push result.
     O_FUNCALLST(2),
+
+    // Call super but do not push result.
+    O_PASSST(1),
 
     // Call literal-named verb but do not push result.
     O_VCALLST(2),

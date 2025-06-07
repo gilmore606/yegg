@@ -85,6 +85,11 @@ class Optimizer(private val coder: Coder) {
                 value(args[1].value!!)
             }
 
+            ?: consume(O_PASS, null, O_DISCARD)?.also { args ->
+                code(O_PASSST)
+                value(args[0].value!!)
+            }
+
             ?: consume(O_VAL, null, O_CALL, null, O_DISCARD)?.also { args ->
                 code(O_VCALLST)
                 value(args[1].value!!) // write O_CALL arg first

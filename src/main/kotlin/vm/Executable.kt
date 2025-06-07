@@ -3,6 +3,7 @@ package com.dlfsystems.vm
 import com.dlfsystems.value.VFun
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
+import com.dlfsystems.world.trait.Verb
 import kotlinx.serialization.Serializable
 
 interface Executable {
@@ -40,5 +41,8 @@ interface Executable {
 
     // Compile for execution, if needed.
     fun jitCompile() { }
+
+    // Get parent executable for 'pass' expr
+    open fun getPassVerb(): Verb? = null
 
 }

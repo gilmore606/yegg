@@ -59,4 +59,38 @@ class VerbTest: YeggTest() {
         """)
     }
 
+    @Test
+    fun `Pass to parent verb`() = yeggTest {
+        run($$"""
+            createTrait("animal")
+            createTrait("dog")
+            addParent($dog, $animal)
+        """)
+
+        verb("animal", "getWeight", "return 5")
+        verb("dog", "getWeight", "return pass() + 2")
+        verb("animal", "makeNoise", $$"""
+            [vol] = args
+            notifyConn("NOISE volume $vol")
+        """)
+        verb("dog", "makeNoise", $$"""
+            [vol] = args
+            notifyConn("BARK volume $vol")
+            return pass(vol)
+        """)
+
+        runForOutput($$"""
+            o = create($dog)
+            notifyConn("Dog weighs: ${o.getWeight()}!")
+            a = create($animal)
+            notifyConn("Animal weighs: ${a.getWeight()}!")
+            o.makeNoise(10)
+        """, """
+            Dog weighs: 7!
+            Animal weighs: 5!
+            BARK volume 10
+            NOISE volume 10
+        """)
+    }
+
 }

@@ -495,12 +495,17 @@ class Parser(inputTokens: List<Token>) {
     }
 
     // Parse a bare function call: ident([arg, arg...])
+    // Special-case for "pass"
     private fun pFuncall(): N_EXPR? {
         val next = this::pReference
         if (nextAre(T_IDENTIFIER, T_PAREN_OPEN)) {
             consume(T_IDENTIFIER)?.also {
+                val name = it.string
                 consume(T_PAREN_OPEN)
-                return node(N_FUNCALL(node(N_IDENTIFIER(it.string)), pArglist()))
+                return node(when (name) {
+                    "pass" -> N_PASS(pArglist())
+                    else -> N_FUNCALL(node(N_IDENTIFIER(name)), pArglist())
+                })
             }
         }
         return next()
