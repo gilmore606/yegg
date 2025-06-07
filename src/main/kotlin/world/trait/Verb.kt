@@ -1,9 +1,7 @@
 package com.dlfsystems.world.trait
 
-import com.dlfsystems.server.Log
 import com.dlfsystems.compiler.Compiler
 import com.dlfsystems.vm.VMWord
-import com.dlfsystems.vm.dumpText
 import com.dlfsystems.vm.Executable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -36,6 +34,6 @@ class Verb(
         }
     }
 
-    override fun getPassVerb() = traitID?.trait()?.getPassVerb(name)
+    override fun getPassExe() = traitID?.trait()?.getPassVerb(name)
 
 }

@@ -228,7 +228,7 @@ class VM(
                     val argCount = next().intFromV
                     val args = buildList { repeat(argCount) { add(0, pop()) } }
                     if (word.opcode == O_PASSST) dropReturnValue = true
-                    exe.getPassVerb()?.also { return Result.Call(it, args, vThis) }
+                    exe.getPassExe()?.also { return Result.Call(it, args, vThis) }
                         ?: fail(E_VERBNF, "verb not found")
                 }
 
