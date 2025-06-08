@@ -72,4 +72,41 @@ class TaskTest: YeggTest() {
         """)
     }
 
+    @Test
+    fun `Read single line`() = yeggTest {
+        verb("sys", "readSingleLine", $$"""
+            notifyConn("Enter name:")
+            name = readLine()
+            notifyConn("Hi $name!")
+        """)
+
+        commandsForOutput($$"""
+            ;$sys.readSingleLine()
+            Dan
+        """, """
+            Enter name:
+            Hi Dan!
+        """)
+    }
+
+    @Test
+    fun `Read multiple lines`() = yeggTest {
+        verb("sys", "readMultiLines", $$"""
+            notifyConn("Enter some things:")
+            things = readLines()
+            notifyConn("You entered ${things.size} things!")
+        """)
+
+        commandsForOutput($$"""
+            ;$sys.readMultiLines()
+            cheese
+            pork
+            eggs
+            .
+        """, """
+            Enter some things:
+            You entered 3 things!
+        """)
+    }
+
 }
