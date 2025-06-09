@@ -504,6 +504,8 @@ class Parser(inputTokens: List<Token>) {
                 consume(T_PAREN_OPEN)
                 return node(when (name) {
                     "pass" -> N_PASS(pArglist())
+                    "readLine" -> N_READ(true, pArglist())
+                    "readLines" -> N_READ(false, pArglist())
                     else -> N_FUNCALL(node(N_IDENTIFIER(name)), pArglist())
                 })
             }

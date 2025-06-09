@@ -2,6 +2,7 @@ package com.dlfsystems.vm
 
 import com.dlfsystems.server.parser.Connection
 import com.dlfsystems.server.Yegg
+import com.dlfsystems.server.mcp.Task
 import com.dlfsystems.value.*
 
 // Properties of a single command invocation as it passes from verb to verb.
@@ -11,6 +12,7 @@ class Context(
     val vThis: VObj = Yegg.vNullObj,
     var vUser: VObj = connection?.user?.vThis ?: Yegg.vNullObj,
 ) {
+    var taskID: Task.ID? = null
 
     var ticksLeft: Int = Yegg.world.getSysInt("tickLimit")
     var callsLeft: Int = Yegg.world.getSysInt("callLimit")

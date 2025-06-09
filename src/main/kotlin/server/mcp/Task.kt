@@ -26,8 +26,12 @@ class Task(val c: Context) {
 
     override fun toString() = c.stack.first().toString()
 
+    init {
+        c.taskID = id
+    }
+
     fun setTime(secondsInFuture: Int) {
-        atEpoch = systemEpoch() + secondsInFuture
+        atEpoch = if (secondsInFuture == Int.MAX_VALUE) Int.MAX_VALUE else systemEpoch() + secondsInFuture
         timeID = TimeID(atEpoch * 1000L)
     }
 
