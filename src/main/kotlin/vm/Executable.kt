@@ -41,4 +41,7 @@ interface Executable {
     // Compile for execution, if needed.
     fun jitCompile() { }
 
+    // Get parent executable for 'pass' expr
+    fun getPassExe(): Executable? = null
+
 }

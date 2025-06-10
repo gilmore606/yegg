@@ -200,10 +200,10 @@ class VM(
                         if (vReturn != null) {
                             if (word.opcode != O_VCALLST) push(vReturn)
                         } else {
-                            val verb = a1.getVerb(c, a2.v)
+                            val verb = a1.getVerb(a2.v)
                             if (verb != null) {
                                 if (word.opcode == O_VCALLST) dropReturnValue = true
-                                val vThis = if (a1 is VObj) a1 else Yegg.vNullObj
+                                val vThis = a1 as? VObj ?: Yegg.vNullObj
                                 return Result.Call(verb, args, vThis)
                             } else fail(E_VERBNF, "verb not found")
                         }
@@ -223,6 +223,13 @@ class VM(
                             } else fail(E_TYPE, "cannot invoke ${value.type} as fun")
                         }
                     } ?: fail(E_VARNF, "no such fun or variable")
+                }
+                O_PASS, O_PASSST -> {
+                    val argCount = next().intFromV
+                    val args = buildList { repeat(argCount) { add(0, pop()) } }
+                    if (word.opcode == O_PASSST) dropReturnValue = true
+                    exe.getPassExe()?.also { return Result.Call(it, args, vThis) }
+                        ?: fail(E_VERBNF, "verb not found")
                 }
 
                 // Task ops

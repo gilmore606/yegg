@@ -43,6 +43,6 @@ data class VTrait(val v: Trait.ID?): Value() {
         return trait()?.callStaticVerb(c, name, args)
     }
 
-    override fun getVerb(c: Context, name: String): Verb? = trait()?.getVerb(name)
+    override fun getVerb(name: String): Verb? = trait()?.getVerb(name)
 
 }

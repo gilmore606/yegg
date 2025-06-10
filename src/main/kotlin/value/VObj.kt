@@ -7,6 +7,7 @@ import com.dlfsystems.vm.Context
 import com.dlfsystems.world.Obj
 import com.dlfsystems.vm.VMException.Type.E_PROPNF
 import com.dlfsystems.vm.VMException.Type.E_INVOBJ
+import com.dlfsystems.world.trait.Verb
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -73,5 +74,7 @@ data class VObj(val v: Obj.ID?): Value() {
         } ?: fail(E_INVOBJ, "cannot clear prop on invalid obj")
         return VVoid
     }
+
+    override fun getVerb(name: String): Verb? = obj()?.getVerb(name)
 
 }
