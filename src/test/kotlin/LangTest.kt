@@ -151,4 +151,16 @@ class LangTest: YeggTest() {
         """)
     }
 
+    @Test
+    fun `Logical OR short circuits right side`() = yeggTest {
+        runForOutput($$"""
+            true || notifyConn("Success.")
+            false || notifyConn("FAILURE!")
+            notifyConn("Done.")
+        """, """
+            Success.
+            Done.
+        """)
+    }
+
 }
