@@ -160,10 +160,13 @@ class LangTest: YeggTest() {
             false || notifyConn("OK 2.")
             foo = (1 == 1) && (false || true)
             notifyConn("Foo is $foo.")
+            bar = (1 == 2) && true
+            notifyConn("Bar is $bar.")
         """, """
             OK 1.
             OK 2.
             Foo is true.
+            Bar is false.
         """)
     }
 

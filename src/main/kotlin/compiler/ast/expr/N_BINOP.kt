@@ -63,7 +63,12 @@ class N_AND(left: N_EXPR, right: N_EXPR): N_BINOP("&&", left, right, listOf()) {
         coder.code(this, O_IF)
         coder.jumpForward(this, "andskip")
         right.code(coder)
+        coder.code(this, O_JUMP)
+        coder.jumpForward(this, "andend")
         coder.setForwardJump(this, "andskip")
+        coder.code(this, O_VAL)
+        coder.value(this, false)
+        coder.setForwardJump(this, "andend")
     }
 }
 
@@ -74,6 +79,11 @@ class N_OR(left: N_EXPR, right: N_EXPR): N_BINOP("||", left, right, listOf()) {
         coder.code(this, O_IF)
         coder.jumpForward(this, "orskip")
         right.code(coder)
+        coder.code(this, O_JUMP)
+        coder.jumpForward(this, "orend")
         coder.setForwardJump(this, "orskip")
+        coder.code(this, O_VAL)
+        coder.value(this, true)
+        coder.setForwardJump(this, "orend")
     }
 }
