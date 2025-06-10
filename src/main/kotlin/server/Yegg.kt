@@ -136,6 +136,7 @@ object Yegg {
         conn.sendText(DISCONNECT_MSG)
         connections.remove(conn)
         connectedUsers.remove(conn.user)
+        conn.onDisconnect()
         Log.i("User ${conn.user} disconnected")
     }
 

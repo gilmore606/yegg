@@ -68,6 +68,11 @@ class Connection(private val sendText: (String) -> Unit) {
         }
     }
 
+    fun onDisconnect() {
+        readRequest?.also { readRequest ->
+            MCP.cancel(readRequest.forTaskID)
+        }
+    }
 
     private fun parseCommand(text: String) {
         // Split command into string parts
