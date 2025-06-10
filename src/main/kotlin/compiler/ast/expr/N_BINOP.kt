@@ -57,7 +57,7 @@ class N_CMP_LT(left: N_EXPR, right: N_EXPR): N_BINOP("<", left, right, listOf(O_
 class N_CMP_GE(left: N_EXPR, right: N_EXPR): N_BINOP(">=", left, right, listOf(O_CMP_GE))
 class N_CMP_LE(left: N_EXPR, right: N_EXPR): N_BINOP("<=", left, right, listOf(O_CMP_LE))
 
-class N_AND(left: N_EXPR, right: N_EXPR): N_BINOP("&&", left, right, listOf(O_AND)) {
+class N_AND(left: N_EXPR, right: N_EXPR): N_BINOP("&&", left, right, listOf()) {
     override fun code(coder: Coder) {
         left.code(coder)
         coder.code(this, O_IF)
@@ -67,7 +67,7 @@ class N_AND(left: N_EXPR, right: N_EXPR): N_BINOP("&&", left, right, listOf(O_AN
     }
 }
 
-class N_OR(left: N_EXPR, right: N_EXPR): N_BINOP("||", left, right, listOf(O_OR)) {
+class N_OR(left: N_EXPR, right: N_EXPR): N_BINOP("||", left, right, listOf()) {
     override fun code(coder: Coder) {
         left.code(coder)
         coder.code(this, O_NEGATE)

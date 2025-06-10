@@ -158,11 +158,12 @@ class LangTest: YeggTest() {
             true && notifyConn("OK 1.")
             false && notifyConn("FAILED 2")
             false || notifyConn("OK 2.")
-            notifyConn("Done.")
+            foo = (1 == 1) && (false || true)
+            notifyConn("Foo is $foo.")
         """, """
             OK 1.
             OK 2.
-            Done.
+            Foo is true.
         """)
     }
 

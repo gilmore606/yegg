@@ -99,8 +99,6 @@ enum class Opcode(val argCount: Int = 0) {
     O_NEGATE,
 
     // Push the boolean result of pop0 and pop1.
-    O_AND,
-    O_OR,
     O_IN,
     O_CMP_EQ,
     O_CMP_GT,
