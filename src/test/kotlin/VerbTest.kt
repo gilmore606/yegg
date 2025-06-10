@@ -60,6 +60,24 @@ class VerbTest: YeggTest() {
     }
 
     @Test
+    fun `Resolve to parent verb`() = yeggTest {
+        run($$"""
+            createTrait("animal")
+            createTrait("dog")
+            addParent($dog, $animal)
+        """)
+
+        verb("animal", "madeOf", "return \"meat\"")
+
+        runForOutput($$"""
+            o = create($dog)
+            notifyConn("Dog is made of: ${o.madeOf()}!")
+        """, """
+            Dog is made of: meat!
+        """)
+    }
+
+    @Test
     fun `Pass to parent verb`() = yeggTest {
         run($$"""
             createTrait("animal")
