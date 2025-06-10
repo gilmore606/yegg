@@ -43,7 +43,7 @@ object MCP {
 
     fun resumeWithResult(taskID: Task.ID, result: Value?) {
         taskMap[taskID]?.also { task ->
-            // TODO: pass result to task
+            task.resumeResult = result
             timeMap.remove(task.timeID)
             task.setTime(0)
             timeMap[task.timeID] = task

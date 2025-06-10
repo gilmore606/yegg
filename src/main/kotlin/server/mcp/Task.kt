@@ -22,6 +22,9 @@ class Task(val c: Context) {
     var timeID = TimeID(0L)
     var atEpoch = 0
 
+    // Result to push on stack before executing.  Set to return a result when resuming a suspend-for-result (i.e. readline).
+    var resumeResult: Value? = null
+
     fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
 
     override fun toString() = c.stack.first().toString()
@@ -48,8 +51,9 @@ class Task(val c: Context) {
     // Continue until the stack is empty.
 
     fun execute(): Result {
+        var vReturn: Value? = resumeResult
+        resumeResult = null
         try {
-            var vReturn: Value? = null
             while (c.stack.isNotEmpty()) {
                 val vmResult = c.stack.first().execute(vReturn)
                 vReturn = null
