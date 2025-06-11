@@ -53,13 +53,11 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_OBJREF("#xxxxx"),
 
     // Keywords
-    T_AND("and", true),
     T_ELSE("else", true),
     T_FALSE("false", true),
     T_FOR("for", true),
     T_IF("if", true),
     T_IN("in", true),
-    T_OR("or", true),
     T_RETURN("return", true),
     T_TRUE("true", true),
     T_WHILE("while", true),

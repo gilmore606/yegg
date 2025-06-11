@@ -327,16 +327,6 @@ class VM(
                     a1.negate()?.also { push(it) }
                         ?: fail(E_TYPE, "cannot negate ${a1.type}")
                 }
-                O_AND -> {
-                    val (a2, a1) = popTwo()
-                    if (a1 is VBool && a2 is VBool) push(VBool(a1.v && a2.v))
-                    else fail(E_TYPE, "cannot AND ${a1.type} and ${a2.type}")
-                }
-                O_OR -> {
-                    val (a2, a1) = popTwo()
-                    if (a1 is VBool && a2 is VBool) push(VBool(a1.v || a2.v))
-                    else fail(E_TYPE, "cannot OR ${a1.type} and ${a2.type}")
-                }
                 O_IN -> {
                     val (a2, a1) = popTwo()
                     a1.isIn(a2)?.also { push(VBool(it)) }

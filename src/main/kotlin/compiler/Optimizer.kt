@@ -112,6 +112,8 @@ class Optimizer(private val coder: Coder) {
                 value(args[0].value!!)
             }
 
+            ?: consume(O_VAL, null, O_DISCARD)
+
 
             // If nothing matched, copy and continue
             ?: run {
