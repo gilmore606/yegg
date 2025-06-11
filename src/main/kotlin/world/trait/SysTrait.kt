@@ -6,6 +6,7 @@ import com.dlfsystems.server.Yegg
 import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.util.systemEpoch
 import com.dlfsystems.value.*
+import com.dlfsystems.value.Value.Type.*
 import com.dlfsystems.vm.Context
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -70,7 +71,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.connectUser("username", "password") -> true if connected
     private fun verbConnectUser(c: Context, args: List<Value>): VBool {
-        if (args.size != 2 || args[0] !is VString || args[1] !is VString) throw IllegalArgumentException("Bad args for connectUser")
+        requireArgTypes(args, STRING, STRING)
         Yegg.world.getUserLogin((args[0] as VString).v, (args[1] as VString).v)?.also { user ->
             c.connection?.also {
                 Yegg.connectUser(user, it)
@@ -83,35 +84,35 @@ class SysTrait : Trait("sys") {
 
     // $sys.disconnectUser()
     private fun verbDisconnectUser(c: Context, args: List<Value>): VVoid {
-        if (args.isNotEmpty()) throw IllegalArgumentException("Bad args for disconnectUser")
+        requireArgTypes(args)
         c.connection?.quitRequested = true
         return VVoid
     }
 
     // $sys.notify(#obj, "text")
     private fun verbNotify(args: List<Value>): VVoid {
-        if (args.size != 2 || args[0] !is VObj || args[1] !is VString) throw IllegalArgumentException("Bad args for notify")
-        Yegg.notifyUser((args[0] as VObj).obj(), (args[1] as VString).v)
+        requireArgTypes(args, OBJ, null)
+        Yegg.notifyUser((args[0] as VObj).obj(), args[1].asString())
         return VVoid
     }
 
     // $sys.notifyConn("text")
     private fun verbNotifyConn(c: Context, args: List<Value>): VVoid {
-        if (args.size != 1) throw IllegalArgumentException("Bad args for notifyConn")
+        requireArgTypes(args, null)
         c.connection?.id?.id?.also { Yegg.notifyConn(it, args[0].asString()) }
         return VVoid
     }
 
     // $sys.createTrait("newTrait")
     private fun verbCreateTrait(args: List<Value>): VVoid {
-        if (args.size != 1 || args[0] !is VString) throw IllegalArgumentException("Bad args for createTrait")
+        requireArgTypes(args, STRING)
         Yegg.world.createTrait(args[0].asString())
         return VVoid
     }
 
     // $sys.destroyTrait("trait")
     private fun verbDestroyTrait(args: List<Value>): VVoid {
-        if (args.size != 1) throw IllegalArgumentException("Bad args for destroyTrait")
+        requireArgTypes(args, STRING)
         Yegg.world.destroyTrait(args[0].asString())
         return VVoid
     }
@@ -134,7 +135,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.destroy(#obj)
     private fun verbDestroy(args: List<Value>): VVoid {
-        if (args.size != 1 || args[0] !is VObj) throw IllegalArgumentException("Bad args for destroy")
+        requireArgTypes(args, OBJ)
         (args[0] as VObj).obj()?.also { subject ->
             Yegg.world.destroyObj(subject)
         } ?: throw IllegalArgumentException("invalid obj")
@@ -143,7 +144,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.addParent($trait, $parentTrait) / (obj, $parentTrait)
     private fun verbAddParent(args: List<Value>): VVoid {
-        if (args.size != 2 || args[1] !is VTrait) throw IllegalArgumentException("Bad args for addParent")
+        requireArgTypes(args, null, TRAIT)
         when (args[0]) {
             is VTrait -> (args[0] as VTrait).trait()!!.addTrait((args[1] as VTrait).trait()!!)
             is VObj -> (args[0] as VObj).obj()!!.addTrait((args[1] as VTrait).trait()!!)
@@ -154,7 +155,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.removeParent($trait, $parentTrait) / (obj, $parentTrait)
     private fun verbRemoveParent(args: List<Value>): VVoid {
-        if (args.size != 2 || args[1] !is VTrait) throw IllegalArgumentException("Bad args for removeParent")
+        requireArgTypes(args, null, TRAIT)
         when (args[0]) {
             is VTrait -> (args[0] as VTrait).trait()!!.removeTrait((args[1] as VTrait).trait()!!)
             is VObj -> (args[0] as VObj).obj()!!.removeTrait((args[1] as VTrait).trait()!!)
@@ -165,7 +166,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.move(#obj, #loc)
     private fun verbMove(args: List<Value>): VVoid {
-        if (args.size != 2 || args[0] !is VObj || args[1] !is VObj) throw IllegalArgumentException("Bad args for move")
+        requireArgTypes(args, OBJ, OBJ)
         (args[0] as VObj).obj()?.also { subject ->
             Yegg.world.moveObj(subject, args[1] as VObj)
         } ?: throw IllegalArgumentException("invalid obj")
@@ -195,14 +196,14 @@ class SysTrait : Trait("sys") {
     // $sys.chance(float) -> true float fraction of the time
     private fun verbChance(args: List<Value>): Value {
         if (args.isEmpty()) return VBool(Random.nextBoolean())
-        if (args.size != 1) throw IllegalArgumentException("Bad args for chance")
-        val x = (args[0] as? VFloat)?.v ?: throw IllegalArgumentException("Bad arg to chance")
+        requireArgTypes(args, FLOAT)
+        val x = (args[0] as VFloat).v
         return VBool(Random.nextFloat() < x)
     }
 
     // $sys.min(v1, v2, v3...) -> lowest INT/FLOAT value in args (or list, if only arg is list)
     private fun verbMin(args: List<Value>): Value {
-        if (args.size < 1) throw IllegalArgumentException("Bad args for min")
+        if (args.isEmpty()) throw IllegalArgumentException("Bad args for min")
         var numbers = args
         if (args.size == 1) {
             if (args[0].type == Value.Type.LIST) numbers = (args[0] as VList).v
@@ -223,7 +224,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.max(v1, v2, v3...) -> highest INT/FLOAT value in args (or list, if only arg is list)
     private fun verbMax(args: List<Value>): Value {
-        if (args.size < 1) throw IllegalArgumentException("Bad args for max")
+        if (args.isEmpty()) throw IllegalArgumentException("Bad args for max")
         var numbers = args
         if (args.size == 1) {
             if (args[0].type == Value.Type.LIST) numbers = (args[0] as VList).v
@@ -243,14 +244,14 @@ class SysTrait : Trait("sys") {
     }
 
     private fun Value.numericValue(): Float? = when (type) {
-        Value.Type.INT -> (this as VInt).v.toFloat()
-        Value.Type.FLOAT -> (this as VFloat).v
+        INT -> (this as VInt).v.toFloat()
+        FLOAT -> (this as VFloat).v
         else -> null
     }
 
     // $sys.setCommand($trait, "co*mmand/cmd arg prep arg = cmdVerb") -> "cmdVerb"
     private fun verbSetCommand(args: List<Value>): VVoid {
-        if (args.size != 2 || args[0] !is VTrait || args[1] !is VString) throw IllegalArgumentException("Bad args for setCommand")
+        requireArgTypes(args, TRAIT, STRING)
         Yegg.world.traits[(args[0] as VTrait).v]?.also { trait ->
             Command.fromString((args[1] as VString).v)?.also { command ->
                 trait.setCommand(command)
@@ -263,7 +264,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.removeCommand($trait, "co*mmand/cmd arg prep arg")
     private fun verbRemoveCommand(args: List<Value>): VVoid {
-        if (args.size != 2 || args[0] !is VTrait || args[1] !is VString) throw IllegalArgumentException("Bad args for removeCommand")
+        requireArgTypes(args, TRAIT, STRING)
         Yegg.world.traits[(args[0] as VTrait).v]?.also { trait ->
             trait.removeCommand((args[1] as VString).v)
             Log.d("removeCommand($trait, ${args[1]}")
@@ -274,7 +275,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.getVerbCode($trait, "verb") -> "string of source code"
     private fun verbGetVerbCode(args: List<Value>): VString {
-        if (args.size != 2 || args[0] !is VTrait || args[1] !is VString) throw IllegalArgumentException("Bad args for getVerbCode")
+        requireArgTypes(args, TRAIT, STRING)
         (args[0] as VTrait).trait()?.getVerb((args[1] as VString).v)?.also { verb ->
             return VString(verb.source)
         } ?: throw IllegalArgumentException("verb not found")
@@ -282,7 +283,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.setVerbCode($trait, "verb", "source code")
     private fun verbSetVerbCode(args: List<Value>): VVoid {
-        if (args.size != 3 || args[0] !is VTrait || args[1] !is VString || args[2] !is VString) throw IllegalArgumentException("Bad args for setVerbCode")
+        requireArgTypes(args, TRAIT, STRING, STRING)
         (args[0] as VTrait).trait()?.also { trait ->
             trait.programVerb((args[1] as VString).v, (args[2] as VString).v)
         } ?: throw IllegalArgumentException("invalid trait")
@@ -291,7 +292,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.removeVerb($trait, "verb")
     private fun verbRemoveVerb(args: List<Value>): VVoid {
-        if (args.size != 2 || args[0] !is VTrait || args[1] !is VString) throw IllegalArgumentException("Bad args for removeVerb")
+        requireArgTypes(args, TRAIT, STRING)
         Yegg.world.traits[(args[0] as VTrait).v]?.also { trait ->
             trait.removeVerb((args[1] as VString).v)
             Log.d("removeVerb($trait, ${args[1]}")
@@ -302,7 +303,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.dumpDatabase() -> "err"
     private fun verbDumpDatabase(args: List<Value>): VString {
-        if (args.isNotEmpty()) throw IllegalArgumentException("Bad args for dumpDatabase")
+        requireArgTypes(args)
         return VString(Yegg.dumpDatabase())
     }
 
@@ -315,9 +316,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.addProp($trait, "propName", value)
     private fun verbAddProp(args: List<Value>): VVoid {
-        if (args.size != 3) throw IllegalArgumentException("Bad args for addProp")
-        if (args[0].type != Value.Type.TRAIT) throw IllegalArgumentException("first arg is ${args[0].type} not TRAIT")
-        if (args[1].type != Value.Type.STRING) throw IllegalArgumentException("second arg is ${args[1].type} not STRING")
+        requireArgTypes(args, TRAIT, STRING, null)
         (args[0] as VTrait).trait()?.addProp(args[1].asString(), args[2])
             ?: throw IllegalArgumentException("invalid trait")
         return VVoid
@@ -325,9 +324,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.removeProp($trait, "propName")
     private fun verbRemoveProp(args: List<Value>): VVoid {
-        if (args.size != 2) throw IllegalArgumentException("Bad args for removeProp")
-        if (args[0].type != Value.Type.TRAIT) throw IllegalArgumentException("first arg is ${args[0].type} not TRAIT")
-        if (args[1].type != Value.Type.STRING) throw IllegalArgumentException("second arg is ${args[1].type} not STRING")
+        requireArgTypes(args, TRAIT, STRING)
         (args[0] as VTrait).trait()?.removeProp(args[1].asString())
             ?: throw IllegalArgumentException("invalid trait")
         return VVoid
@@ -335,7 +332,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.clearProp($trait, "propName") / (obj, "propName")
     private fun verbClearProp(args: List<Value>): VVoid {
-        if (args.size != 2 || args[1].type != Value.Type.STRING) throw IllegalArgumentException("Bad args for clearProp")
+        requireArgTypes(args, null, STRING)
         when (args[0]) {
             is VTrait -> (args[0] as VTrait).trait()!!.clearProp(args[1].asString())
             is VObj -> {
@@ -344,5 +341,12 @@ class SysTrait : Trait("sys") {
             else -> throw IllegalArgumentException("cannot clearProp on ${args[0].type}")
         }
         return VVoid
+    }
+
+    private fun requireArgTypes(args: List<Value>, vararg argTypes: Value.Type?) {
+        if (args.size != argTypes.size) throw IllegalArgumentException("${argTypes.size} args required but ${args.size} provided")
+        args.forEachIndexed { n, arg ->
+            if (argTypes[n] != null && arg.type != argTypes[n]) throw IllegalArgumentException("arg $n is ${arg.type} not ${argTypes[n]}")
+        }
     }
 }
