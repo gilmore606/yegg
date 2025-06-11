@@ -50,6 +50,8 @@ class SysTrait : Trait("sys") {
             "max" -> return verbMax(args)
             "setCommand" -> return verbSetCommand(args)
             "removeCommand" -> return verbRemoveCommand(args)
+            "getVerbCode" -> return verbGetVerbCode(args)
+            "setVerbCode" -> return verbSetVerbCode(args)
             "removeVerb" -> return verbRemoveVerb(args)
             "dumpDatabase" -> return verbDumpDatabase(args)
             "shutdownServer" -> return verbShutdownServer(args)
@@ -268,6 +270,23 @@ class SysTrait : Trait("sys") {
             return VVoid
         }
         throw IllegalArgumentException("invalid trait")
+    }
+
+    // $sys.getVerbCode($trait, "verb") -> "string of source code"
+    private fun verbGetVerbCode(args: List<Value>): VString {
+        if (args.size != 2 || args[0] !is VTrait || args[1] !is VString) throw IllegalArgumentException("Bad args for getVerbCode")
+        (args[0] as VTrait).trait()?.getVerb((args[1] as VString).v)?.also { verb ->
+            return VString(verb.source)
+        } ?: throw IllegalArgumentException("verb not found")
+    }
+
+    // $sys.setVerbCode($trait, "verb", "source code")
+    private fun verbSetVerbCode(args: List<Value>): VVoid {
+        if (args.size != 3 || args[0] !is VTrait || args[1] !is VString || args[2] !is VString) throw IllegalArgumentException("Bad args for setVerbCode")
+        (args[0] as VTrait).trait()?.also { trait ->
+            trait.programVerb((args[1] as VString).v, (args[2] as VString).v)
+        } ?: throw IllegalArgumentException("invalid trait")
+        return VVoid
     }
 
     // $sys.removeVerb($trait, "verb")

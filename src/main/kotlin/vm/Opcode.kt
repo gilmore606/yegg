@@ -61,6 +61,10 @@ enum class Opcode(val argCount: Int = 0) {
     // Push result.
     O_PASS(1),
 
+    // Suspend task and wait for a line (or lines) of input.
+    O_READLINE,
+    O_READLINES,
+
     // Push variable with ID arg1.
     O_GETVAR(1), // variable ID to fetch
 

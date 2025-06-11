@@ -249,6 +249,15 @@ class VM(
                     MCP.schedule(task, (a1 as VInt).v)
                     push(task.vID)
                 }
+                O_READLINE, O_READLINES -> {
+                    c.taskID?.also { taskID ->
+                        c.connection?.also { connection ->
+                            connection.requestReadLines(taskID, word.opcode == O_READLINE)
+                            return Result.Suspend(Int.MAX_VALUE)
+                        }
+                    }
+                    fail(E_SYS, "cannot readline in headless task")
+                }
 
                 // Variable ops
 

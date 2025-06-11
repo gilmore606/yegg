@@ -5,6 +5,9 @@ import com.dlfsystems.server.Yegg
 import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.server.mcp.Task
 import com.dlfsystems.util.NanoID
+import com.dlfsystems.value.VList
+import com.dlfsystems.value.VString
+import com.dlfsystems.value.Value
 import com.dlfsystems.world.Obj
 import com.dlfsystems.world.trait.Verb
 
@@ -15,43 +18,59 @@ class Connection(private val sendText: (String) -> Unit) {
     value class ID(val id: String) { override fun toString() = id }
     val id = ID(NanoID.newID())
 
-    var buffer = mutableListOf<String>()
-    var programming: Pair<String, String>? = null
+    var user: Obj? = null
+
     var quitRequested = false
 
-    var user: Obj? = null
+    data class ReadRequest(val forTaskID: Task.ID, val singleLine: Boolean)
+    var readRequest: ReadRequest? = null
+    val readBuffer = mutableListOf<String>()
+
+    fun requestReadLines(forTaskID: Task.ID, singleLine: Boolean) {
+        readRequest = ReadRequest(forTaskID, singleLine)
+    }
 
     fun sendText(text: String) = sendText.invoke(text)
 
     fun receiveText(text: String) {
-        // TODO: rework program-buffer in-DB with actual suspend/readLines
         Log.d("> $text")
-        programming?.also { verb ->
-            if (text == ".") {
-                val result = Yegg.world.programVerb(verb.first, verb.second, buffer.joinToString("\n"))
-                buffer.clear()
-                programming = null
-                sendText(result)
-            } else buffer.add(text)
-        } ?: run {
-            if (text.startsWith(";")) {
-                val eval = text.substringAfter(";")
-                val source = if (eval.startsWith(";")) "notifyConn(${eval.substringAfter(";")})" else eval
-                try {
-                    val verb = Verb("eval").apply { program(source) }
-                    MCP.schedule(Task.make(
-                        exe = verb,
-                        connection = this,
-                    ))
-                } catch (e: Exception) {
-                    sendText("E_HUH: ${e.message}")
-                }
-            } else if (text.startsWith("@")) {
-                // TODO: get rid of these hardcoded @meta commands
-                parseMeta(text)
-            } else if (text.isNotBlank()) {
-                parseCommand(text)
+
+        readRequest?.also { readRequest ->
+            val singleLine = readRequest.singleLine
+            if (text == "." || singleLine) {
+                val input: Value = if (singleLine) VString(text)
+                    else VList.make(readBuffer.map { VString(it) })
+                readBuffer.clear()
+                val taskID = readRequest.forTaskID
+                this.readRequest = null
+                MCP.resumeWithResult(taskID, input)
+            } else {
+                readBuffer.add(text)
             }
+            return
+        }
+
+        if (text.startsWith(";")) {
+            // TODO: move this in-DB
+            val eval = text.substringAfter(";")
+            val source = if (eval.startsWith(";")) "notifyConn(${eval.substringAfter(";")})" else eval
+            try {
+                val verb = Verb("eval").apply { program(source) }
+                MCP.schedule(Task.make(
+                    exe = verb,
+                    connection = this,
+                ))
+            } catch (e: Exception) {
+                sendText("E_HUH: ${e.message}")
+            }
+        } else if (text.isNotBlank()) {
+            parseCommand(text)
+        }
+    }
+
+    fun onDisconnect() {
+        readRequest?.also { readRequest ->
+            MCP.cancel(readRequest.forTaskID)
         }
     }
 
@@ -116,32 +135,6 @@ class Connection(private val sendText: (String) -> Unit) {
         } ?: run {
             sendText("ERR: No verb ${match.verb} found for command")
         }
-    }
-
-    // Respond to meta commands.
-    private fun parseMeta(text: String) {
-        if (text == "@") return
-        val words = text.split(" ")
-        when (words[0].substring(1, words[0].length)) {
-            "program" -> parseProgram(words)
-            "list" -> parseList(words)
-            else -> sendText(Yegg.HUH_MSG)
-        }
-    }
-
-    private fun parseProgram(words: List<String>) {
-        if (words.size < 2) { sendText("@program what?") ; return }
-        val terms = words[1].split(".")
-        if (terms.size != 2) { sendText("@program what?") ; return }
-        programming = Pair(terms[0], terms[1])
-        sendText("Enter verbcode.  Terminate with '.' on a line by itself.")
-    }
-
-    private fun parseList(words: List<String>) {
-        if (words.size < 2) { sendText("@list what?") ; return }
-        val terms = words[1].split(".")
-        if (terms.size != 2) { sendText("@list what?") ; return }
-        sendText(Yegg.world.listVerb(terms[0], terms[1]))
     }
 
 }

@@ -3,6 +3,7 @@ package com.dlfsystems.server.mcp
 import com.dlfsystems.server.Log
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.util.systemEpoch
+import com.dlfsystems.value.Value
 import kotlinx.coroutines.*
 import java.util.*
 
@@ -38,8 +39,11 @@ object MCP {
     }
 
     // Move a scheduled task to immediate execution.
-    fun resume(taskID: Task.ID) {
+    fun resume(taskID: Task.ID) { resumeWithResult(taskID, null) }
+
+    fun resumeWithResult(taskID: Task.ID, result: Value?) {
         taskMap[taskID]?.also { task ->
+            task.resumeResult = result
             timeMap.remove(task.timeID)
             task.setTime(0)
             timeMap[task.timeID] = task
