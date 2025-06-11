@@ -62,4 +62,20 @@ abstract class YeggTest {
         }
     }
 
+    protected suspend fun commandsForOutput(source: String, expected: String) {
+        val commands = source.trimIndent().split("\n")
+        val expectedLines = expected.trimIndent().split("\n")
+        TestConnection(scope).apply {
+            start()
+            for (c in commands) {
+                send(c)
+                delay(50L)
+            }
+            expectedLines.forEachIndexed { n, expectedLine ->
+                assertEquals(expectedLine, output[n])
+            }
+            stop()
+        }
+    }
+
 }
