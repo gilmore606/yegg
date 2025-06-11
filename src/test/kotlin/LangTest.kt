@@ -151,4 +151,23 @@ class LangTest: YeggTest() {
         """)
     }
 
+    @Test
+    fun `Logical OR and AND short circuits right side`() = yeggTest {
+        runForOutput($$"""
+            true || notifyConn("FAILED 1")
+            true && notifyConn("OK 1.")
+            false && notifyConn("FAILED 2")
+            false || notifyConn("OK 2.")
+            foo = (1 == 1) && (false || true)
+            notifyConn("Foo is $foo.")
+            bar = (1 == 2) && true
+            notifyConn("Bar is $bar.")
+        """, """
+            OK 1.
+            OK 2.
+            Foo is true.
+            Bar is false.
+        """)
+    }
+
 }

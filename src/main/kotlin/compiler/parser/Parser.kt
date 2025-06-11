@@ -367,10 +367,10 @@ class Parser(inputTokens: List<Token>) {
     private fun pAndOr(): N_EXPR? {
         val next = this::pConditional
         var left = next() ?: return null
-        while (nextIs(T_AND, T_OR)) {
+        while (nextIs(T_LOGIC_AND, T_LOGIC_OR)) {
             val operator = consume()
             next()?.also { right ->
-                left = node(if (operator.type == T_AND) N_AND(left, right)
+                left = node(if (operator.type == T_LOGIC_AND) N_AND(left, right)
                             else N_OR(left, right)
                 )
             }
