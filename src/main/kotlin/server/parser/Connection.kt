@@ -24,11 +24,10 @@ class Connection(private val sendText: (String) -> Unit) {
 
     data class ReadRequest(val forTaskID: Task.ID, val singleLine: Boolean)
     var readRequest: ReadRequest? = null
-    var readBuffer = mutableListOf<String>()
+    val readBuffer = mutableListOf<String>()
 
     fun requestReadLines(forTaskID: Task.ID, singleLine: Boolean) {
         readRequest = ReadRequest(forTaskID, singleLine)
-        readBuffer.clear()
     }
 
     fun sendText(text: String) = sendText.invoke(text)
@@ -41,6 +40,7 @@ class Connection(private val sendText: (String) -> Unit) {
             if (text == "." || singleLine) {
                 val input: Value = if (singleLine) VString(text)
                     else VList.make(readBuffer.map { VString(it) })
+                readBuffer.clear()
                 val taskID = readRequest.forTaskID
                 this.readRequest = null
                 MCP.resumeWithResult(taskID, input)
