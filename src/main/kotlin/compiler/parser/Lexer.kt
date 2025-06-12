@@ -1,7 +1,7 @@
-package com.dlfsystems.compiler.lexer
+package com.dlfsystems.compiler.parser
 
 import com.dlfsystems.compiler.CompileException
-import com.dlfsystems.compiler.lexer.TokenType.*
+import com.dlfsystems.compiler.parser.TokenType.*
 import com.dlfsystems.util.NanoID
 
 // Take an input string and produce a stream of tokens.
@@ -165,7 +165,6 @@ class Lexer(val source: String) {
                     ',' -> emit(T_COMMA)
                     '?' -> emit(T_QUESTION)
                     '^' -> emit(T_POWER)
-                    '@' -> emit(T_AT)
                     '%' -> emit(T_MODULUS)
                     else -> {
                         if (isIdentifierChar(c)) begin(T_IDENTIFIER, c)
@@ -201,7 +200,7 @@ class Lexer(val source: String) {
     private fun emit(tokenType: TokenType, reconsume: Char? = null) {
         var newType = tokenType
         if (tokenType == T_IDENTIFIER) {
-            TokenType.entries.firstOrNull { it.isKeyword && it.literal == tokenString }?.also {
+            entries.firstOrNull { it.isKeyword && it.literal == tokenString }?.also {
                 newType = it
             }
         }

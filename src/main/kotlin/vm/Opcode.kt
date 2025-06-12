@@ -1,8 +1,8 @@
 package com.dlfsystems.vm
 
 // An opcode representing an instruction for a VM.
-// Pop0/pop1 = values popped from the stack.
-// Arg1/arg2 = non-opcode VMwords written directly after the opcode.
+// pop0/pop1 = values popped from the stack.
+// arg1/arg2 = non-opcode VMwords written directly after the opcode.
 
 enum class Opcode(val argCount: Int = 0) {
 
@@ -18,10 +18,10 @@ enum class Opcode(val argCount: Int = 0) {
     // Pop arg1 (as intval) pairs of stack values, and push a map of argX:argX+1.
     O_MAPVAL(1),
 
-    // Pop0 = string arg names.
-    // Pop1 = string scope var names.
-    // arg1 = entryPoint index.
-    // Push VFun.
+    // pop0 = VList of string arg names
+    // pop1 = VList of string scope var names
+    // arg1 = blockID in current executable
+    // Aggregate these to create and push a VFun.
     O_FUNVAL(1),
 
     // Push index result of pop0[pop1].

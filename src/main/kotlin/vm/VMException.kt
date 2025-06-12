@@ -33,6 +33,9 @@ class VMException(val type: Type, val m: String): Exception() {
         // Invalid object
         E_INVOBJ,
 
+        // Invalid argument
+        E_INVARG,
+
         // List or map accessed out of range
         E_RANGE,
 

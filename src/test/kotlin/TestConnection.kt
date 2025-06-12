@@ -1,8 +1,10 @@
-package com.dlfsystems.server
+package com.dlfsystems
 
+import com.dlfsystems.server.Connection
+import com.dlfsystems.server.Yegg
 import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.server.mcp.Task
-import com.dlfsystems.server.Connection
+import com.dlfsystems.server.onYeggThread
 import com.dlfsystems.world.trait.Verb
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -16,13 +18,18 @@ class TestConnection(scope: CoroutineScope) {
     fun send(text: String) { conn.receiveText(text) }
     private fun receiveOutput(o: String) { if (o.isNotBlank()) output.add(o) }
 
-    suspend fun start() { onYeggThread { Yegg.addConnection(conn) } }
-    suspend fun stop() { onYeggThread { Yegg.removeConnection(conn) } }
+    suspend fun start() {
+        onYeggThread { Yegg.addConnection(conn) }
+    }
+    suspend fun stop() {
+        onYeggThread { Yegg.removeConnection(conn) }
+    }
 
     suspend fun runVerb(source: String) {
         Verb("testVerb").apply {
             program(source)
-            MCP.schedule(Task.make(
+            MCP.schedule(
+                Task.Companion.make(
                 exe = this,
                 connection = conn,
             ))

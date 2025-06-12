@@ -1,6 +1,7 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.server.Yegg
+import com.dlfsystems.util.fail
 import com.dlfsystems.vm.Context
 import com.dlfsystems.vm.VMException.Type.*
 import kotlinx.serialization.SerialName

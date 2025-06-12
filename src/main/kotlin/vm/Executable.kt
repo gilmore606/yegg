@@ -5,6 +5,8 @@ import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
 import kotlinx.serialization.Serializable
 
+// A block of bytecode which can be executed by a VM.
+
 interface Executable {
 
     @Serializable

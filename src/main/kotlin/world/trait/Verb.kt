@@ -11,6 +11,7 @@ class Verb(
     val name: String,
     val traitID: Trait.ID? = null,
 ): Executable {
+
     var source = ""
     @Transient override var code: List<VMWord> = listOf()
     @Transient override var symbols: Map<String, Int> = mapOf()
@@ -21,7 +22,6 @@ class Verb(
     fun program(source: String) {
         this.source = source.trimIndent()
         recompile()
-        // Log.d("programmed $name with code ${code.dumpText()}")
     }
 
     override fun jitCompile() { if (code.isEmpty()) recompile() }

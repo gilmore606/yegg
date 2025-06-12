@@ -6,6 +6,8 @@ import com.dlfsystems.vm.Opcode
 import com.dlfsystems.vm.Opcode.*
 import com.dlfsystems.vm.VMWord
 
+// Reduce certain bytecode patterns to shorter ones.
+
 class Optimizer(private val coder: Coder) {
     private val mem = coder.mem
     private val outMem = mutableListOf<VMWord>()
@@ -38,7 +40,7 @@ class Optimizer(private val coder: Coder) {
 
             // Optimizations
 
-            consume(O_NEGATE, O_NEGATE)?.also { }
+            consume(O_NEGATE, O_NEGATE)
 
             ?: consume(O_SETVAR, null, O_GETVAR, null) { args ->
                 args[0].isInt() && args[1].isInt(args[0].intFromV)

@@ -7,7 +7,6 @@ import com.dlfsystems.value.Value
 import kotlinx.coroutines.*
 import java.util.*
 
-
 // The task scheduler.
 // Runs tasks at scheduled epoch times in a single thread.
 
@@ -41,6 +40,7 @@ object MCP {
     // Move a scheduled task to immediate execution.
     fun resume(taskID: Task.ID) { resumeWithResult(taskID, null) }
 
+    // Resume with a result pushed onto the stack.
     fun resumeWithResult(taskID: Task.ID, result: Value?) {
         taskMap[taskID]?.also { task ->
             task.resumeResult = result
@@ -50,12 +50,10 @@ object MCP {
         } ?: throw IllegalArgumentException("Task $taskID does not exist")
     }
 
-    // Is the given taskID a valid scheduled task?
     fun isValidTask(taskID: Task.ID) = taskMap.containsKey(taskID)
 
     fun taskList() = taskMap.values.toList()
 
-    // Start processing all queued tasks.
     fun start() {
         if (job?.isActive == true) throw IllegalStateException("Already started")
         job = Yegg.launch {
@@ -64,7 +62,6 @@ object MCP {
         Log.i(TAG, "Started.")
     }
 
-    // Stop processing queued tasks.
     fun stop() {
         job?.cancel()
         Log.i(TAG, "Stopped.")
@@ -82,6 +79,7 @@ object MCP {
                     timeMap[task.timeID] = task
                     taskMap[task.id] = task
                 }
+                Log.flush()
             } ?: run {
                 delay(WAIT_FOR_TASKS_MS)
             }
@@ -98,4 +96,5 @@ object MCP {
     }
 
     private const val TAG = "MCP"
+
 }

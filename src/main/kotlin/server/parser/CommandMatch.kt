@@ -5,6 +5,7 @@ import com.dlfsystems.world.Obj
 import com.dlfsystems.world.trait.Trait
 
 // The successful result of matching a Command, which contains the info needed to execute it.
+
 class CommandMatch(
     // The verb to execute.
     val verb: String,

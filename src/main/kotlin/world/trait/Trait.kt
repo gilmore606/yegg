@@ -8,9 +8,11 @@ import com.dlfsystems.server.parser.Command.Arg
 import com.dlfsystems.server.parser.CommandMatch
 import com.dlfsystems.server.parser.Preposition
 import com.dlfsystems.util.NanoID
+import com.dlfsystems.util.fail
 import com.dlfsystems.util.matchesWildcard
 import com.dlfsystems.value.*
 import com.dlfsystems.vm.Context
+import com.dlfsystems.vm.VMException.Type.E_INVARG
 import com.dlfsystems.world.Obj
 import com.dlfsystems.world.Propval
 import kotlinx.serialization.SerialName
@@ -80,7 +82,7 @@ sealed class Trait(val name: String) {
     // Add parent trait to this trait.
     fun addTrait(parent: Trait) {
         parents.forEach {
-            if (it.trait()!!.inheritsTrait(parent.id)) throw IllegalArgumentException("trait already inherits $parent")
+            if (it.trait()!!.inheritsTrait(parent.id)) fail(E_INVARG, "trait already inherits $parent")
         }
         parents.add(parent.id)
         parent.children.add(id)
@@ -100,7 +102,7 @@ sealed class Trait(val name: String) {
 
     // Remove parent trait from this trait.
     fun removeTrait(parent: Trait) {
-        if (parent.id !in parents) throw IllegalArgumentException("trait does not have trait")
+        if (parent.id !in parents) fail(E_INVARG, "trait does not have trait")
         parents.remove(parent.id)
         parent.children.remove(id)
         // Remove orphaned props from this trait (and inheriting objects)
@@ -146,7 +148,7 @@ sealed class Trait(val name: String) {
 
     fun addProp(propName: String, value: Value) {
         forEachDescendantTrait { trait ->
-            if (trait.props.containsKey(propName)) throw IllegalArgumentException("trait $trait already has prop $propName")
+            if (trait.props.containsKey(propName)) fail(E_INVARG, "trait $trait already has prop $propName")
         }
         forEachDescendantTrait { trait ->
             trait.props[propName] = Propval(this.id)
@@ -158,8 +160,8 @@ sealed class Trait(val name: String) {
     }
 
     fun removeProp(propName: String) {
-        if (!props.containsKey(propName)) throw IllegalArgumentException("trait has no property $propName")
-        if (getPropOwner(propName) != id) throw IllegalArgumentException("prop $propName is not owned by trait")
+        if (!props.containsKey(propName)) fail(E_INVARG, "trait has no property $propName")
+        if (getPropOwner(propName) != id) fail(E_INVARG, "prop $propName is not owned by trait")
         forEachDescendantTrait { trait ->
             trait.props.remove(propName)
         }
@@ -206,9 +208,9 @@ sealed class Trait(val name: String) {
     }
 
     fun clearProp(propName: String) {
-        if (!props.containsKey(propName)) throw IllegalArgumentException("trait has no property $propName")
+        if (!props.containsKey(propName)) fail(E_INVARG, "trait has no property $propName")
         val newParentID = getPropOwner(propName)!!
-        if (newParentID == id) throw IllegalArgumentException("prop $propName is owned by trait, and can't be cleared on it")
+        if (newParentID == id) fail(E_INVARG, "prop $propName is owned by trait, and can't be cleared on it")
         if (props[propName]!!.v == null) return  // already clear
         props[propName]!!.v = null
         forEachDescendantTrait { trait ->

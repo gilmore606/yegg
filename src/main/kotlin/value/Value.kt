@@ -1,7 +1,8 @@
 package com.dlfsystems.value
 
+import com.dlfsystems.util.fail
 import com.dlfsystems.vm.Context
-import com.dlfsystems.vm.VMException
+import com.dlfsystems.vm.VMException.Type.E_INVARG
 import com.dlfsystems.world.trait.Verb
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -14,13 +15,6 @@ sealed class Value {
 
     @SerialName("yType")
     abstract val type: Type
-
-    // utility func for throwing a runtime exception
-    fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
-    // utility func for throwing E_RANGE on incorrect arg count
-    fun requireArgCount(args: List<Value>, min: Int, max: Int) {
-        if (args.size < min || args.size > max) fail(VMException.Type.E_RANGE, "incorrect number of args")
-    }
 
     // String equivalent when added to a string.
     open fun asString(): String = "VALUE"
@@ -68,5 +62,9 @@ sealed class Value {
 
     // Get a verb on this type.  Return null if no such verb.
     open fun getVerb(name: String): Verb? = null
+
+    protected fun requireArgCount(args: List<Value>, min: Int, max: Int) {
+        if (args.size < min || args.size > max) fail(E_INVARG, "incorrect number of args")
+    }
 
 }

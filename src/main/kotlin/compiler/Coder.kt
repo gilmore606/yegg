@@ -8,6 +8,8 @@ import com.dlfsystems.value.*
 import com.dlfsystems.vm.Executable
 import com.dlfsystems.world.Obj
 
+// Generate compiled bytecode by traversing the AST.
+
 class Coder(val ast: Node) {
 
     var mem = mutableListOf<VMWord>()
@@ -144,6 +146,5 @@ class Coder(val ast: Node) {
             mem[loc].fillAddress(dest)
         }
     }
-
 
 }

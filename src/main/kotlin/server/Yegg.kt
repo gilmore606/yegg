@@ -2,7 +2,6 @@ package com.dlfsystems.server
 
 import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.server.parser.Command
-import com.dlfsystems.server.Connection
 import com.dlfsystems.value.*
 import com.dlfsystems.world.World
 import com.dlfsystems.world.Obj
@@ -36,11 +35,7 @@ object Yegg {
     val vTrue = VBool(true)
     val vFalse = VBool(false)
     val vNullObj = VObj(null)
-    val vNullTrait = VTrait(null)
     val vZero = VInt(0)
-    val vEmptyStr = VString("")
-    val vEmptyList = VList.make(emptyList())
-    val vEmptyMap = VMap.make(emptyMap())
 
     lateinit var conf: Conf
     lateinit var world: World
@@ -95,7 +90,7 @@ object Yegg {
                 world = JSON.decodeFromString<World>(file.readText())
                 Log.i(TAG, "Loaded ${world.name}.")
             } catch (e: Exception) {
-                Log.e(TAG, "FATAL: Failed to load from ${file.path} !")
+                Log.e(TAG, "FATAL: Failed to load from ${file.path} : $e")
                 exitProcess(1)
             }
         } else {

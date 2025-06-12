@@ -1,17 +1,20 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.dlfsystems.world
 
 import com.dlfsystems.server.parser.CommandMatch
 import com.dlfsystems.server.parser.Preposition
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.util.NanoID
+import com.dlfsystems.util.fail
 import com.dlfsystems.value.VList
 import com.dlfsystems.value.VObj
 import com.dlfsystems.value.Value
+import com.dlfsystems.vm.VMException.Type.E_INVARG
 import com.dlfsystems.world.trait.Trait
 import com.dlfsystems.world.trait.Verb
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-
 
 // An instance in the world.
 
@@ -46,7 +49,7 @@ class Obj {
     // Add trait to this object.
     fun addTrait(trait: Trait) {
         traits.forEach {
-            if (it.trait()!!.inheritsTrait(trait.id)) throw IllegalArgumentException("obj already has trait")
+            if (it.trait()!!.inheritsTrait(trait.id)) fail(E_INVARG, "obj already has trait")
         }
         traits.add(trait.id)
         trait.applyTo(this)
@@ -54,7 +57,7 @@ class Obj {
 
     // Remove trait from this object.
     fun removeTrait(trait: Trait) {
-        if (!traits.contains(trait.id)) throw IllegalArgumentException("obj doesn't have trait")
+        if (!traits.contains(trait.id)) fail(E_INVARG, "obj doesn't have trait")
         traits.remove(trait.id)
         trait.unapplyFrom(this)
     }
@@ -87,10 +90,10 @@ class Obj {
     }
 
     fun setProp(propName: String, value: Value): Boolean =
-        props[propName]?.let { it.v = value ; true } ?: false
+        props[propName]?.let { it.v = value ; true } == true
 
     fun clearProp(propName: String): Boolean =
-        props[propName]?.let { it.v = null ; true } ?: false
+        props[propName]?.let { it.v = null ; true } == true
 
     // Verbs
 

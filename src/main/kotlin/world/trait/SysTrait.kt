@@ -4,10 +4,16 @@ import com.dlfsystems.server.Log
 import com.dlfsystems.server.parser.Command
 import com.dlfsystems.server.Yegg
 import com.dlfsystems.server.mcp.MCP
+import com.dlfsystems.util.fail
 import com.dlfsystems.util.systemEpoch
 import com.dlfsystems.value.*
 import com.dlfsystems.value.Value.Type.*
 import com.dlfsystems.vm.Context
+import com.dlfsystems.vm.VMException
+import com.dlfsystems.vm.VMException.Type.E_INVARG
+import com.dlfsystems.vm.VMException.Type.E_INVOBJ
+import com.dlfsystems.vm.VMException.Type.E_TYPE
+import com.dlfsystems.vm.VMException.Type.E_VERBNF
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
@@ -123,8 +129,8 @@ class SysTrait : Trait("sys") {
         Yegg.world.getTrait("root")?.also { obj.addTrait(it) }
         try {
             args.forEach {
-                if (it !is VTrait) throw IllegalArgumentException("Non-trait passed to create")
-                obj.addTrait(it.trait()!!)
+                if (it !is VTrait) fail(E_INVARG, "Non-trait passed to create")
+                obj.addTrait((it as VTrait).trait()!!)
             }
             return obj.vThis
         } catch (e: Exception) {
@@ -138,7 +144,7 @@ class SysTrait : Trait("sys") {
         requireArgTypes(args, OBJ)
         (args[0] as VObj).obj()?.also { subject ->
             Yegg.world.destroyObj(subject)
-        } ?: throw IllegalArgumentException("invalid obj")
+        } ?: fail(E_INVOBJ, "invalid obj")
         return VVoid
     }
 
@@ -148,7 +154,7 @@ class SysTrait : Trait("sys") {
         when (args[0]) {
             is VTrait -> (args[0] as VTrait).trait()!!.addTrait((args[1] as VTrait).trait()!!)
             is VObj -> (args[0] as VObj).obj()!!.addTrait((args[1] as VTrait).trait()!!)
-            else -> throw IllegalArgumentException("cannot addParent to ${args[0].type}")
+            else -> fail(E_TYPE, "cannot addParent to ${args[0].type}")
         }
         return VVoid
     }
@@ -159,7 +165,7 @@ class SysTrait : Trait("sys") {
         when (args[0]) {
             is VTrait -> (args[0] as VTrait).trait()!!.removeTrait((args[1] as VTrait).trait()!!)
             is VObj -> (args[0] as VObj).obj()!!.removeTrait((args[1] as VTrait).trait()!!)
-            else -> throw IllegalArgumentException("cannot removeParent from ${args[0].type}")
+            else -> fail(E_TYPE, "cannot removeParent from ${args[0].type}")
         }
         return VVoid
     }
@@ -169,7 +175,7 @@ class SysTrait : Trait("sys") {
         requireArgTypes(args, OBJ, OBJ)
         (args[0] as VObj).obj()?.also { subject ->
             Yegg.world.moveObj(subject, args[1] as VObj)
-        } ?: throw IllegalArgumentException("invalid obj")
+        } ?: fail(E_INVOBJ, "invalid obj")
         return VVoid
     }
 
@@ -180,16 +186,16 @@ class SysTrait : Trait("sys") {
         when (args.size) {
             0 -> return VFloat(Random.nextFloat())
             1 -> {
-                val x = (args[0] as? VInt)?.v ?: throw IllegalArgumentException("Bad arg to random")
+                val x = (args[0] as? VInt)?.v ?: throw VMException(E_TYPE, "Bad arg to random")
                 return VInt(Random.nextInt(x))
             }
             2 -> {
-                val x = (args[0] as? VInt)?.v ?: throw IllegalArgumentException("Bad arg to random")
-                val y = (args[1] as? VInt)?.v ?: throw IllegalArgumentException("Bad arg to random")
+                val x = (args[0] as? VInt)?.v ?: throw VMException(E_TYPE, "Bad arg to random")
+                val y = (args[1] as? VInt)?.v ?: throw VMException(E_TYPE, "Bad arg to random")
                 return VInt(Random.nextInt(x, y + 1))
             }
         }
-        throw IllegalArgumentException("Too many args to random")
+        throw VMException(E_INVARG, "Too many args to random")
     }
 
     // $sys.chance() -> 50-50 true/false
@@ -203,12 +209,12 @@ class SysTrait : Trait("sys") {
 
     // $sys.min(v1, v2, v3...) -> lowest INT/FLOAT value in args (or list, if only arg is list)
     private fun verbMin(args: List<Value>): Value {
-        if (args.isEmpty()) throw IllegalArgumentException("Bad args for min")
+        if (args.isEmpty()) fail(E_INVARG, "Bad args for min")
         var numbers = args
         if (args.size == 1) {
-            if (args[0].type == Value.Type.LIST) numbers = (args[0] as VList).v
+            if (args[0].type == LIST) numbers = (args[0] as VList).v
         }
-        if (numbers[0].numericValue() == null) throw IllegalArgumentException("Bad args for min")
+        if (numbers[0].numericValue() == null) fail(E_INVARG, "Bad args for min")
         var min = numbers[0]
         var minval = numbers[0].numericValue()!!
         numbers.forEach {
@@ -224,12 +230,12 @@ class SysTrait : Trait("sys") {
 
     // $sys.max(v1, v2, v3...) -> highest INT/FLOAT value in args (or list, if only arg is list)
     private fun verbMax(args: List<Value>): Value {
-        if (args.isEmpty()) throw IllegalArgumentException("Bad args for max")
+        if (args.isEmpty()) fail(E_INVARG, "Bad args for max")
         var numbers = args
         if (args.size == 1) {
-            if (args[0].type == Value.Type.LIST) numbers = (args[0] as VList).v
+            if (args[0].type == LIST) numbers = (args[0] as VList).v
         }
-        if (numbers[0].numericValue() == null) throw IllegalArgumentException("Bad args for max")
+        if (numbers[0].numericValue() == null) fail(E_INVARG, "Bad args for max")
         var max = numbers[0]
         var maxval = numbers[0].numericValue()!!
         numbers.forEach {
@@ -256,9 +262,9 @@ class SysTrait : Trait("sys") {
             Command.fromString((args[1] as VString).v)?.also { command ->
                 trait.setCommand(command)
                 return VVoid
-            } ?: throw IllegalArgumentException("invalid command pattern")
+            } ?: fail(E_INVARG, "invalid command pattern")
         }
-        throw IllegalArgumentException("invalid trait")
+        throw VMException(E_INVARG, "invalid trait")
     }
 
     // $sys.removeCommand($trait, "co*mmand/cmd arg prep arg")
@@ -268,7 +274,7 @@ class SysTrait : Trait("sys") {
             trait.removeCommand((args[1] as VString).v)
             return VVoid
         }
-        throw IllegalArgumentException("invalid trait")
+        throw VMException(E_INVARG, "invalid trait")
     }
 
     // $sys.getVerbCode($trait, "verb") -> "string of source code"
@@ -276,7 +282,7 @@ class SysTrait : Trait("sys") {
         requireArgTypes(args, TRAIT, STRING)
         (args[0] as VTrait).trait()?.getVerb((args[1] as VString).v)?.also { verb ->
             return VString(verb.source)
-        } ?: throw IllegalArgumentException("verb not found")
+        } ?: throw VMException(E_VERBNF, "verb not found")
     }
 
     // $sys.setVerbCode($trait, "verb", "source code")
@@ -284,7 +290,7 @@ class SysTrait : Trait("sys") {
         requireArgTypes(args, TRAIT, STRING, STRING)
         (args[0] as VTrait).trait()?.also { trait ->
             trait.programVerb((args[1] as VString).v, (args[2] as VString).v)
-        } ?: throw IllegalArgumentException("invalid trait")
+        } ?: fail(E_INVARG, "invalid trait")
         return VVoid
     }
 
@@ -295,7 +301,7 @@ class SysTrait : Trait("sys") {
             trait.removeVerb((args[1] as VString).v)
             return VVoid
         }
-        throw IllegalArgumentException("invalid trait")
+        throw VMException(E_INVARG, "invalid trait")
     }
 
     // $sys.dumpDatabase() -> "err"
@@ -315,7 +321,7 @@ class SysTrait : Trait("sys") {
     private fun verbAddProp(args: List<Value>): VVoid {
         requireArgTypes(args, TRAIT, STRING, null)
         (args[0] as VTrait).trait()?.addProp(args[1].asString(), args[2])
-            ?: throw IllegalArgumentException("invalid trait")
+            ?: fail(E_INVARG, "invalid trait")
         return VVoid
     }
 
@@ -323,7 +329,7 @@ class SysTrait : Trait("sys") {
     private fun verbRemoveProp(args: List<Value>): VVoid {
         requireArgTypes(args, TRAIT, STRING)
         (args[0] as VTrait).trait()?.removeProp(args[1].asString())
-            ?: throw IllegalArgumentException("invalid trait")
+            ?: fail(E_INVARG, "invalid trait")
         return VVoid
     }
 
@@ -335,19 +341,20 @@ class SysTrait : Trait("sys") {
             is VObj -> {
 
             }
-            else -> throw IllegalArgumentException("cannot clearProp on ${args[0].type}")
+            else -> fail(E_TYPE, "cannot clearProp on ${args[0].type}")
         }
         return VVoid
     }
 
     private fun requireArgTypes(args: List<Value>, vararg argTypes: Value.Type?) {
-        if (args.size != argTypes.size) throw IllegalArgumentException("${argTypes.size} args required but ${args.size} provided")
+        if (args.size != argTypes.size) fail(E_INVARG, "${argTypes.size} args required but ${args.size} provided")
         args.forEachIndexed { n, arg ->
-            if (argTypes[n] != null && arg.type != argTypes[n]) throw IllegalArgumentException("arg $n is ${arg.type} not ${argTypes[n]}")
+            if (argTypes[n] != null && arg.type != argTypes[n]) fail(E_TYPE, "arg $n is ${arg.type} not ${argTypes[n]}")
         }
     }
 
     companion object {
         private const val TAG = "sys"
     }
+
 }

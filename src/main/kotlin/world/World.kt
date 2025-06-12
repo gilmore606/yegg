@@ -1,7 +1,10 @@
 package com.dlfsystems.world
 
 import com.dlfsystems.server.Yegg
+import com.dlfsystems.util.fail
 import com.dlfsystems.value.*
+import com.dlfsystems.vm.VMException.Type.E_INVARG
+import com.dlfsystems.vm.VMException.Type.E_MAXREC
 import com.dlfsystems.world.trait.*
 import kotlinx.serialization.Serializable
 
@@ -37,7 +40,7 @@ data class World(val name: String) {
 
     fun createTrait(traitName: String): Trait? {
         getTrait(traitName)?.also {
-            throw IllegalArgumentException("Trait with id $traitName already exists")
+            fail(E_INVARG, "Trait with id $traitName already exists")
         } ?: run {
             return when (traitName) {
                 "sys" -> SysTrait()
@@ -53,11 +56,11 @@ data class World(val name: String) {
 
     fun destroyTrait(traitName: String) {
         getTrait(traitName)?.also { trait ->
-            if (trait.children.isNotEmpty()) throw IllegalArgumentException("Can't destroy trait with descendant traits")
+            if (trait.children.isNotEmpty()) fail(E_INVARG, "Can't destroy trait with descendant traits")
             trait.removeSelf()
             traits.remove(trait.id)
             traitIDs.remove(traitName)
-        } ?: throw IllegalArgumentException("No trait $traitName exists")
+        } ?: fail(E_INVARG, "No trait $traitName exists")
     }
 
     fun createObj() = Obj().also { objs[it.id] = it }
@@ -76,7 +79,7 @@ data class World(val name: String) {
         // Prevent recursive move
         var checkLoc = newLocV.obj()
         while (checkLoc != null) {
-            if (checkLoc.location == obj.vThis) throw IllegalArgumentException("Recursive move")
+            if (checkLoc.location == obj.vThis) fail(E_MAXREC, "Recursive move")
             checkLoc = checkLoc.location.obj()
         }
         oldLoc.obj()?.also { it.contents.v.removeIf { it == obj.vThis } }

@@ -19,9 +19,6 @@ data class VTask(val v: Task.ID): Value() {
     override fun toString() = "<task:$v>"
     override fun asString() = toString()
 
-    // Valid tasks are true
-    override fun isTrue() = MCP.isValidTask(v)
-
     override fun cmpEq(a2: Value) = (a2 is VTask && v == a2.v)
 
     override fun getProp(name: String) = when (name) {

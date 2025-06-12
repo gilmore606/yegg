@@ -1,5 +1,6 @@
 package com.dlfsystems.value
 
+import com.dlfsystems.util.fail
 import com.dlfsystems.vm.VMException.Type.E_RANGE
 import com.dlfsystems.vm.VMWord
 import com.dlfsystems.vm.Executable

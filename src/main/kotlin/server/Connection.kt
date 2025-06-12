@@ -11,6 +11,8 @@ import com.dlfsystems.value.Value
 import com.dlfsystems.world.Obj
 import com.dlfsystems.world.trait.Verb
 
+// A transport-agnostic connection to the Yegg server.
+
 class Connection(private val sendText: (String) -> Unit) {
 
     @JvmInline

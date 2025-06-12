@@ -1,6 +1,5 @@
 package com.dlfsystems.server
 
-import com.dlfsystems.server.Connection
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
@@ -46,7 +45,6 @@ object Telnet {
                     }
                 }
                 onYeggThread { Yegg.addConnection(conn) }
-
 
                 try {
                     while (true) {

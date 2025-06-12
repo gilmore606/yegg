@@ -1,10 +1,12 @@
 package com.dlfsystems.compiler
 
 import com.dlfsystems.compiler.ast.Node
-import com.dlfsystems.compiler.lexer.Lexer
-import com.dlfsystems.compiler.lexer.Token
+import com.dlfsystems.compiler.parser.Lexer
+import com.dlfsystems.compiler.parser.Token
 import com.dlfsystems.compiler.parser.Parser
 import com.dlfsystems.vm.*
+
+// Compile a source string into executable code.
 
 object Compiler {
 

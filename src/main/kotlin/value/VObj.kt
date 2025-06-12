@@ -3,7 +3,9 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.server.Yegg
+import com.dlfsystems.util.fail
 import com.dlfsystems.vm.Context
+import com.dlfsystems.vm.VMException
 import com.dlfsystems.world.Obj
 import com.dlfsystems.vm.VMException.Type.E_PROPNF
 import com.dlfsystems.vm.VMException.Type.E_INVOBJ
@@ -41,7 +43,7 @@ data class VObj(val v: Obj.ID?): Value() {
             }
             return obj.getProp(name)
         }
-        throw IllegalArgumentException("Invalid obj")
+        throw VMException(E_INVOBJ, "Invalid obj")
     }
 
     override fun setProp(name: String, value: Value): Boolean {
@@ -63,7 +65,7 @@ data class VObj(val v: Obj.ID?): Value() {
 
     private fun verbHasProp(args: List<Value>): VBool {
         requireArgCount(args, 1, 1)
-        return VBool(obj()?.hasProp(args[0].asString()) ?: false)
+        return VBool(obj()?.hasProp(args[0].asString()) == true)
     }
 
     private fun verbClearProp(args: List<Value>): VVoid {

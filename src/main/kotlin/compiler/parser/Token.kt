@@ -1,4 +1,4 @@
-package com.dlfsystems.compiler.lexer
+package com.dlfsystems.compiler.parser
 
 enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     // Groupers
@@ -39,7 +39,6 @@ enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     T_LOGIC_OR("||"),
     T_LOGIC_AND("&&"),
     T_COMMA(","),
-    T_AT("@"),
     T_ARROW("->"),
 
     // Literals

@@ -1,6 +1,8 @@
 package com.dlfsystems.value
 
 import com.dlfsystems.vm.Context
+import com.dlfsystems.vm.VMException
+import com.dlfsystems.vm.VMException.Type.E_INVARG
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.math.*
@@ -72,7 +74,7 @@ data class VInt(val v: Int): Value() {
         return when (args[0].type) {
             Type.INT -> if ((args[0] as VInt).v >= v) this else args[0] as VInt
             Type.FLOAT -> if ((args[0] as VFloat).v >= v) this else VInt(floor((args[0] as VFloat).v).toInt())
-            else -> throw IllegalArgumentException("${args[0].type} is not numeric")
+            else -> throw VMException(E_INVARG, "${args[0].type} is not numeric")
         }
     }
 
@@ -81,7 +83,7 @@ data class VInt(val v: Int): Value() {
         return when (args[0].type) {
             Type.INT -> if ((args[0] as VInt).v <= v) this else args[0] as VInt
             Type.FLOAT -> if ((args[0] as VFloat).v <= v) this else VInt(ceil((args[0] as VFloat).v).toInt())
-            else -> throw IllegalArgumentException("${args[0].type} is not numeric")
+            else -> throw VMException(E_INVARG, "${args[0].type} is not numeric")
         }
     }
 

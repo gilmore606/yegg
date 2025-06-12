@@ -3,6 +3,7 @@ package com.dlfsystems.server.parser
 import kotlinx.serialization.Serializable
 
 // A user-typeable command on a trait.
+
 @Serializable
 data class Command(
     // The original string representation used to create this command.

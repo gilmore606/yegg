@@ -3,7 +3,7 @@
 package com.dlfsystems.compiler.parser
 
 import com.dlfsystems.compiler.CompileException
-import com.dlfsystems.compiler.lexer.TokenType.*
+import com.dlfsystems.compiler.parser.TokenType.*
 import com.dlfsystems.compiler.ast.*
 import com.dlfsystems.compiler.ast.expr.*
 import com.dlfsystems.compiler.ast.expr.identifier.*
@@ -12,8 +12,6 @@ import com.dlfsystems.compiler.ast.expr.ref.N_INDEX
 import com.dlfsystems.compiler.ast.expr.ref.N_PROPREF
 import com.dlfsystems.compiler.ast.expr.ref.N_RANGE
 import com.dlfsystems.compiler.ast.statement.*
-import com.dlfsystems.compiler.lexer.Token
-import com.dlfsystems.compiler.lexer.TokenType
 import com.dlfsystems.world.Obj
 
 // Take a stream of input tokens from Lexer and produce a tree of syntax nodes.
