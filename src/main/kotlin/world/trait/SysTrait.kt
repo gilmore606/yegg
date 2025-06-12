@@ -255,7 +255,6 @@ class SysTrait : Trait("sys") {
         Yegg.world.traits[(args[0] as VTrait).v]?.also { trait ->
             Command.fromString((args[1] as VString).v)?.also { command ->
                 trait.setCommand(command)
-                Log.d("setCommand($trait, $command)")
                 return VVoid
             } ?: throw IllegalArgumentException("invalid command pattern")
         }
@@ -267,7 +266,6 @@ class SysTrait : Trait("sys") {
         requireArgTypes(args, TRAIT, STRING)
         Yegg.world.traits[(args[0] as VTrait).v]?.also { trait ->
             trait.removeCommand((args[1] as VString).v)
-            Log.d("removeCommand($trait, ${args[1]}")
             return VVoid
         }
         throw IllegalArgumentException("invalid trait")
@@ -295,7 +293,6 @@ class SysTrait : Trait("sys") {
         requireArgTypes(args, TRAIT, STRING)
         Yegg.world.traits[(args[0] as VTrait).v]?.also { trait ->
             trait.removeVerb((args[1] as VString).v)
-            Log.d("removeVerb($trait, ${args[1]}")
             return VVoid
         }
         throw IllegalArgumentException("invalid trait")
@@ -309,7 +306,7 @@ class SysTrait : Trait("sys") {
 
     // $sys.shutdownServer()
     private fun verbShutdownServer(args: List<Value>): VVoid {
-        Log.i("Shutdown requested: $args")
+        Log.i(TAG, "Shutdown requested: $args")
         Yegg.stop()
         return VVoid
     }
@@ -348,5 +345,9 @@ class SysTrait : Trait("sys") {
         args.forEachIndexed { n, arg ->
             if (argTypes[n] != null && arg.type != argTypes[n]) throw IllegalArgumentException("arg $n is ${arg.type} not ${argTypes[n]}")
         }
+    }
+
+    companion object {
+        private const val TAG = "sys"
     }
 }

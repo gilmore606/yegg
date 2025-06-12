@@ -61,17 +61,19 @@ object MCP {
         job = Yegg.launch {
             runTasks()
         }
+        Log.i(TAG, "Started.")
     }
 
     // Stop processing queued tasks.
     fun stop() {
         job?.cancel()
+        Log.i(TAG, "Stopped.")
     }
 
     private suspend fun runTasks() {
         while (true) {
             getNextTask()?.also { task ->
-                Log.d("Executing ${task.id} $task")
+                Log.d(TAG, "Executing ${task.id} $task")
                 timeMap.remove(task.timeID)
                 taskMap.remove(task.id)
                 val result = task.execute()
@@ -95,4 +97,5 @@ object MCP {
         return null
     }
 
+    private const val TAG = "MCP"
 }

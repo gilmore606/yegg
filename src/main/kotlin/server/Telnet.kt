@@ -23,13 +23,13 @@ object Telnet {
     private suspend fun server() {
         val serverSocket = aSocket(SelectorManager(Dispatchers.IO))
             .tcp().bind(Yegg.conf.serverAddress, Yegg.conf.serverPort)
-        Log.i("Server listening at ${serverSocket.localAddress}")
+        Log.i(TAG, "Server listening at ${serverSocket.localAddress}")
 
         while (true) {
 
             val client = serverSocket.accept()
             val address = client.remoteAddress
-            Log.i("Accepted client socket $address")
+            Log.i(TAG, "Accepted client socket $address")
 
             val scope = CoroutineScope(
                 Dispatchers.IO.limitedParallelism(2) + CoroutineName("telnet$address")
@@ -53,9 +53,9 @@ object Telnet {
                         val input = receive.readUTF8Line() ?: break
                         onYeggThread { conn.receiveText(input) }
                     }
-                    Log.i("Closing client socket $address")
+                    Log.i(TAG, "Closing client socket $address")
                 } catch (e: Throwable) {
-                    Log.i("Connection error on $address: $e")
+                    Log.i(TAG, "Connection error on $address: $e")
                 }
 
                 client.close()
@@ -65,4 +65,5 @@ object Telnet {
         }
     }
 
+    private const val TAG = "Telnet"
 }

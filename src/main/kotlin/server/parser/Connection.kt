@@ -33,8 +33,6 @@ class Connection(private val sendText: (String) -> Unit) {
     fun sendText(text: String) = sendText.invoke(text)
 
     fun receiveText(text: String) {
-        Log.d("> $text")
-
         readRequest?.also { readRequest ->
             val singleLine = readRequest.singleLine
             if (text == "." || singleLine) {

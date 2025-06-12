@@ -68,17 +68,17 @@ object Yegg {
             if (!inTestMode) loadWorld() else createNewWorld("test")
             MCP.start()
             if (!inTestMode) Telnet.start()
-            Log.i("Server started.")
+            Log.i(TAG, "Server started.")
         }
     }
 
     fun resetForTest() {
-        if (!inTestMode) Log.e("resetForTest() called when not in test mode!")
+        if (!inTestMode) Log.e(TAG, "resetForTest() called when not in test mode!")
         else createNewWorld("test")
     }
 
     fun stop() {
-        Log.i("Server shutting down.")
+        Log.i(TAG, "Server shutting down.")
         if (!inTestMode) Telnet.stop()
         MCP.stop()
         if (!inTestMode) Log.stop()
@@ -89,16 +89,16 @@ object Yegg {
         val worldName = conf.worldName
         val file = File("$worldName.yegg")
         if (file.exists()) {
-            Log.i("Loading database from ${file.path}...")
+            Log.i(TAG, "Loading database from ${file.path}...")
             try {
                 world = JSON.decodeFromString<World>(file.readText())
-                Log.i("Loaded ${world.name}.")
+                Log.i(TAG, "Loaded ${world.name}.")
             } catch (e: Exception) {
-                Log.e("FATAL: Failed to load from ${file.path} !")
+                Log.e(TAG, "FATAL: Failed to load from ${file.path} !")
                 exitProcess(1)
             }
         } else {
-            Log.i("No database $worldName found, initializing new world.")
+            Log.i(TAG, "No database $worldName found, initializing new world.")
             createNewWorld(worldName)
         }
     }
@@ -106,6 +106,7 @@ object Yegg {
     private fun createNewWorld(worldName: String) {
         world = World(worldName).apply {
             createTrait("sys")!!.apply {
+                addProp("loginBanner", VString("Welcome to Yegg.\n\n"))
                 addProp("tickLimit", VInt(100000))
                 addProp("stackLimit", VInt(100))
                 addProp("callLimit", VInt(50))
@@ -123,6 +124,10 @@ object Yegg {
                     [traitName, verbName] = args[0].split(".")
                     trait = $(traitName.replace("\$", ""))
                     notifyConn(getVerbCode(trait, verbName))
+                """)
+                setCommand(Command.fromString("@quit = cmdQuit")!!)
+                programVerb("cmdQuit", $$"""
+                    disconnectUser()
                 """)
             }
             createTrait("user")!!.apply {
@@ -145,7 +150,7 @@ object Yegg {
         conn.user = user
         connectedUsers[user] = conn
         conn.sendText(CONNECT_MSG)
-        Log.i("User $user connected")
+        Log.i(TAG, "User $user connected")
     }
 
     fun removeConnection(conn: Connection) {
@@ -153,7 +158,7 @@ object Yegg {
         connections.remove(conn)
         connectedUsers.remove(conn.user)
         conn.onDisconnect()
-        Log.i("User ${conn.user} disconnected")
+        Log.i(TAG, "User ${conn.user} disconnected")
     }
 
     fun notifyUser(user: Obj?, text: String) {
@@ -166,7 +171,7 @@ object Yegg {
 
     fun dumpDatabase(): String {
         val file = File("${world.name}.yegg")
-        Log.i("Dumping database...")
+        Log.i(TAG, "Dumping database...")
         try {
             file.writeText(JSON.encodeToString(world))
         } catch (e: Exception) {
@@ -175,6 +180,7 @@ object Yegg {
         return ""
     }
 
+    private const val TAG = "Yegg"
 }
 
 // Switch execution to the Yegg server thread.
