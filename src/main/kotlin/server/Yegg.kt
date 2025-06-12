@@ -2,7 +2,7 @@ package com.dlfsystems.server
 
 import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.server.parser.Command
-import com.dlfsystems.server.parser.Connection
+import com.dlfsystems.server.Connection
 import com.dlfsystems.value.*
 import com.dlfsystems.world.World
 import com.dlfsystems.world.Obj
@@ -79,6 +79,7 @@ object Yegg {
 
     fun stop() {
         Log.i(TAG, "Server shutting down.")
+        notifyAll("Server is shutting down!")
         if (!inTestMode) Telnet.stop()
         MCP.stop()
         if (!inTestMode) Log.stop()
@@ -167,6 +168,10 @@ object Yegg {
 
     fun notifyConn(connID: String, text: String) {
         connections.firstOrNull { it.id.id == connID }?.sendText(text)
+    }
+
+    fun notifyAll(text: String) {
+        connections.forEach { it.sendText(text) }
     }
 
     fun dumpDatabase(): String {

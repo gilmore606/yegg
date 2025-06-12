@@ -1,16 +1,15 @@
-package com.dlfsystems.server.parser
+package com.dlfsystems.server
 
-import com.dlfsystems.server.Log
-import com.dlfsystems.server.Yegg
 import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.server.mcp.Task
+import com.dlfsystems.server.parser.CommandMatch
+import com.dlfsystems.server.parser.Preposition
 import com.dlfsystems.util.NanoID
 import com.dlfsystems.value.VList
 import com.dlfsystems.value.VString
 import com.dlfsystems.value.Value
 import com.dlfsystems.world.Obj
 import com.dlfsystems.world.trait.Verb
-
 
 class Connection(private val sendText: (String) -> Unit) {
 
@@ -37,7 +36,7 @@ class Connection(private val sendText: (String) -> Unit) {
             val singleLine = readRequest.singleLine
             if (text == "." || singleLine) {
                 val input: Value = if (singleLine) VString(text)
-                    else VList.make(readBuffer.map { VString(it) })
+                    else VList.Companion.make(readBuffer.map { VString(it) })
                 readBuffer.clear()
                 val taskID = readRequest.forTaskID
                 this.readRequest = null
@@ -54,7 +53,8 @@ class Connection(private val sendText: (String) -> Unit) {
             val source = if (eval.startsWith(";")) "notifyConn(${eval.substringAfter(";")})" else eval
             try {
                 val verb = Verb("eval").apply { program(source) }
-                MCP.schedule(Task.make(
+                MCP.schedule(
+                    Task.Companion.make(
                     exe = verb,
                     connection = this,
                 ))
@@ -124,7 +124,8 @@ class Connection(private val sendText: (String) -> Unit) {
 
     private fun runCommand(match: CommandMatch) {
         Yegg.world.traits[match.trait.id]?.getVerb(match.verb)?.also { verb ->
-            MCP.schedule(Task.make(
+            MCP.schedule(
+                Task.Companion.make(
                 exe = verb,
                 args = match.args,
                 connection = this,

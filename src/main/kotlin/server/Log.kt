@@ -38,7 +38,7 @@ object Log {
         if (level >= Yegg.conf.logLevel) {
             val line = "${level.disp}: [$tag] $m"
             if (Yegg.conf.logToConsole) println(line)
-            writer?.write("$line\n")
+            writer?.write("${timestamp}: $line\n")
         }
     }
 

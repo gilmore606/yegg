@@ -1,7 +1,7 @@
 package com.dlfsystems.server
 
 import com.dlfsystems.server.Yegg.launch
-import com.dlfsystems.server.parser.Connection
+import com.dlfsystems.server.Connection
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel

@@ -2,7 +2,7 @@ package com.dlfsystems.server
 
 import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.server.mcp.Task
-import com.dlfsystems.server.parser.Connection
+import com.dlfsystems.server.Connection
 import com.dlfsystems.world.trait.Verb
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
