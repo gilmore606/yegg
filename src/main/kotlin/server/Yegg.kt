@@ -1,6 +1,7 @@
 package com.dlfsystems.server
 
 import com.dlfsystems.server.mcp.MCP
+import com.dlfsystems.server.parser.Command
 import com.dlfsystems.server.parser.Connection
 import com.dlfsystems.value.*
 import com.dlfsystems.world.World
@@ -108,6 +109,21 @@ object Yegg {
                 addProp("tickLimit", VInt(100000))
                 addProp("stackLimit", VInt(100))
                 addProp("callLimit", VInt(50))
+                setCommand(Command.fromString("@program string = cmdProgram")!!)
+                programVerb("cmdProgram", $$"""
+                    [traitName, verbName] = args[0].split(".")
+                    trait = $(traitName.replace("\$", ""))
+                    notifyConn("Enter code for $trait:$verbName (end with .):")
+                    code = readLines()
+                    setVerbCode(trait, verbName, code.join(" "))
+                    notifyConn("Verb programmed.")
+                """)
+                setCommand(Command.fromString("@list string = cmdList")!!)
+                programVerb("cmdList", $$"""
+                    [traitName, verbName] = args[0].split(".")
+                    trait = $(traitName.replace("\$", ""))
+                    notifyConn(getVerbCode(trait, verbName))
+                """)
             }
             createTrait("user")!!.apply {
                 addProp("username", VString(""))

@@ -45,7 +45,7 @@ abstract class YeggTest {
     protected suspend fun run(source: String) {
         TestConnection(scope).apply {
             start()
-            runVerb(source.trimIndent())
+            runVerb(source)
             stop()
         }
     }
@@ -54,7 +54,7 @@ abstract class YeggTest {
         val expectedLines = expected.trimIndent().split("\n")
         TestConnection(scope).apply {
             start()
-            runVerb(source.trimIndent())
+            runVerb(source)
             expectedLines.forEachIndexed { n, expectedLine ->
                 assertEquals(expectedLine, output[n])
             }

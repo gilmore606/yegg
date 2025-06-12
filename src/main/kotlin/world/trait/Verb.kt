@@ -19,7 +19,7 @@ class Verb(
     override fun toString() = name
 
     fun program(source: String) {
-        this.source = source
+        this.source = source.trimIndent()
         recompile()
         // Log.d("programmed $name with code ${code.dumpText()}")
     }

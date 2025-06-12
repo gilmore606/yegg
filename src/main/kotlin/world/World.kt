@@ -100,11 +100,5 @@ data class World(val name: String) {
         return "ERR: unknown trait $traitName"
     }
 
-    fun listVerb(traitName: String, name: String): String {
-        getTrait(traitName)?.also { trait ->
-            trait.verbs[name]?.also { return it.source }
-                ?: return "ERR: verb not found $name"
-        }
-        return "ERR: unknown trait $traitName"
-    }
+
 }
