@@ -5,17 +5,11 @@ import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
+import java.io.IOException
 
 object Telnet {
 
     private var job: Job? = null
-
-    // Separate thread, to avoid blocking MCP on client buffer flushes (and vice versa)
-    private val scope = CoroutineScope(
-        SupervisorJob() +
-                Dispatchers.IO +
-                CoroutineName("Yegg telnet")
-    )
 
     fun start() {
         if (job?.isActive == true) throw IllegalStateException("Already started")
@@ -29,20 +23,26 @@ object Telnet {
     private suspend fun server() {
         val serverSocket = aSocket(SelectorManager(Dispatchers.IO))
             .tcp().bind(Yegg.conf.serverAddress, Yegg.conf.serverPort)
-        Log.i("Server listening at ${serverSocket.localAddress}:${serverSocket.port}")
+        Log.i("Server listening at ${serverSocket.localAddress}")
 
         while (true) {
 
             val client = serverSocket.accept()
-            Log.i("Accepted client socket: $client")
+            val address = client.remoteAddress
+            Log.i("Accepted client socket $address")
 
+            val scope = CoroutineScope(
+                Dispatchers.IO.limitedParallelism(2) + CoroutineName("telnet$address")
+            )
             scope.launch {
                 val receive = client.openReadChannel()
                 val send = client.openWriteChannel(autoFlush = true)
 
                 val conn = Connection {
                     scope.launch {
-                        send.writeStringUtf8("${it.replace("\n", "\r\n")}\r\n")
+                        try {
+                            send.writeStringUtf8("${it.replace("\n", "\r\n")}\r\n")
+                        } catch (e: IOException) { }
                     }
                 }
                 onYeggThread { Yegg.addConnection(conn) }
@@ -53,9 +53,9 @@ object Telnet {
                         val input = receive.readUTF8Line() ?: break
                         onYeggThread { conn.receiveText(input) }
                     }
-                    Log.i("Closing client socket: $client")
+                    Log.i("Closing client socket $address")
                 } catch (e: Throwable) {
-                    Log.i("Connection error on $client: $e")
+                    Log.i("Connection error on $address: $e")
                 }
 
                 client.close()
