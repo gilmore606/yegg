@@ -13,7 +13,10 @@ import com.dlfsystems.world.trait.Verb
 
 // A transport-agnostic connection to the Yegg server.
 
-class Connection(private val sendText: (String) -> Unit) {
+class Connection(
+    private val sendText: (String) -> Unit,
+    private val disconnectRemote: () -> Unit,
+) {
 
     @JvmInline
     value class ID(val id: String) { override fun toString() = id }
@@ -21,30 +24,51 @@ class Connection(private val sendText: (String) -> Unit) {
 
     var user: Obj? = null
 
-    var quitRequested = false
+    private val TAG: String
+        get() = "Conn:$id:${user?.id}"
 
     data class ReadRequest(val forTaskID: Task.ID, val singleLine: Boolean)
     var readRequest: ReadRequest? = null
     val readBuffer = mutableListOf<String>()
 
+    val inputBuffer = mutableListOf<String>()
+
     fun requestReadLines(forTaskID: Task.ID, singleLine: Boolean) {
         readRequest = ReadRequest(forTaskID, singleLine)
     }
 
-    fun sendText(text: String) = sendText.invoke(text)
+    fun sendText(text: String) { sendText.invoke(text) }
 
     fun receiveText(text: String) {
+        inputBuffer.add(text)
+        if (inputBuffer.size > INPUT_BUFFER_MAX_LINES) {
+            Log.w(TAG, "Input buffer size exceeded -- forcing disconnect")
+            forceDisconnect()
+        }
+    }
+
+    fun processNextInput() {
+        if (inputBuffer.isNotEmpty()) {
+            processInput(inputBuffer.removeFirst())
+        }
+    }
+
+    private fun processInput(text: String) {
         readRequest?.also { readRequest ->
             val singleLine = readRequest.singleLine
             if (text == "." || singleLine) {
                 val input: Value = if (singleLine) VString(text)
-                    else VList.Companion.make(readBuffer.map { VString(it) })
+                    else VList.make(readBuffer.map { VString(it) })
                 readBuffer.clear()
                 val taskID = readRequest.forTaskID
                 this.readRequest = null
                 MCP.resumeWithResult(taskID, input)
             } else {
                 readBuffer.add(text)
+                if (readBuffer.size > INPUT_BUFFER_MAX_LINES) {
+                    Log.w(TAG, "Read buffer size exceeded -- forcing disconnect")
+                    forceDisconnect()
+                }
             }
             return
         }
@@ -66,6 +90,11 @@ class Connection(private val sendText: (String) -> Unit) {
         } else if (text.isNotBlank()) {
             parseCommand(text)
         }
+    }
+
+    fun forceDisconnect() {
+        Yegg.removeConnection(this)
+        disconnectRemote.invoke()
     }
 
     fun onDisconnect() {
@@ -138,4 +167,7 @@ class Connection(private val sendText: (String) -> Unit) {
         }
     }
 
+    companion object {
+        private const val INPUT_BUFFER_MAX_LINES = 1000
+    }
 }

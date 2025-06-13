@@ -13,7 +13,10 @@ import kotlinx.coroutines.launch
 class TestConnection(scope: CoroutineScope) {
 
     val output = mutableListOf<String>()
-    private val conn = Connection { scope.launch { this@TestConnection.receiveOutput(it) } }
+    private val conn = Connection(
+        { scope.launch { this@TestConnection.receiveOutput(it) } },
+        { }
+    )
 
     fun send(text: String) { conn.receiveText(text) }
     private fun receiveOutput(o: String) { if (o.isNotBlank()) output.add(o) }

@@ -150,11 +150,18 @@ object Yegg {
     }
 
     fun removeConnection(conn: Connection) {
+        if (!connections.contains(conn)) return
         conn.sendText(DISCONNECT_MSG)
         connections.remove(conn)
         connectedUsers.remove(conn.user)
         conn.onDisconnect()
         Log.i(TAG, "User ${conn.user} disconnected")
+    }
+
+    fun processNextInputs() {
+        for (conn in connections) {
+            conn.processNextInput()
+        }
     }
 
     fun notifyUser(user: Obj?, text: String) {
