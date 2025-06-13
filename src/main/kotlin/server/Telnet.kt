@@ -56,7 +56,6 @@ object Telnet {
                 try {
                     while (true) {
                         val input = receive.readUTF8Line() ?: break
-                        Log.i(TAG, ">$input<")
                         onYeggThread { conn.receiveText(input) }
                     }
                     Log.i(TAG, "Closing client socket ${client.remoteAddress}")
