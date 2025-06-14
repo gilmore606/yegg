@@ -34,7 +34,7 @@ object Telnet {
 
     class TelnetSocket(val client: Socket) {
         val scope = CoroutineScope(
-            Dispatchers.IO.limitedParallelism(2) + CoroutineName("telnet${client.remoteAddress}")
+            Dispatchers.IO + CoroutineName("telnet${client.remoteAddress}")
         )
 
         init {
@@ -42,15 +42,12 @@ object Telnet {
                 val receive = client.openReadChannel()
                 val send = client.openWriteChannel(autoFlush = true)
 
-                val conn = Connection({
-                    scope.launch {
-                        try {
-                            send.writeStringUtf8("${it.replace("\n", "\r\n")}\r\n")
-                        } catch (e: IOException) { }
-                    }
-                }, {
-                    scope.launch { stop() }
-                })
+                val conn = Connection { scope.launch { stop() } }
+
+                scope.launch { conn.outputFlow.collect {
+                    send.writeStringUtf8("${it.replace("\n", "\r\n")}\r\n")
+                } }
+
                 onYeggThread { Yegg.addConnection(conn) }
 
                 try {

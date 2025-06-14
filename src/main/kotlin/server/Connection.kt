@@ -10,12 +10,12 @@ import com.dlfsystems.value.VString
 import com.dlfsystems.value.Value
 import com.dlfsystems.world.Obj
 import com.dlfsystems.world.trait.Verb
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 // A transport-agnostic connection to the Yegg server.
 
 class Connection(
-    private val sendText: (String) -> Unit,
-    private val disconnectRemote: () -> Unit,
+    private val disconnectRemote: () -> Unit
 ) {
 
     @JvmInline
@@ -33,11 +33,15 @@ class Connection(
 
     val inputBuffer = mutableListOf<String>()
 
+    val outputFlow = MutableSharedFlow<String>(extraBufferCapacity = OUTPUT_BUFFER_MAX_LINES)
+
     fun requestReadLines(forTaskID: Task.ID, singleLine: Boolean) {
         readRequest = ReadRequest(forTaskID, singleLine)
     }
 
-    fun sendText(text: String) { sendText.invoke(text) }
+    fun sendText(text: String) {
+        if (!outputFlow.tryEmit(text)) Log.w(TAG, "Failed to emit on outputFlow")
+    }
 
     fun receiveText(text: String) {
         inputBuffer.add(text)
@@ -169,5 +173,6 @@ class Connection(
 
     companion object {
         private const val INPUT_BUFFER_MAX_LINES = 1000
+        private const val OUTPUT_BUFFER_MAX_LINES = 1000
     }
 }

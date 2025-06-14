@@ -14,12 +14,13 @@ class TestConnection(scope: CoroutineScope) {
 
     val output = mutableListOf<String>()
 
-    private val conn = Connection(
-        { scope.launch { this@TestConnection.receiveOutput(it) } },
-        { }
-    )
+    private val conn = Connection { }
 
     private val loginBanner = Yegg.world.sys.getProp("loginBanner")?.asString() ?: ""
+
+    init {
+        scope.launch { conn.outputFlow.collect { receiveOutput(it) } }
+    }
 
     fun send(text: String) { conn.receiveText(text) }
 

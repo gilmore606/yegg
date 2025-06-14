@@ -13,11 +13,13 @@ class Websocket(
     lateinit var conn: Connection
 
     suspend fun listen() {
-        conn = Connection(
-            { launch { outgoing.send(Frame.Text(it)) } },
-            { launch { close(CloseReason(CloseReason.Codes.NORMAL, "server closed")) } }
-        )
+        conn = Connection {
+            launch { close(CloseReason(CloseReason.Codes.NORMAL, "server closed")) }
+        }
+        launch { conn.outputFlow.collect { outgoing.send(Frame.Text(it)) } }
+
         onYeggThread { Yegg.addConnection(conn) }
+
         for (frame in incoming) {
             if (frame is Frame.Text) {
                 val text = frame.readText()
