@@ -12,7 +12,7 @@ import java.util.*
 
 object MCP {
 
-    private const val WAIT_FOR_TASKS_MS = 10L
+    private const val WAIT_FOR_TASKS_MS = 1L
 
     private val timeMap = TreeMap<TimeID, Task>()
     private val taskMap = HashMap<Task.ID, Task>()
@@ -69,7 +69,8 @@ object MCP {
 
     private suspend fun runTasks() {
         while (true) {
-            getNextTask()?.also { task ->
+            var task = getNextTask()
+            while (task != null) {
                 Log.d(TAG, "Executing ${task.id} $task")
                 timeMap.remove(task.timeID)
                 taskMap.remove(task.id)
@@ -79,10 +80,12 @@ object MCP {
                     timeMap[task.timeID] = task
                     taskMap[task.id] = task
                 }
-                Log.flush()
-            } ?: run {
-                delay(WAIT_FOR_TASKS_MS)
+                task = getNextTask()
             }
+
+            Yegg.processNextInputs()
+            Log.flush()
+            delay(WAIT_FOR_TASKS_MS)
         }
     }
 

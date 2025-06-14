@@ -94,7 +94,7 @@ class SysTrait : Trait("sys") {
     // $sys.disconnectUser()
     private fun verbDisconnectUser(c: Context, args: List<Value>): VVoid {
         requireArgTypes(args)
-        c.connection?.quitRequested = true
+        c.connection?.forceDisconnect()
         return VVoid
     }
 
