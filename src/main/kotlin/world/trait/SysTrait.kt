@@ -16,6 +16,7 @@ import com.dlfsystems.vm.VMException.Type.E_TYPE
 import com.dlfsystems.vm.VMException.Type.E_VERBNF
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.mindrot.jbcrypt.BCrypt
 import kotlin.random.Random
 
 // A special trait which exists in every world.
@@ -58,6 +59,7 @@ class SysTrait : Trait("sys") {
             "ansi" -> return verbAnsi(args)
             "utf8" -> return verbUtf8(args)
             "cp437" -> return verbCp437(args)
+            "crypt" -> return verbCrypt(args)
             "setCommand" -> return verbSetCommand(args)
             "removeCommand" -> return verbRemoveCommand(args)
             "getVerbCode" -> return verbGetVerbCode(args)
@@ -270,6 +272,13 @@ class SysTrait : Trait("sys") {
         val incode = (args[0] as VInt).v
         if (incode < 0 || incode > 255) fail(E_INVARG, "cp437 code must be between 0 and 255")
         return VString(Char(CP437_TO_UTF8_TABLE[incode]).toString())
+    }
+
+    // $sys.crypt("plaintext") -> bcrypted salted text
+    private fun verbCrypt(args: List<Value>): VString {
+        requireArgTypes(args, STRING)
+        val plain = (args[0] as VString).v
+        return VString(BCrypt.hashpw(plain, BCrypt.gensalt()))
     }
 
     private fun Value.numericValue(): Float? = when (type) {
