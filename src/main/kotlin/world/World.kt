@@ -7,6 +7,7 @@ import com.dlfsystems.vm.VMException.Type.E_INVARG
 import com.dlfsystems.vm.VMException.Type.E_MAXREC
 import com.dlfsystems.world.trait.*
 import kotlinx.serialization.Serializable
+import org.mindrot.jbcrypt.BCrypt
 
 @Serializable
 data class World(val name: String) {
@@ -21,7 +22,7 @@ data class World(val name: String) {
             objs[obj]?.getProp("username")?.also {
                 if (it == VString(name)) {
                     objs[obj]?.getProp("password")?.also {
-                        if (it == VString(password)) {
+                        if (BCrypt.checkpw(password, it.asString())) {
                             return objs[obj]
                         }
                     }

@@ -1,6 +1,5 @@
 package com.dlfsystems
 
-import com.dlfsystems.TestConnection
 import com.dlfsystems.server.Yegg
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
