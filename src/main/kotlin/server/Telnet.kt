@@ -93,7 +93,6 @@ object Telnet {
 
         val optPrefs = mutableMapOf<Opt, Boolean>().apply {
             Opt.entries.forEach { set(it, true) }
-            set(Opt.ECHO, false)
             set(Opt.STATUS, false)
             set(Opt.TERM_SPEED, false)
             set(Opt.CHARSET, false)
@@ -263,7 +262,7 @@ object Telnet {
 
         private suspend fun ByteWriteChannel.sendText(text: String) {
             try { writeStringUtf8("${text.replace("\n", "\r\n")}\r\n") }
-            catch (e: ClosedWriteChannelException) {  }
+            catch (e: Exception) {  }
         }
 
         private suspend fun expectByte(expected: ByteCmd): Boolean {
