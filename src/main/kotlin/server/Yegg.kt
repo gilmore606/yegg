@@ -2,6 +2,7 @@ package com.dlfsystems.server
 
 import com.dlfsystems.server.mcp.MCP
 import com.dlfsystems.server.parser.Command
+import com.dlfsystems.util.systemEpoch
 import com.dlfsystems.value.*
 import com.dlfsystems.world.World
 import com.dlfsystems.world.Obj
@@ -21,7 +22,9 @@ object Yegg {
         val logLevel: Log.Level,
         val logToConsole: Boolean,
         val optimizeCompiler: Boolean,
+        val MSSP: Map<String, String>,
     )
+
     private const val CONFIG_PATH = "yegg.json"
 
     private const val CONNECT_MSG = "** Connected **"
@@ -43,6 +46,8 @@ object Yegg {
     private val connections = mutableSetOf<Connection>()
     val connectedUsers = mutableMapOf<Obj, Connection>()
 
+    var startTime: Int = 0
+
     private val coroutineScope = CoroutineScope(
         SupervisorJob() +
                 Dispatchers.Default.limitedParallelism(1) +
@@ -63,6 +68,7 @@ object Yegg {
             if (!inTestMode) loadWorld() else createNewWorld("test")
             MCP.start()
             if (!inTestMode) Telnet.start()
+            startTime = systemEpoch()
             Log.i(TAG, "Server started.")
         }
     }

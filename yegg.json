@@ -4,5 +4,19 @@
   "serverPort": 8888,
   "logLevel": "DEBUG",
   "logToConsole": true,
-  "optimizeCompiler": true
+  "optimizeCompiler": true,
+  "MSSP": {
+    "NAME": "TestYegg",
+    "HOSTNAME": "yegg.tspigot.net",
+    "PORT": "8888",
+    "CODEBASE": "Yegg 0.1",
+    "CONTACT": "gilmore@tspigot.net",
+    "CREATED": "2025",
+    "WEBSITE": "http://tspigot.net",
+    "CHARSET": "UTF-8",
+    "FAMILY": "Custom",
+    "GENRE": "None",
+    "GAMEPLAY": "Educational",
+    "STATUS": "Alpha"
+  }
 }
