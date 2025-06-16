@@ -35,6 +35,19 @@ class Connection(
 
     val outputFlow = MutableSharedFlow<String>(extraBufferCapacity = OUTPUT_BUFFER_MAX_LINES)
 
+    enum class ColorMode { ANSI, XTERM256, OSC, TRUECOLOR }
+    var colorSupport = mutableListOf<ColorMode>()
+
+    var clientWidth = 80
+    var clientHeight = 24
+
+    var isScreenReader = false
+    var isUtf8 = false
+
+    fun changeColorSupport(mode: ColorMode, value: Boolean) {
+        if (value) colorSupport.add(mode) else colorSupport.remove(mode)
+    }
+
     fun requestReadLines(forTaskID: Task.ID, singleLine: Boolean) {
         readRequest = ReadRequest(forTaskID, singleLine)
     }
