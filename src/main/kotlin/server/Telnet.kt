@@ -4,6 +4,7 @@ import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
 import java.io.IOException
 
 object Telnet {
@@ -25,42 +26,49 @@ object Telnet {
         Log.i(TAG, "Server listening at ${serverSocket.localAddress}")
 
         while (true) {
-
             val client = serverSocket.accept()
-            val address = client.remoteAddress
-            Log.i(TAG, "Accepted client socket $address")
+            Log.i(TAG, "Accepted client socket ${client.remoteAddress}")
+            TelnetSocket(client)
+        }
+    }
 
-            val scope = CoroutineScope(
-                Dispatchers.IO.limitedParallelism(2) + CoroutineName("telnet$address")
-            )
+    class TelnetSocket(val client: Socket) {
+        val scope = CoroutineScope(
+            Dispatchers.IO + CoroutineName("telnet${client.remoteAddress}")
+        )
+
+        init {
             scope.launch {
                 val receive = client.openReadChannel()
                 val send = client.openWriteChannel(autoFlush = true)
 
-                val conn = Connection {
-                    scope.launch {
-                        try {
-                            send.writeStringUtf8("${it.replace("\n", "\r\n")}\r\n")
-                        } catch (e: IOException) { }
-                    }
-                }
+                val conn = Connection { scope.launch { stop() } }
+
+                scope.launch { conn.outputFlow.collect {
+                    send.writeStringUtf8("${it.replace("\n", "\r\n")}\r\n")
+                } }
+
                 onYeggThread { Yegg.addConnection(conn) }
 
                 try {
                     while (true) {
                         val input = receive.readUTF8Line() ?: break
                         onYeggThread { conn.receiveText(input) }
-                        if (conn.quitRequested) break
                     }
-                    Log.i(TAG, "Closing client socket $address")
+                    Log.i(TAG, "Closing client socket ${client.remoteAddress}")
                 } catch (e: Throwable) {
-                    Log.i(TAG, "Connection error on $address: $e")
+                    if (e !is CancellationException) {
+                        Log.i(TAG, "Connection error on ${client.remoteAddress}: $e")
+                    }
                 }
 
                 onYeggThread { Yegg.removeConnection(conn) }
                 client.close()
             }
+        }
 
+        fun stop() {
+            scope.cancel()
         }
     }
 
