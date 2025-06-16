@@ -254,6 +254,10 @@ object Telnet {
                                 else -> { }
                             }
                         }
+                    } else if (termString.contains("xterm", true)) {
+                        conn.changeColorSupport(ColorMode.XTERM256, true)
+                    } else if (termString.contains("ansi", true)) {
+                        conn.changeColorSupport(ColorMode.ANSI, true)
                     }
                 }
                 else -> Log.w(TAG, "Got subnegotiation for unknown option: $option")
