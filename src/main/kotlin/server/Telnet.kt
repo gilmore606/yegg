@@ -256,6 +256,7 @@ object Telnet {
                         }
                     } else if (termString.contains("xterm", true)) {
                         conn.changeColorSupport(ColorMode.XTERM256, true)
+                        conn.changeColorSupport(ColorMode.ANSI, true)
                     } else if (termString.contains("ansi", true)) {
                         conn.changeColorSupport(ColorMode.ANSI, true)
                     }

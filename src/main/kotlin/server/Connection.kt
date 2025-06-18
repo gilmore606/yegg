@@ -27,16 +27,14 @@ class Connection(
     private val TAG: String
         get() = "Conn:$id:${user?.id}"
 
-    data class ReadRequest(val forTaskID: Task.ID, val singleLine: Boolean)
+    data class ReadRequest(val taskID: Task.ID, val singleLine: Boolean)
     var readRequest: ReadRequest? = null
     val readBuffer = mutableListOf<String>()
-
     val inputBuffer = mutableListOf<String>()
-
     val outputFlow = MutableSharedFlow<String>(extraBufferCapacity = OUTPUT_BUFFER_MAX_LINES)
 
     enum class ColorMode { ANSI, XTERM256, OSC, TRUECOLOR }
-    var colorSupport = mutableListOf<ColorMode>()
+    var colorSupport = mutableSetOf<ColorMode>()
 
     var clientWidth = 80
     var clientHeight = 24
@@ -77,7 +75,7 @@ class Connection(
                 val input: Value = if (singleLine) VString(text)
                     else VList.make(readBuffer.map { VString(it) })
                 readBuffer.clear()
-                val taskID = readRequest.forTaskID
+                val taskID = readRequest.taskID
                 this.readRequest = null
                 MCP.resumeWithResult(taskID, input)
             } else {
@@ -115,9 +113,7 @@ class Connection(
     }
 
     fun onDisconnect() {
-        readRequest?.also { readRequest ->
-            MCP.cancel(readRequest.forTaskID)
-        }
+        readRequest?.also { MCP.cancel(it.taskID) }
     }
 
     private fun parseCommand(text: String) {
