@@ -128,6 +128,20 @@ class LangTest: YeggTest() {
     }
 
     @Test
+    fun `For loop over empty list is skipped`() = yeggTest {
+        runForOutput($$"""
+            foo = []
+            for (x in foo) notifyConn("ACK")
+            foo = [1]
+            for (x in foo) notifyConn("BAR")
+            notifyConn("done")
+        """, """
+            BAR
+            done
+        """)
+    }
+
+    @Test
     fun `When`() = yeggTest {
         runForOutput($$"""
             foo = ""

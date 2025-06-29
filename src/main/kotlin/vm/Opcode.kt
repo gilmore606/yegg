@@ -125,6 +125,7 @@ enum class Opcode(val argCount: Int = 0) {
 
     // Compare pop0 to zero.
     O_CMP_EQZ,
+    O_CMP_NEZ,
     O_CMP_GTZ,
     O_CMP_GEZ,
     O_CMP_LTZ,

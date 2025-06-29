@@ -42,8 +42,12 @@ class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEM
         coder.code(this, O_SETVAR)
         coder.value(this, internalIndex.variableID!!)
         source.code(coder)
-        coder.code(this, O_SETVAR)
+        coder.code(this, O_SETGETVAR)
         coder.value(this, internalSource.variableID!!)
+        coder.code(this, O_ITERSIZE)
+        coder.code(this, O_CMP_NEZ)
+        coder.code(this, O_IF)
+        coder.jumpForward(this, "forEnd")
         coder.setBackJump(this, "forStart")
         coder.code(this, O_ITERPICK)
         coder.value(this, internalSource.variableID!!)
@@ -62,6 +66,7 @@ class N_FORVALUE(val index: N_IDENTIFIER, val source: N_EXPR, val body: N_STATEM
         coder.code(this, O_CMP_LE)
         coder.code(this, O_IF)
         coder.jumpBack(this, "forStart")
+        coder.setForwardJump(this, "forEnd")
         coder.setBreakJump()
     }
 }

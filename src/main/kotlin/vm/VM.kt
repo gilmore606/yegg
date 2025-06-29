@@ -353,6 +353,7 @@ class VM(
                     }
                 }
                 O_CMP_EQZ -> { push(VBool(pop().cmpEq(Yegg.vZero))) }
+                O_CMP_NEZ -> { push(VBool(!pop().cmpEq(Yegg.vZero))) }
                 O_CMP_GTZ -> { push(VBool(pop().cmpGt(Yegg.vZero))) }
                 O_CMP_GEZ -> { push(VBool(pop().cmpGe(Yegg.vZero))) }
                 O_CMP_LTZ -> { push(VBool(pop().cmpLt(Yegg.vZero))) }
