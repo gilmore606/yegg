@@ -8,8 +8,8 @@ class N_SUSPEND(val seconds: N_EXPR): N_STATEMENT() {
     override fun toText() = "suspend ($seconds)"
     override fun kids() = listOf(seconds)
 
-    override fun code(coder: Coder) {
-        seconds.code(coder)
-        coder.code(this, O_SUSPEND)
+    override fun code(c: Coder) {
+        seconds.code(c)
+        c.opcode(this, O_SUSPEND)
     }
 }

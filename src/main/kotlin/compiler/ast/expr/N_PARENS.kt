@@ -8,8 +8,8 @@ class N_PARENS(val expr: N_EXPR): N_EXPR() {
     override fun kids() = listOf(expr)
     override fun constantValue() = expr.constantValue()
 
-    override fun code(coder: Coder) {
-        if (codeConstant(coder)) return
-        expr.code(coder)
+    override fun code(c: Coder) {
+        if (codeConstant(c)) return
+        expr.code(c)
     }
 }

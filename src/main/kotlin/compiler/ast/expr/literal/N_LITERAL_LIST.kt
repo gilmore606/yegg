@@ -17,10 +17,10 @@ class N_LITERAL_LIST(val value: List<N_EXPR>): N_LITERAL() {
         }
         return VList(constant)
     }
-    override fun code(coder: Coder) {
-        if (codeConstant(coder)) return
-        value.forEach { it.code(coder) }
-        coder.code(this, O_LISTVAL)
-        coder.value(this, value.size)
+    override fun code(c: Coder) {
+        if (codeConstant(c)) return
+        value.forEach { it.code(c) }
+        c.opcode(this, O_LISTVAL)
+        c.value(this, value.size)
     }
 }

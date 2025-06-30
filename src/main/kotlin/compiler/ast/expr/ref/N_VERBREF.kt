@@ -10,11 +10,11 @@ class N_VERBREF(val left: N_EXPR, val right: N_EXPR, val args: List<N_EXPR>): N_
 
     override fun identify() { (right as? N_IDENTIFIER)?.markAsVerb() }
 
-    override fun code(coder: Coder) {
-        args.forEach { it.code(coder) }
-        left.code(coder)
-        right.code(coder)
-        coder.code(this, O_CALL)
-        coder.value(this, args.size)
+    override fun code(c: Coder) {
+        args.forEach { it.code(c) }
+        left.code(c)
+        right.code(c)
+        c.opcode(this, O_CALL)
+        c.value(this, args.size)
     }
 }

@@ -42,7 +42,7 @@ abstract class Node {
     open fun variableName(): String? = null
 
     // Generate opcodes for this node.
-    open fun code(coder: Coder) { }
+    open fun code(c: Coder) { }
 
     fun makeID() = NanoID.newID()
 }

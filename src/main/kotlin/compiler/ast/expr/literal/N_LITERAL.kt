@@ -11,9 +11,9 @@ import com.dlfsystems.world.Obj
 abstract class N_LITERAL: N_EXPR() {
     open fun codeValue(coder: Coder) { }
 
-    override fun code(coder: Coder) {
-        coder.code(this, O_VAL)
-        codeValue(coder)
+    override fun code(c: Coder) {
+        c.opcode(this, O_VAL)
+        codeValue(c)
     }
 }
 

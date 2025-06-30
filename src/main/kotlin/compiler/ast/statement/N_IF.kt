@@ -10,17 +10,17 @@ class N_IF(val condition: N_EXPR, val sThen: N_STATEMENT, val sElse: N_STATEMENT
     override fun toText() = sElse?.let { "(if $condition $sThen else $sElse)" } ?: "if $condition $sThen"
     override fun kids() = mutableListOf(condition, sThen).apply { sElse?.also { add(it) }}
 
-    override fun code(coder: Coder) {
-        condition.code(coder)
-        coder.code(this, O_IF)
-        coder.jumpForward(this, "ifskip")
-        sThen.code(coder)
+    override fun code(c: Coder) {
+        condition.code(c)
+        c.opcode(this, O_IF)
+        c.jumpForward(this, "ifskip")
+        sThen.code(c)
         sElse?.also { sElse ->
-            coder.code(this, O_JUMP)
-            coder.jumpForward(this, "elseskip")
-            coder.setForwardJump(this, "ifskip")
-            sElse.code(coder)
-            coder.setForwardJump(this, "elseskip")
-        } ?: coder.setForwardJump(this, "ifskip")
+            c.opcode(this, O_JUMP)
+            c.jumpForward(this, "elseskip")
+            c.setForwardJump(this, "ifskip")
+            sElse.code(c)
+            c.setForwardJump(this, "elseskip")
+        } ?: c.setForwardJump(this, "ifskip")
     }
 }

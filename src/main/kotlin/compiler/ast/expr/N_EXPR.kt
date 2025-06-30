@@ -9,17 +9,18 @@ import com.dlfsystems.vm.Opcode.*
 
 abstract class N_EXPR: N_STATEMENT() {
     // Code this expr as the left side of = assign.
-    open fun codeAssign(coder: Coder) { fail("illegal left side of assignment") }
+    open fun codeAssign(c: Coder) { fail("illegal left side of assignment") }
     // Code this expr as the left side of [i]= assign.
-    open fun codeIndexAssign(coder: Coder) { fail("illegal left side of index assignment") }
+    // TODO: is this used?  do we need to implement this or something?
+    open fun codeIndexAssign(c: Coder) { fail("illegal left side of index assignment") }
     // Does this expr have a constant value?
     open fun constantValue(): Value? = null
     // If we have a constantValue(), code it and return true.
     // Any code() on an N_EXPR that can have a constant value should call this first (and terminate if true).
-    protected fun codeConstant(coder: Coder): Boolean {
+    protected fun codeConstant(c: Coder): Boolean {
         constantValue()?.also { value ->
-            coder.code(this, O_VAL)
-            coder.value(this, value)
+            c.opcode(this, O_VAL)
+            c.value(this, value)
             return true
         }
         return false

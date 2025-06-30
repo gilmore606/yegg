@@ -10,9 +10,9 @@ class N_FORK(val seconds: N_EXPR, val function: N_LITERAL_FUN): N_EXPR() {
     override fun toText() = "fork ($seconds) $function"
     override fun kids() = listOf(seconds, function)
 
-    override fun code(coder: Coder) {
-        seconds.code(coder)
-        function.code(coder)
-        coder.code(this, O_FORK)
+    override fun code(c: Coder) {
+        seconds.code(c)
+        function.code(c)
+        c.opcode(this, O_FORK)
     }
 }

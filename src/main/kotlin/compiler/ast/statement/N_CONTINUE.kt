@@ -6,8 +6,8 @@ import com.dlfsystems.vm.Opcode.*
 class N_CONTINUE: N_STATEMENT() {
     override fun toText() = "continue"
 
-    override fun code(coder: Coder) {
-        coder.code(this, O_JUMP)
-        coder.jumpContinue(this)
+    override fun code(c: Coder) {
+        c.opcode(this, O_JUMP)
+        c.jumpContinue(this)
     }
 }

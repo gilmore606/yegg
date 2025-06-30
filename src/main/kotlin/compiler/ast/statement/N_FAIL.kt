@@ -8,8 +8,8 @@ class N_FAIL(val expr: N_EXPR): N_STATEMENT() {
     override fun toText() = "fail $expr"
     override fun kids() = listOf(expr)
 
-    override fun code(coder: Coder) {
-        expr.code(coder)
-        coder.code(this, O_FAIL)
+    override fun code(c: Coder) {
+        expr.code(c)
+        c.opcode(this, O_FAIL)
     }
 }

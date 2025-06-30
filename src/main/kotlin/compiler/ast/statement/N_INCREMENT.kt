@@ -9,9 +9,9 @@ class N_INCREMENT(val identifier: N_IDENTIFIER, val isDecrement: Boolean = false
     override fun toText() = "$identifier++"
     override fun kids() = listOf(identifier)
 
-    override fun code(coder: Coder) {
+    override fun code(c: Coder) {
         if (!identifier.isVariable()) fail("cannot increment non-variable identifier")
-        if (isDecrement) coder.code(this, O_DECVAR) else coder.code(this, O_INCVAR)
-        coder.value(this, identifier.variableID!!)
+        if (isDecrement) c.opcode(this, O_DECVAR) else c.opcode(this, O_INCVAR)
+        c.value(this, identifier.variableID!!)
     }
 }

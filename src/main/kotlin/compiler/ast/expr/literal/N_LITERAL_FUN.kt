@@ -8,18 +8,18 @@ import com.dlfsystems.vm.Opcode.*
 
 class N_LITERAL_FUN(val args: List<N_IDENTIFIER>, val block: N_STATEMENT): N_LITERAL() {
     override fun kids() = args + listOf(block)
-    override fun code(coder: Coder) {
-        coder.code(this, O_VAL)
-        coder.value(this, args.map { VString(it.name) })
-        coder.code(this, O_VAL)
-        coder.value(this, block.collectVars().map { VString(it) })
-        coder.code(this, O_FUNVAL)
-        val blockID = coder.codeBlockStart(this)
-        coder.code(this, O_JUMP)
-        coder.jumpForward(this, "skipFun")
-        block.code(coder)
-        coder.code(this, O_RETURN)
-        coder.codeBlockEnd(this, blockID)
-        coder.setForwardJump(this, "skipFun")
+    override fun code(c: Coder) {
+        c.opcode(this, O_VAL)
+        c.value(this, args.map { VString(it.name) })
+        c.opcode(this, O_VAL)
+        c.value(this, block.collectVars().map { VString(it) })
+        c.opcode(this, O_FUNVAL)
+        val blockID = c.codeBlockStart(this)
+        c.opcode(this, O_JUMP)
+        c.jumpForward(this, "skipFun")
+        block.code(c)
+        c.opcode(this, O_RETURN)
+        c.codeBlockEnd(this, blockID)
+        c.setForwardJump(this, "skipFun")
     }
 }

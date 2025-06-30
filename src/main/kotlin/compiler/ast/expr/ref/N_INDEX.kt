@@ -10,15 +10,15 @@ class N_INDEX(val left: N_EXPR, val index: N_EXPR): N_EXPR() {
     override fun toText() = "INDEX<$left[$index]>"
     override fun kids() = listOf(left, index)
 
-    override fun code(coder: Coder) {
-        left.code(coder)
-        index.code(coder)
-        coder.code(this, O_GETI)
+    override fun code(c: Coder) {
+        left.code(c)
+        index.code(c)
+        c.opcode(this, O_GETI)
     }
 
-    override fun codeAssign(coder: Coder) {
-        left.code(coder)
-        index.code(coder)
-        coder.code(this, O_SETI)
+    override fun codeAssign(c: Coder) {
+        left.code(c)
+        index.code(c)
+        c.opcode(this, O_SETI)
     }
 }

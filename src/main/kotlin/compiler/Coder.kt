@@ -35,7 +35,7 @@ class Coder(val ast: Node) {
     }
 
     // Write an opcode into memory.
-    fun code(from: Node, op: Opcode) {
+    fun opcode(from: Node, op: Opcode) {
         mem.add(VMWord(from.lineNum, from.charNum, opcode = op))
     }
 

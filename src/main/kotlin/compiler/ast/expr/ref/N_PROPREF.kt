@@ -12,16 +12,16 @@ class N_PROPREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
 
     override fun identify() { (right as? N_IDENTIFIER)?.markAsProp() }
 
-    override fun code(coder: Coder) {
-        left.code(coder)
-        right.code(coder)
-        coder.code(this, O_GETPROP)
+    override fun code(c: Coder) {
+        left.code(c)
+        right.code(c)
+        c.opcode(this, O_GETPROP)
     }
 
-    override fun codeAssign(coder: Coder) {
-        left.code(coder)
-        right.code(coder)
-        coder.code(this, O_SETPROP)
+    override fun codeAssign(c: Coder) {
+        left.code(c)
+        right.code(c)
+        c.opcode(this, O_SETPROP)
     }
 
 }

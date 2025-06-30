@@ -371,7 +371,7 @@ class SysTrait : Trait("sys") {
         when (args[0]) {
             is VTrait -> (args[0] as VTrait).trait()!!.clearProp(args[1].asString())
             is VObj -> {
-
+                // TODO: clear prop on obj
             }
             else -> fail(E_TYPE, "cannot clearProp on ${args[0].type}")
         }

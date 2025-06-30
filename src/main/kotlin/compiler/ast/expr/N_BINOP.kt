@@ -21,11 +21,11 @@ abstract class N_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR
     }
     open fun asConstant(l: Value, r: Value): Value? = null
 
-    override fun code(coder: Coder) {
-        if (codeConstant(coder)) return
-        left.code(coder)
-        right.code(coder)
-        ops.forEach { coder.code(this, it) }
+    override fun code(c: Coder) {
+        if (codeConstant(c)) return
+        left.code(c)
+        right.code(c)
+        ops.forEach { c.opcode(this, it) }
     }
 }
 
@@ -58,32 +58,32 @@ class N_CMP_GE(left: N_EXPR, right: N_EXPR): N_BINOP(">=", left, right, listOf(O
 class N_CMP_LE(left: N_EXPR, right: N_EXPR): N_BINOP("<=", left, right, listOf(O_CMP_LE))
 
 class N_AND(left: N_EXPR, right: N_EXPR): N_BINOP("&&", left, right, listOf()) {
-    override fun code(coder: Coder) {
-        left.code(coder)
-        coder.code(this, O_IF)
-        coder.jumpForward(this, "andskip")
-        right.code(coder)
-        coder.code(this, O_JUMP)
-        coder.jumpForward(this, "andend")
-        coder.setForwardJump(this, "andskip")
-        coder.code(this, O_VAL)
-        coder.value(this, false)
-        coder.setForwardJump(this, "andend")
+    override fun code(c: Coder) {
+        left.code(c)
+        c.opcode(this, O_IF)
+        c.jumpForward(this, "andskip")
+        right.code(c)
+        c.opcode(this, O_JUMP)
+        c.jumpForward(this, "andend")
+        c.setForwardJump(this, "andskip")
+        c.opcode(this, O_VAL)
+        c.value(this, false)
+        c.setForwardJump(this, "andend")
     }
 }
 
 class N_OR(left: N_EXPR, right: N_EXPR): N_BINOP("||", left, right, listOf()) {
-    override fun code(coder: Coder) {
-        left.code(coder)
-        coder.code(this, O_NEGATE)
-        coder.code(this, O_IF)
-        coder.jumpForward(this, "orskip")
-        right.code(coder)
-        coder.code(this, O_JUMP)
-        coder.jumpForward(this, "orend")
-        coder.setForwardJump(this, "orskip")
-        coder.code(this, O_VAL)
-        coder.value(this, true)
-        coder.setForwardJump(this, "orend")
+    override fun code(c: Coder) {
+        left.code(c)
+        c.opcode(this, O_NEGATE)
+        c.opcode(this, O_IF)
+        c.jumpForward(this, "orskip")
+        right.code(c)
+        c.opcode(this, O_JUMP)
+        c.jumpForward(this, "orend")
+        c.setForwardJump(this, "orskip")
+        c.opcode(this, O_VAL)
+        c.value(this, true)
+        c.setForwardJump(this, "orend")
     }
 }

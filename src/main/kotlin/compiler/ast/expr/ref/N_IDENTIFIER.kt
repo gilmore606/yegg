@@ -22,23 +22,23 @@ class N_IDENTIFIER(val name: String): N_EXPR() {
 
     override fun variableName() = if (isVariable()) name else null
 
-    override fun code(coder: Coder) {
+    override fun code(c: Coder) {
         when (type) {
             Type.VARIABLE -> {
-                coder.code(this, O_GETVAR)
-                coder.value(this, variableID!!)
+                c.opcode(this, O_GETVAR)
+                c.value(this, variableID!!)
             }
             else -> {
-                coder.code(this, O_VAL)
-                coder.value(this, name)
+                c.opcode(this, O_VAL)
+                c.value(this, name)
             }
         }
     }
 
-    override fun codeAssign(coder: Coder) {
+    override fun codeAssign(c: Coder) {
         if (type == Type.VARIABLE) {
-            coder.code(this, O_SETVAR)
-            coder.value(this, variableID!!)
+            c.opcode(this, O_SETVAR)
+            c.value(this, variableID!!)
         } else fail("non-variable identifier on left of assignment!")
     }
 }

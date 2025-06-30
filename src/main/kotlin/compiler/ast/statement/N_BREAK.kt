@@ -6,8 +6,8 @@ import com.dlfsystems.vm.Opcode.*
 class N_BREAK: N_STATEMENT() {
     override fun toText() = "break"
 
-    override fun code(coder: Coder) {
-        coder.code(this, O_JUMP)
-        coder.jumpBreak(this)
+    override fun code(c: Coder) {
+        c.opcode(this, O_JUMP)
+        c.jumpBreak(this)
     }
 }

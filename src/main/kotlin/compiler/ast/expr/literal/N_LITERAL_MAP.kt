@@ -22,13 +22,13 @@ class N_LITERAL_MAP(val value: Map<N_EXPR, N_EXPR>): N_LITERAL() {
         }
         return VMap(constant)
     }
-    override fun code(coder: Coder) {
-        if (codeConstant(coder)) return
+    override fun code(c: Coder) {
+        if (codeConstant(c)) return
         value.keys.forEach { key ->
-            value[key]!!.code(coder)
-            key.code(coder)
+            value[key]!!.code(c)
+            key.code(c)
         }
-        coder.code(this, O_MAPVAL)
-        coder.value(this, value.size)
+        c.opcode(this, O_MAPVAL)
+        c.value(this, value.size)
     }
 }

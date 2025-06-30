@@ -13,26 +13,26 @@ class N_WHEN(val subject: N_EXPR?, val options: List<Pair<N_EXPR?, Node>>, val a
         addAll(options.map { it.second })
     }
 
-    override fun code(coder: Coder) {
+    override fun code(c: Coder) {
         // non-null match options
         options.filter { it.first != null }.forEachIndexed { n, o ->
-            o.first!!.code(coder)
+            o.first!!.code(c)
             subject?.also {
-                it.code(coder)
-                coder.code(this, O_CMP_EQ)
+                it.code(c)
+                c.opcode(this, O_CMP_EQ)
             }
-            coder.code(this, O_IF)
-            coder.jumpForward(this, "skip$n")
-            o.second.code(coder)
-            if (asStatement && o.second is N_EXPRSTATEMENT) coder.code(this, O_DISCARD)
-            coder.code(this, O_JUMP)
-            coder.jumpForward(this, "end")
-            coder.setForwardJump(this, "skip$n")
+            c.opcode(this, O_IF)
+            c.jumpForward(this, "skip$n")
+            o.second.code(c)
+            if (asStatement && o.second is N_EXPRSTATEMENT) c.opcode(this, O_DISCARD)
+            c.opcode(this, O_JUMP)
+            c.jumpForward(this, "end")
+            c.setForwardJump(this, "skip$n")
         }
         // else option
         options.firstOrNull { it.first == null }?.also { o ->
-            o.second.code(coder)
+            o.second.code(c)
         }
-        coder.setForwardJump(this, "end")
+        c.setForwardJump(this, "end")
     }
 }

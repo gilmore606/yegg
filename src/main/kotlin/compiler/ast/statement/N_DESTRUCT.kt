@@ -11,10 +11,10 @@ class N_DESTRUCT(val vars: List<N_IDENTIFIER>, val right: N_EXPR): N_STATEMENT()
     override fun toText() = "[${vars.joinToString(",")}] = $right"
     override fun kids() = vars + listOf(right)
 
-    override fun code(coder: Coder) {
-        coder.code(this, O_VAL)
-        coder.value(this, vars.map { VString(it.name) })
-        right.code(coder)
-        coder.code(this, O_DESTRUCT)
+    override fun code(c: Coder) {
+        c.opcode(this, O_VAL)
+        c.value(this, vars.map { VString(it.name) })
+        right.code(c)
+        c.opcode(this, O_DESTRUCT)
     }
 }

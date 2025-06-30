@@ -7,7 +7,7 @@ class N_BLOCK(val statements: List<N_STATEMENT>): N_STATEMENT() {
     override fun toText(depth: Int) = "{\n" + statements.joinToString("") { it.toText(depth + 1) + "\n" } + tab(depth) + "}"
     override fun kids() = statements
 
-    override fun code(coder: Coder) {
-        statements.forEach { it.code(coder) }
+    override fun code(c: Coder) {
+        statements.forEach { it.code(c) }
     }
 }
