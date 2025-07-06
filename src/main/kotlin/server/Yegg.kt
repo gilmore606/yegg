@@ -132,13 +132,16 @@ object Yegg {
                     disconnectUser()
                 """)
             }
-            createTrait("user")!!.apply {
-                addProp("username", VString(""))
-                addProp("password", VString(""))
-            }
             createTrait("root")!!.apply {
                 addProp("name", VString("thing"))
                 addProp("aliases", VList.make(listOf(VString("thing"))))
+            }
+            createTrait("user")!!.apply {
+                addTrait(world.getTrait("root")!!)
+                addProp("username", VString(""))
+                addProp("password", VString(""))
+                addProp("lastConnectTime", VInt(0))
+                addProp("lastActiveTime", VInt(0))
             }
         }
     }
@@ -153,6 +156,8 @@ object Yegg {
         connectedUsers[user] = conn
         conn.sendText(CONNECT_MSG)
         Log.i(TAG, "User $user connected")
+        user.setProp("lastConnectTime", VInt(systemEpoch()))
+        user.setProp("lastActiveTime", VInt(systemEpoch()))
     }
 
     fun removeConnection(conn: Connection) {

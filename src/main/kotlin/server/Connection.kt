@@ -5,6 +5,8 @@ import com.dlfsystems.server.mcp.Task
 import com.dlfsystems.server.parser.CommandMatch
 import com.dlfsystems.server.parser.Preposition
 import com.dlfsystems.util.NanoID
+import com.dlfsystems.util.systemEpoch
+import com.dlfsystems.value.VInt
 import com.dlfsystems.value.VList
 import com.dlfsystems.value.VString
 import com.dlfsystems.value.Value
@@ -131,6 +133,7 @@ class Connection(
         }
 
         user?.also { user ->
+            user.setProp("lastActiveTime", VInt(systemEpoch()))
             // If logged in, match against all objs in scope
             val scope = buildList {
                 add(user)
