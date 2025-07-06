@@ -55,20 +55,21 @@ class Task(val c: Context) {
         resumeResult = null
         try {
             while (c.stack.isNotEmpty()) {
-                val vmResult = c.stack.first().execute(vReturn)
-                vReturn = null
-                when (vmResult) {
-                    is VM.Result.Return -> {
-                        vReturn = vmResult.v
-                        c.callsLeft++
-                        c.pop()
-                    }
-                    is VM.Result.Call -> {
-                        if (--c.callsLeft < 0) fail(E_MAXREC, "too many nested verb calls")
-                        c.push(vmResult.vThis, vmResult.exe, vmResult.args)
-                    }
-                    is VM.Result.Suspend -> {
-                        return Result.Suspend(vmResult.seconds)
+                c.stack.first().execute(vReturn).also { result ->
+                    vReturn = null
+                    when (result) {
+                        is VM.Result.Return -> {
+                            vReturn = result.v
+                            c.callsLeft++
+                            c.pop()
+                        }
+                        is VM.Result.Call -> {
+                            if (--c.callsLeft < 0) fail(E_MAXREC, "too many nested verb calls")
+                            c.push(result.vThis, result.exe, result.args)
+                        }
+                        is VM.Result.Suspend -> {
+                            return Result.Suspend(result.seconds)
+                        }
                     }
                 }
             }

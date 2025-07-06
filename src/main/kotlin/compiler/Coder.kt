@@ -87,7 +87,7 @@ class Coder(val ast: Node) {
         val dest = mem.size
         val fullname = "$name${from.id}"
         forwardJumps[fullname]!!.forEach { loc ->
-            mem[loc].fillAddress(dest)
+            mem[loc].address = dest
         }
         forwardJumps.remove(fullname)
     }
@@ -135,7 +135,7 @@ class Coder(val ast: Node) {
     fun setBreakJump() {
         val dest = mem.size
         breakJumps.removeFirst().forEach { loc ->
-            mem[loc].fillAddress(dest)
+            mem[loc].address = dest
         }
     }
 
@@ -143,7 +143,7 @@ class Coder(val ast: Node) {
     fun setContinueJump() {
         val dest = mem.size
         continueJumps.removeFirst().forEach { loc ->
-            mem[loc].fillAddress(dest)
+            mem[loc].address = dest
         }
     }
 

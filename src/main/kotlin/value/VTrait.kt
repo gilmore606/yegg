@@ -29,6 +29,8 @@ data class VTrait(val v: Trait.ID?): Value() {
 
     override fun getProp(name: String) = when (name) {
         "asString" -> propAsString()
+        "parents" -> propParents()
+        "children" -> propChildren()
         else -> trait()?.getProp(name)
     }
 
@@ -36,8 +38,16 @@ data class VTrait(val v: Trait.ID?): Value() {
         trait()?.setProp(name, value) ?: false
 
     private fun propAsString() = v?.let { v ->
-        VString("$" + Yegg.world.traits[v]?.name)
+        VString("$" + trait()?.name)
     } ?: VString(asString())
+
+    private fun propParents() = v?.let { v ->
+        VList.make(trait()?.parents?.map { VTrait(it) } ?: listOf())
+    } ?: VList.make(listOf())
+
+    private fun propChildren() = v?.let { v ->
+        VList.make(trait()?.children?.map { VTrait(it) } ?: listOf())
+    } ?: VList.make(listOf())
 
     override fun callStaticVerb(c: Context, name: String, args: List<Value>): Value? {
         return trait()?.callStaticVerb(c, name, args)

@@ -191,23 +191,18 @@ class VM(
 
                 O_CALL, O_VCALL, O_VCALLST -> {
                     val argCount = next().intFromV
-                    val a2 = if (word.opcode == O_CALL) pop() else next().value
+                    val a2 = if (word.opcode == O_CALL) pop() else next().value!!
                     val a1 = pop()
                     val args = buildList { repeat(argCount) { add(0, pop()) } }
-                    if (a2 is VString) {
-                        // If static built-in verb, call directly without returning
-                        val vReturn = a1.callStaticVerb(c, a2.v, args)
-                        if (vReturn != null) {
-                            if (word.opcode != O_VCALLST) push(vReturn)
-                        } else {
-                            val verb = a1.getVerb(a2.v)
-                            if (verb != null) {
-                                if (word.opcode == O_VCALLST) dropReturnValue = true
-                                val vThis = a1 as? VObj ?: Yegg.vNullObj
-                                return Result.Call(verb, args, vThis)
-                            } else fail(E_VERBNF, "verb not found")
-                        }
-                    } else fail(E_VERBNF, "verb name must be string")
+                    val name = a2.asString()
+                    // If static built-in verb, call directly without returning
+                    a1.callStaticVerb(c, name, args)?.also {
+                        if (word.opcode != O_VCALLST) push(it)
+                    } ?: a1.getVerb(name)?.also { verb ->
+                        if (word.opcode == O_VCALLST) dropReturnValue = true
+                        val vThis = a1 as? VObj ?: Yegg.vNullObj
+                        return Result.Call(verb, args, vThis)
+                    } ?: fail(E_VERBNF, "no such verb $name")
                 }
                 O_FUNCALL, O_FUNCALLST -> {
                     val name = (next().value as VString).v
@@ -216,13 +211,13 @@ class VM(
                     // If static sys function, call directly without returning
                     Yegg.world.sys.callStaticVerb(c, name, args)?.also {
                         if (word.opcode != O_FUNCALLST) push(it)
-                    } ?: exe.symbols[name]?.also { variableID ->
-                        variables[variableID]?.let { value ->
+                    } ?: exe.symbols[name]?.also { varID ->
+                        variables[varID]?.let { value ->
                             if (value is Executable) {
                                 return Result.Call(value, args)
                             } else fail(E_TYPE, "cannot invoke ${value.type} as fun")
                         }
-                    } ?: fail(E_VARNF, "no such fun or variable")
+                    } ?: fail(E_VARNF, "no such fun $name")
                 }
                 O_PASS, O_PASSST -> {
                     val argCount = next().intFromV
@@ -251,8 +246,8 @@ class VM(
                 }
                 O_READLINE, O_READLINES -> {
                     c.taskID?.also { taskID ->
-                        c.connection?.also { connection ->
-                            connection.requestReadLines(taskID, word.opcode == O_READLINE)
+                        c.connection?.also { conn ->
+                            conn.requestReadLines(taskID, word.opcode == O_READLINE)
                             return Result.Suspend(Int.MAX_VALUE)
                         }
                     }
@@ -312,20 +307,18 @@ class VM(
                     val a2 = if (word.opcode == O_VGETPROP) next().value!! else pop()
                     val a1 = pop()
                     if (a2 is VString) {
-                        a1.getProp(a2.v)?.also { push(it) }
-                            ?: fail(E_PROPNF, "property not found")
+                        a1.getProp(a2.v)?.also { push(it) } ?: fail(E_PROPNF, "property not found")
                     } else fail(E_PROPNF, "property name must be string")
                 }
                 O_SETPROP -> {
                     val (a3, a2, a1) = popThree()
-                    if (!a2.setProp((a3 as VString).v, a1))
-                        fail(E_PROPNF, "property not found")
+                    if (!a2.setProp((a3 as VString).v, a1)) fail(E_PROPNF, "property not found")
                 }
                 O_TRAIT, O_VTRAIT -> {
                     val a1 = if (word.opcode == O_VTRAIT) next().value!! else pop()
                     if (a1 is VString) {
                         Yegg.world.getTrait(a1.v)?.also { push(it.vTrait) }
-                            ?: fail (E_TRAITNF, "trait not found")
+                            ?: fail (E_TRAITNF, "no such trait $a1")
                     } else fail(E_TRAITNF, "trait name must be string")
                 }
 
@@ -333,8 +326,7 @@ class VM(
 
                 O_NEGATE -> {
                     val a1 = pop()
-                    a1.negate()?.also { push(it) }
-                        ?: fail(E_TYPE, "cannot negate ${a1.type}")
+                    a1.negate()?.also { push(it) } ?: fail(E_TYPE, "cannot negate ${a1.type}")
                 }
                 O_IN -> {
                     val (a2, a1) = popTwo()

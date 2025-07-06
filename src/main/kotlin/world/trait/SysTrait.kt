@@ -32,6 +32,7 @@ class SysTrait : Trait("sys") {
             "time" -> return propTime()
             "connectedUsers" -> return propConnectedUsers()
             "tasks" -> return propTasks()
+            "allTraits" -> return propAllTraits()
         }
         return super.getProp(propName)
     }
@@ -79,6 +80,9 @@ class SysTrait : Trait("sys") {
 
     // $sys.tasks ->
     private fun propTasks() = VList.make(MCP.taskList().map { it.vID })
+
+    // $sys.allTraits -> [$sys, $user, ...]
+    private fun propAllTraits() = VList.make(Yegg.world.traits.keys.map { VTrait(it) })
 
     // $sys.connectUser("username", "password") -> true if connected
     private fun verbConnectUser(c: Context, args: List<Value>): VBool {

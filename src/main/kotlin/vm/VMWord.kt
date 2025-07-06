@@ -15,10 +15,6 @@ data class VMWord(
     @SerialName("v") val value: Value? = null,
     @SerialName("a") var address: Int? = null,
 ) {
-    // In compilation, an address word may be written before the address it points to is known.
-    // fillAddress is called to set it once calculated.
-    fun fillAddress(newAddress: Int) { address = newAddress }
-
     override fun toString() = opcode?.toString() ?: value?.toString() ?: address?.let { "<$it>" } ?: "!!NULL!!"
 
     fun isInt(equals: Int? = null): Boolean {

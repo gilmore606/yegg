@@ -1,1 +1,1 @@
-rootProject.name = "kmud"
+rootProject.name = "yegg"
