@@ -1,17 +1,17 @@
-package com.dlfsystems.server
+package com.dlfsystems.yegg.server
 
-import com.dlfsystems.server.mcp.MCP
-import com.dlfsystems.server.mcp.Task
-import com.dlfsystems.server.parser.CommandMatch
-import com.dlfsystems.server.parser.Preposition
-import com.dlfsystems.util.NanoID
-import com.dlfsystems.util.systemEpoch
-import com.dlfsystems.value.VInt
-import com.dlfsystems.value.VList
-import com.dlfsystems.value.VString
-import com.dlfsystems.value.Value
-import com.dlfsystems.world.Obj
-import com.dlfsystems.world.trait.Verb
+import com.dlfsystems.yegg.server.mcp.MCP
+import com.dlfsystems.yegg.server.mcp.Task
+import com.dlfsystems.yegg.server.parser.CommandMatch
+import com.dlfsystems.yegg.server.parser.Preposition
+import com.dlfsystems.yegg.util.NanoID
+import com.dlfsystems.yegg.util.systemEpoch
+import com.dlfsystems.yegg.value.VInt
+import com.dlfsystems.yegg.value.VList
+import com.dlfsystems.yegg.value.VString
+import com.dlfsystems.yegg.value.Value
+import com.dlfsystems.yegg.world.Obj
+import com.dlfsystems.yegg.world.trait.Verb
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 // A transport-agnostic connection to the Yegg server.

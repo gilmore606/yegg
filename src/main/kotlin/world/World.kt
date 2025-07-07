@@ -1,11 +1,11 @@
-package com.dlfsystems.world
+package com.dlfsystems.yegg.world
 
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.util.fail
-import com.dlfsystems.value.*
-import com.dlfsystems.vm.VMException.Type.E_INVARG
-import com.dlfsystems.vm.VMException.Type.E_MAXREC
-import com.dlfsystems.world.trait.*
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.util.fail
+import com.dlfsystems.yegg.value.*
+import com.dlfsystems.yegg.vm.VMException.Type.E_INVARG
+import com.dlfsystems.yegg.vm.VMException.Type.E_MAXREC
+import com.dlfsystems.yegg.world.trait.*
 import kotlinx.serialization.Serializable
 import org.mindrot.jbcrypt.BCrypt
 

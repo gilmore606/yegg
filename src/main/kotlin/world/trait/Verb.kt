@@ -1,8 +1,8 @@
-package com.dlfsystems.world.trait
+package com.dlfsystems.yegg.world.trait
 
-import com.dlfsystems.compiler.Compiler
-import com.dlfsystems.vm.VMWord
-import com.dlfsystems.vm.Executable
+import com.dlfsystems.yegg.compiler.Compiler
+import com.dlfsystems.yegg.vm.VMWord
+import com.dlfsystems.yegg.vm.Executable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 

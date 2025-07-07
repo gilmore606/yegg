@@ -1,4 +1,4 @@
-package com.dlfsystems
+package com.dlfsystems.yegg
 
 import kotlin.test.Test
 

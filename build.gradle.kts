@@ -7,10 +7,11 @@ plugins {
     kotlin("jvm") version "2.1.10"
     id("io.ktor.plugin") version "3.1.1"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
+    application
 }
 
-group = "com.dlfsystems"
-version = "0.0.1"
+group = "com.dlfsystems.yegg"
+version = "0.1"
 
 kotlin {
     compilerOptions {
@@ -19,7 +20,7 @@ kotlin {
 }
 
 application {
-    mainClass = "com.dlfsystems.ApplicationKt"
+    mainClass = "com.dlfsystems.yegg.ApplicationKt"
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")

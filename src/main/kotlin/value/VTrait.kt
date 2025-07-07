@@ -1,11 +1,11 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
-package com.dlfsystems.value
+package com.dlfsystems.yegg.value
 
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.vm.Context
-import com.dlfsystems.world.trait.Trait
-import com.dlfsystems.world.trait.Verb
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.vm.Context
+import com.dlfsystems.yegg.world.trait.Trait
+import com.dlfsystems.yegg.world.trait.Verb
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

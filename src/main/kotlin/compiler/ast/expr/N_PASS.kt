@@ -1,7 +1,7 @@
-package com.dlfsystems.compiler.ast.expr
+package com.dlfsystems.yegg.compiler.ast.expr
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.vm.Opcode.O_PASS
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.vm.Opcode.O_PASS
 
 class N_PASS(val args: List<N_EXPR>): N_EXPR() {
     override fun kids() = args

@@ -1,9 +1,9 @@
-package com.dlfsystems.vm
+package com.dlfsystems.yegg.vm
 
-import com.dlfsystems.server.Connection
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.server.mcp.Task
-import com.dlfsystems.value.*
+import com.dlfsystems.yegg.server.Connection
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.server.mcp.Task
+import com.dlfsystems.yegg.value.*
 
 // Properties of a single command invocation as it passes from verb to verb.
 

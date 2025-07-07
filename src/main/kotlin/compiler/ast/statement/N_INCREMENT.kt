@@ -1,9 +1,9 @@
-package com.dlfsystems.compiler.ast.statement
+package com.dlfsystems.yegg.compiler.ast.statement
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.expr.identifier.N_IDENTIFIER
-import com.dlfsystems.vm.Opcode.O_DECVAR
-import com.dlfsystems.vm.Opcode.O_INCVAR
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.expr.identifier.N_IDENTIFIER
+import com.dlfsystems.yegg.vm.Opcode.O_DECVAR
+import com.dlfsystems.yegg.vm.Opcode.O_INCVAR
 
 class N_INCREMENT(val identifier: N_IDENTIFIER, val isDecrement: Boolean = false): N_STATEMENT() {
     override fun toText() = "$identifier++"

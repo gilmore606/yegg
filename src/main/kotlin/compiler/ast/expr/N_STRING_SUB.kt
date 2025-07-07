@@ -1,8 +1,8 @@
-package com.dlfsystems.compiler.ast.expr
+package com.dlfsystems.yegg.compiler.ast.expr
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.expr.literal.N_LITERAL_STRING
-import com.dlfsystems.vm.Opcode.O_ADD
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.expr.literal.N_LITERAL_STRING
+import com.dlfsystems.yegg.vm.Opcode.O_ADD
 
 // A string with code substitutions.
 class N_STRING_SUB(val parts: List<N_EXPR>): N_EXPR() {

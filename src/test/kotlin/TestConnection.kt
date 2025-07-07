@@ -1,11 +1,11 @@
-package com.dlfsystems
+package com.dlfsystems.yegg
 
-import com.dlfsystems.server.Connection
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.server.mcp.MCP
-import com.dlfsystems.server.mcp.Task
-import com.dlfsystems.server.onYeggThread
-import com.dlfsystems.world.trait.Verb
+import com.dlfsystems.yegg.server.Connection
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.server.mcp.MCP
+import com.dlfsystems.yegg.server.mcp.Task
+import com.dlfsystems.yegg.server.onYeggThread
+import com.dlfsystems.yegg.world.trait.Verb
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

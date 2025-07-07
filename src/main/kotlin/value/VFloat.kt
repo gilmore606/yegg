@@ -1,8 +1,8 @@
-package com.dlfsystems.value
+package com.dlfsystems.yegg.value
 
-import com.dlfsystems.vm.Context
-import com.dlfsystems.vm.VMException
-import com.dlfsystems.vm.VMException.Type.E_INVARG
+import com.dlfsystems.yegg.vm.Context
+import com.dlfsystems.yegg.vm.VMException
+import com.dlfsystems.yegg.vm.VMException.Type.E_INVARG
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.math.*

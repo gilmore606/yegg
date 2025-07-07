@@ -1,20 +1,20 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
-package com.dlfsystems.world.trait
+package com.dlfsystems.yegg.world.trait
 
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.server.parser.Command
-import com.dlfsystems.server.parser.Command.Arg
-import com.dlfsystems.server.parser.CommandMatch
-import com.dlfsystems.server.parser.Preposition
-import com.dlfsystems.util.NanoID
-import com.dlfsystems.util.fail
-import com.dlfsystems.util.matchesWildcard
-import com.dlfsystems.value.*
-import com.dlfsystems.vm.Context
-import com.dlfsystems.vm.VMException.Type.E_INVARG
-import com.dlfsystems.world.Obj
-import com.dlfsystems.world.Propval
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.server.parser.Command
+import com.dlfsystems.yegg.server.parser.Command.Arg
+import com.dlfsystems.yegg.server.parser.CommandMatch
+import com.dlfsystems.yegg.server.parser.Preposition
+import com.dlfsystems.yegg.util.NanoID
+import com.dlfsystems.yegg.util.fail
+import com.dlfsystems.yegg.util.matchesWildcard
+import com.dlfsystems.yegg.value.*
+import com.dlfsystems.yegg.vm.Context
+import com.dlfsystems.yegg.vm.VMException.Type.E_INVARG
+import com.dlfsystems.yegg.world.Obj
+import com.dlfsystems.yegg.world.Propval
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

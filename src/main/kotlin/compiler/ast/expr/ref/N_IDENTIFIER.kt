@@ -1,8 +1,8 @@
-package com.dlfsystems.compiler.ast.expr.identifier
+package com.dlfsystems.yegg.compiler.ast.expr.identifier
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.expr.N_EXPR
-import com.dlfsystems.vm.Opcode.*
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
+import com.dlfsystems.yegg.vm.Opcode.*
 
 // A bare string in source code, which in context may resolve to a trait, property, or verb.
 // Without other context, assumed to refer to a variable.

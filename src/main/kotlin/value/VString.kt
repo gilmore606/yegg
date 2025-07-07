@@ -1,9 +1,9 @@
-package com.dlfsystems.value
+package com.dlfsystems.yegg.value
 
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.util.fail
-import com.dlfsystems.vm.Context
-import com.dlfsystems.vm.VMException.Type.*
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.util.fail
+import com.dlfsystems.yegg.vm.Context
+import com.dlfsystems.yegg.vm.VMException.Type.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
@@ -92,6 +92,8 @@ data class VString(var v: String): Value() {
             "replace" -> return verbReplace(args)
             "capitalize" -> return verbCapitalize(args)
             "trim" -> return verbTrim(args)
+            "pad" -> return verbPad(args)
+            "trunc" -> return verbTrunc(args)
             "matches" -> return verbMatches(args)
             "matchesIn" -> return verbMatchesIn(args)
             "matchFirst" -> return verbMatchFirst(args)
@@ -146,6 +148,24 @@ data class VString(var v: String): Value() {
     private fun verbTrim(args: List<Value>): VString {
         requireArgCount(args, 0, 0)
         return VString(v.trim())
+    }
+
+    private fun verbPad(args: List<Value>): VString {
+        requireArgCount(args, 1, 2)
+        (args[0] as? VInt)?.also { length ->
+            var pad = if (args.size > 1) args[1].asString().toCharArray()[0] else ' '
+            return VString(v.padEnd(length.v, pad))
+        } ?: fail(E_TYPE, "pad count must be int")
+        return VString("")
+    }
+
+    private fun verbTrunc(args: List<Value>): VString {
+        requireArgCount(args, 1, 1)
+        (args[0] as VInt)?.also { length ->
+            if (length.v >= v.length) return VString(v)
+            return VString(v.substring(0, length.v - 1))
+        } ?: fail(E_TYPE, "trunc count must be int")
+        return VString("")
     }
 
     // "regex".matches(string) -> bool

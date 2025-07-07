@@ -1,11 +1,11 @@
-package com.dlfsystems.compiler.ast.statement
+package com.dlfsystems.yegg.compiler.ast.statement
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.expr.N_EXPR
-import com.dlfsystems.compiler.ast.expr.identifier.N_IDENTIFIER
-import com.dlfsystems.value.VString
-import com.dlfsystems.vm.Opcode.O_DESTRUCT
-import com.dlfsystems.vm.Opcode.O_VAL
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
+import com.dlfsystems.yegg.compiler.ast.expr.identifier.N_IDENTIFIER
+import com.dlfsystems.yegg.value.VString
+import com.dlfsystems.yegg.vm.Opcode.O_DESTRUCT
+import com.dlfsystems.yegg.vm.Opcode.O_VAL
 
 class N_DESTRUCT(val vars: List<N_IDENTIFIER>, val right: N_EXPR): N_STATEMENT() {
     override fun toText() = "[${vars.joinToString(",")}] = $right"

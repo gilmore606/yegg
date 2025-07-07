@@ -1,6 +1,6 @@
-package com.dlfsystems.compiler.ast.statement
+package com.dlfsystems.yegg.compiler.ast.statement
 
-import com.dlfsystems.compiler.Coder
+import com.dlfsystems.yegg.compiler.Coder
 
 class N_BLOCK(val statements: List<N_STATEMENT>): N_STATEMENT() {
     override fun toText() = toText(0)

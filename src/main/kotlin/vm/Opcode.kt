@@ -1,4 +1,4 @@
-package com.dlfsystems.vm
+package com.dlfsystems.yegg.vm
 
 // An opcode representing an instruction for a VM.
 // pop0/pop1 = values popped from the stack.

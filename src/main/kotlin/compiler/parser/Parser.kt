@@ -1,18 +1,18 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
-package com.dlfsystems.compiler.parser
+package com.dlfsystems.yegg.compiler.parser
 
-import com.dlfsystems.compiler.CompileException
-import com.dlfsystems.compiler.parser.TokenType.*
-import com.dlfsystems.compiler.ast.*
-import com.dlfsystems.compiler.ast.expr.*
-import com.dlfsystems.compiler.ast.expr.identifier.*
-import com.dlfsystems.compiler.ast.expr.literal.*
-import com.dlfsystems.compiler.ast.expr.ref.N_INDEX
-import com.dlfsystems.compiler.ast.expr.ref.N_PROPREF
-import com.dlfsystems.compiler.ast.expr.ref.N_RANGE
-import com.dlfsystems.compiler.ast.statement.*
-import com.dlfsystems.world.Obj
+import com.dlfsystems.yegg.compiler.CompileException
+import com.dlfsystems.yegg.compiler.parser.TokenType.*
+import com.dlfsystems.yegg.compiler.ast.*
+import com.dlfsystems.yegg.compiler.ast.expr.*
+import com.dlfsystems.yegg.compiler.ast.expr.identifier.*
+import com.dlfsystems.yegg.compiler.ast.expr.literal.*
+import com.dlfsystems.yegg.compiler.ast.expr.ref.N_INDEX
+import com.dlfsystems.yegg.compiler.ast.expr.ref.N_PROPREF
+import com.dlfsystems.yegg.compiler.ast.expr.ref.N_RANGE
+import com.dlfsystems.yegg.compiler.ast.statement.*
+import com.dlfsystems.yegg.world.Obj
 
 // Take a stream of input tokens from Lexer and produce a tree of syntax nodes.
 

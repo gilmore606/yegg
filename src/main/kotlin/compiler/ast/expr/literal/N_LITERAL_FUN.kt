@@ -1,10 +1,10 @@
-package com.dlfsystems.compiler.ast.expr.literal
+package com.dlfsystems.yegg.compiler.ast.expr.literal
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.expr.identifier.N_IDENTIFIER
-import com.dlfsystems.compiler.ast.statement.N_STATEMENT
-import com.dlfsystems.value.VString
-import com.dlfsystems.vm.Opcode.*
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.expr.identifier.N_IDENTIFIER
+import com.dlfsystems.yegg.compiler.ast.statement.N_STATEMENT
+import com.dlfsystems.yegg.value.VString
+import com.dlfsystems.yegg.vm.Opcode.*
 
 class N_LITERAL_FUN(val args: List<N_IDENTIFIER>, val block: N_STATEMENT): N_LITERAL() {
     override fun kids() = args + listOf(block)

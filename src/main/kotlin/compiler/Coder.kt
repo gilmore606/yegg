@@ -1,12 +1,12 @@
-package com.dlfsystems.compiler
+package com.dlfsystems.yegg.compiler
 
-import com.dlfsystems.compiler.ast.Node
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.vm.Opcode
-import com.dlfsystems.vm.VMWord
-import com.dlfsystems.value.*
-import com.dlfsystems.vm.Executable
-import com.dlfsystems.world.Obj
+import com.dlfsystems.yegg.compiler.ast.Node
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.vm.Opcode
+import com.dlfsystems.yegg.vm.VMWord
+import com.dlfsystems.yegg.value.*
+import com.dlfsystems.yegg.vm.Executable
+import com.dlfsystems.yegg.world.Obj
 
 // Generate compiled bytecode by traversing the AST.
 

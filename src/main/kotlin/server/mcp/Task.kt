@@ -1,14 +1,14 @@
-package com.dlfsystems.server.mcp
+package com.dlfsystems.yegg.server.mcp
 
-import com.dlfsystems.server.Connection
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.util.NanoID
-import com.dlfsystems.util.systemEpoch
-import com.dlfsystems.value.VObj
-import com.dlfsystems.value.VTask
-import com.dlfsystems.value.Value
-import com.dlfsystems.vm.*
-import com.dlfsystems.vm.VMException.Type.*
+import com.dlfsystems.yegg.server.Connection
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.util.NanoID
+import com.dlfsystems.yegg.util.systemEpoch
+import com.dlfsystems.yegg.value.VObj
+import com.dlfsystems.yegg.value.VTask
+import com.dlfsystems.yegg.value.Value
+import com.dlfsystems.yegg.vm.*
+import com.dlfsystems.yegg.vm.VMException.Type.*
 import kotlinx.serialization.Serializable
 
 class Task(val c: Context) {

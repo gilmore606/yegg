@@ -1,8 +1,8 @@
-package com.dlfsystems.compiler.ast.expr
+package com.dlfsystems.yegg.compiler.ast.expr
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.vm.Opcode.O_IF
-import com.dlfsystems.vm.Opcode.O_JUMP
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.vm.Opcode.O_IF
+import com.dlfsystems.yegg.vm.Opcode.O_JUMP
 
 // A three-part conditional expression: (cond) ? trueExpr : falseExpr
 class N_CONDITIONAL(val condition: N_EXPR, val eTrue: N_EXPR, val eFalse: N_EXPR): N_EXPR() {

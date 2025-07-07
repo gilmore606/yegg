@@ -1,8 +1,8 @@
-package com.dlfsystems.compiler.ast.expr
+package com.dlfsystems.yegg.compiler.ast.expr
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.expr.literal.N_LITERAL_FUN
-import com.dlfsystems.vm.Opcode.O_FORK
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.expr.literal.N_LITERAL_FUN
+import com.dlfsystems.yegg.vm.Opcode.O_FORK
 
 // fork <expr> { block }
 // Returns a VTask with the forked task ID.

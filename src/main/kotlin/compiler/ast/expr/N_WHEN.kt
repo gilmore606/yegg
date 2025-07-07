@@ -1,9 +1,9 @@
-package com.dlfsystems.compiler.ast.expr
+package com.dlfsystems.yegg.compiler.ast.expr
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.Node
-import com.dlfsystems.compiler.ast.statement.N_EXPRSTATEMENT
-import com.dlfsystems.vm.Opcode.*
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.Node
+import com.dlfsystems.yegg.compiler.ast.statement.N_EXPRSTATEMENT
+import com.dlfsystems.yegg.vm.Opcode.*
 
 // when [expr] { option1 -> expr  option 2 -> { .... expr } else -> ...}
 class N_WHEN(val subject: N_EXPR?, val options: List<Pair<N_EXPR?, Node>>, val asStatement: Boolean = false): N_EXPR() {

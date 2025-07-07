@@ -1,9 +1,9 @@
-package com.dlfsystems.compiler.ast.expr
+package com.dlfsystems.yegg.compiler.ast.expr
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.statement.N_STATEMENT
-import com.dlfsystems.value.Value
-import com.dlfsystems.vm.Opcode.*
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.statement.N_STATEMENT
+import com.dlfsystems.yegg.value.Value
+import com.dlfsystems.yegg.vm.Opcode.*
 
 // An expression which reduces to a Value.
 

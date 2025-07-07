@@ -1,10 +1,10 @@
-package com.dlfsystems.compiler.ast.expr
+package com.dlfsystems.yegg.compiler.ast.expr
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.value.VVoid
-import com.dlfsystems.value.Value
-import com.dlfsystems.vm.Opcode
-import com.dlfsystems.vm.Opcode.*
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.value.VVoid
+import com.dlfsystems.yegg.value.Value
+import com.dlfsystems.yegg.vm.Opcode
+import com.dlfsystems.yegg.vm.Opcode.*
 
 // A binary operation, popping two stack values and pushing one result.
 

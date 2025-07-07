@@ -1,4 +1,4 @@
-package com.dlfsystems.world.trait
+package com.dlfsystems.yegg.world.trait
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

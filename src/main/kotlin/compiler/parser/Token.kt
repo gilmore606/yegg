@@ -1,4 +1,4 @@
-package com.dlfsystems.compiler.parser
+package com.dlfsystems.yegg.compiler.parser
 
 enum class TokenType(val literal: String, val isKeyword: Boolean = false) {
     // Groupers

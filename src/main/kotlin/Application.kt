@@ -1,7 +1,7 @@
-package com.dlfsystems
+package com.dlfsystems.yegg
 
-import com.dlfsystems.server.Websocket
-import com.dlfsystems.server.Yegg
+import com.dlfsystems.yegg.server.Websocket
+import com.dlfsystems.yegg.server.Yegg
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*

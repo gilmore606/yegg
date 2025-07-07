@@ -1,8 +1,8 @@
-package com.dlfsystems.compiler.parser
+package com.dlfsystems.yegg.compiler.parser
 
-import com.dlfsystems.compiler.CompileException
-import com.dlfsystems.compiler.parser.TokenType.*
-import com.dlfsystems.util.NanoID
+import com.dlfsystems.yegg.compiler.CompileException
+import com.dlfsystems.yegg.compiler.parser.TokenType.*
+import com.dlfsystems.yegg.util.NanoID
 
 // Take an input string and produce a stream of tokens.
 

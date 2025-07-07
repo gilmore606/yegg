@@ -1,10 +1,10 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
-package com.dlfsystems.world
+package com.dlfsystems.yegg.world
 
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.value.Value
-import com.dlfsystems.world.trait.Trait
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.value.Value
+import com.dlfsystems.yegg.world.trait.Trait
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*

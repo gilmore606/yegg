@@ -1,4 +1,4 @@
-package com.dlfsystems.server.mcp
+package com.dlfsystems.yegg.server.mcp
 
 import kotlinx.serialization.Serializable
 import java.lang.Comparable

@@ -1,11 +1,11 @@
-package com.dlfsystems.server
+package com.dlfsystems.yegg.server
 
-import com.dlfsystems.server.mcp.MCP
-import com.dlfsystems.server.parser.Command
-import com.dlfsystems.util.systemEpoch
-import com.dlfsystems.value.*
-import com.dlfsystems.world.World
-import com.dlfsystems.world.Obj
+import com.dlfsystems.yegg.server.mcp.MCP
+import com.dlfsystems.yegg.server.parser.Command
+import com.dlfsystems.yegg.util.systemEpoch
+import com.dlfsystems.yegg.value.*
+import com.dlfsystems.yegg.world.World
+import com.dlfsystems.yegg.world.Obj
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -132,12 +132,12 @@ object Yegg {
                     disconnectUser()
                 """)
             }
-            createTrait("root")!!.apply {
+            val root = createTrait("root")!!.apply {
                 addProp("name", VString("thing"))
                 addProp("aliases", VList.make(listOf(VString("thing"))))
             }
             createTrait("user")!!.apply {
-                addTrait(world.getTrait("root")!!)
+                addTrait(root)
                 addProp("username", VString(""))
                 addProp("password", VString(""))
                 addProp("lastConnectTime", VInt(0))

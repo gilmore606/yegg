@@ -1,7 +1,7 @@
-package com.dlfsystems.compiler
+package com.dlfsystems.yegg.compiler
 
-import com.dlfsystems.compiler.ast.expr.identifier.N_IDENTIFIER
-import com.dlfsystems.compiler.ast.Node
+import com.dlfsystems.yegg.compiler.ast.expr.identifier.N_IDENTIFIER
+import com.dlfsystems.yegg.compiler.ast.Node
 
 // Assign variable IDs to identifiers.
 

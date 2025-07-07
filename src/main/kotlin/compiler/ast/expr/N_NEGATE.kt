@@ -1,7 +1,7 @@
-package com.dlfsystems.compiler.ast.expr
+package com.dlfsystems.yegg.compiler.ast.expr
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.vm.Opcode.O_NEGATE
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.vm.Opcode.O_NEGATE
 
 // Negation of a numeric or boolean.
 class N_NEGATE(val expr: N_EXPR): N_EXPR() {

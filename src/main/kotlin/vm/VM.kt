@@ -1,14 +1,14 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
-package com.dlfsystems.vm
+package com.dlfsystems.yegg.vm
 
-import com.dlfsystems.server.mcp.MCP
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.server.mcp.Task
-import com.dlfsystems.value.Value
-import com.dlfsystems.vm.Opcode.*
-import com.dlfsystems.value.*
-import com.dlfsystems.vm.VMException.Type.*
+import com.dlfsystems.yegg.server.mcp.MCP
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.server.mcp.Task
+import com.dlfsystems.yegg.value.Value
+import com.dlfsystems.yegg.vm.Opcode.*
+import com.dlfsystems.yegg.value.*
+import com.dlfsystems.yegg.vm.VMException.Type.*
 
 // A stack machine for one-time execution of an Executable in a Context.
 

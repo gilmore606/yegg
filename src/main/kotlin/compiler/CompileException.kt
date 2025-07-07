@@ -1,8 +1,8 @@
-package com.dlfsystems.compiler
+package com.dlfsystems.yegg.compiler
 
-import com.dlfsystems.compiler.ast.Node
-import com.dlfsystems.compiler.parser.Token
-import com.dlfsystems.vm.VMWord
+import com.dlfsystems.yegg.compiler.ast.Node
+import com.dlfsystems.yegg.compiler.parser.Token
+import com.dlfsystems.yegg.vm.VMWord
 
 class CompileException(m: String, lineNum: Int, charNum: Int): Exception("$m at line $lineNum c$charNum") {
     var code: List<VMWord>? = null

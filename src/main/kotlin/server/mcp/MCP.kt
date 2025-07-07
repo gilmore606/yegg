@@ -1,9 +1,9 @@
-package com.dlfsystems.server.mcp
+package com.dlfsystems.yegg.server.mcp
 
-import com.dlfsystems.server.Log
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.util.systemEpoch
-import com.dlfsystems.value.Value
+import com.dlfsystems.yegg.server.Log
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.util.systemEpoch
+import com.dlfsystems.yegg.value.Value
 import kotlinx.coroutines.*
 import java.util.*
 

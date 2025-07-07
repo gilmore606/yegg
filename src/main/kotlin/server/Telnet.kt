@@ -1,6 +1,6 @@
-package com.dlfsystems.server
+package com.dlfsystems.yegg.server
 
-import com.dlfsystems.server.Connection.ColorMode
+import com.dlfsystems.yegg.server.Connection.ColorMode
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*

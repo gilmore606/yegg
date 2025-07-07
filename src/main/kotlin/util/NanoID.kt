@@ -1,4 +1,4 @@
-package com.dlfsystems.util
+package com.dlfsystems.yegg.util
 
 import java.security.SecureRandom
 

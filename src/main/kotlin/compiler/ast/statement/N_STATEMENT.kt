@@ -1,6 +1,6 @@
-package com.dlfsystems.compiler.ast.statement
+package com.dlfsystems.yegg.compiler.ast.statement
 
-import com.dlfsystems.compiler.ast.Node
+import com.dlfsystems.yegg.compiler.ast.Node
 
 // A statement which doesn't return a value.
 

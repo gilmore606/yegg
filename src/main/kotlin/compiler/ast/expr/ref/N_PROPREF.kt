@@ -1,10 +1,10 @@
-package com.dlfsystems.compiler.ast.expr.ref
+package com.dlfsystems.yegg.compiler.ast.expr.ref
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.expr.N_EXPR
-import com.dlfsystems.compiler.ast.expr.identifier.N_IDENTIFIER
-import com.dlfsystems.vm.Opcode.O_GETPROP
-import com.dlfsystems.vm.Opcode.O_SETPROP
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
+import com.dlfsystems.yegg.compiler.ast.expr.identifier.N_IDENTIFIER
+import com.dlfsystems.yegg.vm.Opcode.O_GETPROP
+import com.dlfsystems.yegg.vm.Opcode.O_SETPROP
 
 class N_PROPREF(val left: N_EXPR, val right: N_EXPR): N_EXPR() {
     override fun toText() = "($left.$right)"

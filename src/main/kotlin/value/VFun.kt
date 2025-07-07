@@ -1,9 +1,9 @@
-package com.dlfsystems.value
+package com.dlfsystems.yegg.value
 
-import com.dlfsystems.util.fail
-import com.dlfsystems.vm.VMException.Type.E_RANGE
-import com.dlfsystems.vm.VMWord
-import com.dlfsystems.vm.Executable
+import com.dlfsystems.yegg.util.fail
+import com.dlfsystems.yegg.vm.VMException.Type.E_RANGE
+import com.dlfsystems.yegg.vm.VMWord
+import com.dlfsystems.yegg.vm.Executable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

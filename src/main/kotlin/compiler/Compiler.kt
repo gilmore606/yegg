@@ -1,10 +1,10 @@
-package com.dlfsystems.compiler
+package com.dlfsystems.yegg.compiler
 
-import com.dlfsystems.compiler.ast.Node
-import com.dlfsystems.compiler.parser.Lexer
-import com.dlfsystems.compiler.parser.Token
-import com.dlfsystems.compiler.parser.Parser
-import com.dlfsystems.vm.*
+import com.dlfsystems.yegg.compiler.ast.Node
+import com.dlfsystems.yegg.compiler.parser.Lexer
+import com.dlfsystems.yegg.compiler.parser.Token
+import com.dlfsystems.yegg.compiler.parser.Parser
+import com.dlfsystems.yegg.vm.*
 
 // Compile a source string into executable code.
 

@@ -1,9 +1,9 @@
-package com.dlfsystems.compiler.ast.statement
+package com.dlfsystems.yegg.compiler.ast.statement
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.expr.N_EXPR
-import com.dlfsystems.vm.Opcode.O_IF
-import com.dlfsystems.vm.Opcode.O_JUMP
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
+import com.dlfsystems.yegg.vm.Opcode.O_IF
+import com.dlfsystems.yegg.vm.Opcode.O_JUMP
 
 
 class N_IF(val condition: N_EXPR, val sThen: N_STATEMENT, val sElse: N_STATEMENT? = null): N_STATEMENT() {

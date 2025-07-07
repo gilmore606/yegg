@@ -1,9 +1,9 @@
-package com.dlfsystems.compiler.ast.expr.ref
+package com.dlfsystems.yegg.compiler.ast.expr.ref
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.expr.N_EXPR
-import com.dlfsystems.vm.Opcode.O_GETRANGE
-import com.dlfsystems.vm.Opcode.O_SETRANGE
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
+import com.dlfsystems.yegg.vm.Opcode.O_GETRANGE
+import com.dlfsystems.yegg.vm.Opcode.O_SETRANGE
 
 // A range index into a value: <expr>[<expr>..<expr>]
 class N_RANGE(val left: N_EXPR, val index1: N_EXPR, val index2: N_EXPR): N_EXPR() {

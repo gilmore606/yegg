@@ -1,7 +1,7 @@
-package com.dlfsystems.compiler.ast.statement
+package com.dlfsystems.yegg.compiler.ast.statement
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.expr.N_EXPR
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
 
 class N_ASSIGN(val left: N_EXPR, val right: N_EXPR): N_STATEMENT() {
     override fun toText() = "$left = $right"

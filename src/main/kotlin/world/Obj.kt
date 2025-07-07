@@ -1,18 +1,18 @@
 @file:Suppress("NOTHING_TO_INLINE")
 
-package com.dlfsystems.world
+package com.dlfsystems.yegg.world
 
-import com.dlfsystems.server.parser.CommandMatch
-import com.dlfsystems.server.parser.Preposition
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.util.NanoID
-import com.dlfsystems.util.fail
-import com.dlfsystems.value.VList
-import com.dlfsystems.value.VObj
-import com.dlfsystems.value.Value
-import com.dlfsystems.vm.VMException.Type.E_INVARG
-import com.dlfsystems.world.trait.Trait
-import com.dlfsystems.world.trait.Verb
+import com.dlfsystems.yegg.server.parser.CommandMatch
+import com.dlfsystems.yegg.server.parser.Preposition
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.util.NanoID
+import com.dlfsystems.yegg.util.fail
+import com.dlfsystems.yegg.value.VList
+import com.dlfsystems.yegg.value.VObj
+import com.dlfsystems.yegg.value.Value
+import com.dlfsystems.yegg.vm.VMException.Type.E_INVARG
+import com.dlfsystems.yegg.world.trait.Trait
+import com.dlfsystems.yegg.world.trait.Verb
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

@@ -1,6 +1,6 @@
-package com.dlfsystems.util
+package com.dlfsystems.yegg.util
 
-import com.dlfsystems.vm.VMException
+import com.dlfsystems.yegg.vm.VMException
 
 // Does string match pat*tern?
 fun String.matchesWildcard(pattern: String): Boolean {

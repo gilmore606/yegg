@@ -1,8 +1,8 @@
-package com.dlfsystems.vm
+package com.dlfsystems.yegg.vm
 
-import com.dlfsystems.value.VFun
-import com.dlfsystems.value.VObj
-import com.dlfsystems.value.Value
+import com.dlfsystems.yegg.value.VFun
+import com.dlfsystems.yegg.value.VObj
+import com.dlfsystems.yegg.value.Value
 import kotlinx.serialization.Serializable
 
 // A block of bytecode which can be executed by a VM.

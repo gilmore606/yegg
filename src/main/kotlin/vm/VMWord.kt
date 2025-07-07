@@ -1,7 +1,7 @@
-package com.dlfsystems.vm
+package com.dlfsystems.yegg.vm
 
-import com.dlfsystems.value.VInt
-import com.dlfsystems.value.Value
+import com.dlfsystems.yegg.value.VInt
+import com.dlfsystems.yegg.value.Value
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

@@ -1,8 +1,8 @@
-package com.dlfsystems.compiler.ast
+package com.dlfsystems.yegg.compiler.ast
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.CompileException
-import com.dlfsystems.util.NanoID
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.CompileException
+import com.dlfsystems.yegg.util.NanoID
 
 // A node in the syntax tree.
 

@@ -1,8 +1,8 @@
-package com.dlfsystems.compiler.ast.expr
+package com.dlfsystems.yegg.compiler.ast.expr
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.vm.Opcode.O_READLINE
-import com.dlfsystems.vm.Opcode.O_READLINES
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.vm.Opcode.O_READLINE
+import com.dlfsystems.yegg.vm.Opcode.O_READLINES
 
 class N_READ(val singleLine: Boolean, val args: List<N_EXPR>): N_EXPR() {
     override fun kids() = args

@@ -1,10 +1,10 @@
-package com.dlfsystems.compiler
+package com.dlfsystems.yegg.compiler
 
-import com.dlfsystems.value.Value
-import com.dlfsystems.vm.Executable
-import com.dlfsystems.vm.Opcode
-import com.dlfsystems.vm.Opcode.*
-import com.dlfsystems.vm.VMWord
+import com.dlfsystems.yegg.value.Value
+import com.dlfsystems.yegg.vm.Executable
+import com.dlfsystems.yegg.vm.Opcode
+import com.dlfsystems.yegg.vm.Opcode.*
+import com.dlfsystems.yegg.vm.VMWord
 
 // Reduce certain bytecode patterns to shorter ones.
 

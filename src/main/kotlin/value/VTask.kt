@@ -1,9 +1,9 @@
-package com.dlfsystems.value
+package com.dlfsystems.yegg.value
 
-import com.dlfsystems.server.mcp.MCP
-import com.dlfsystems.server.mcp.Task
-import com.dlfsystems.server.Yegg
-import com.dlfsystems.vm.Context
+import com.dlfsystems.yegg.server.mcp.MCP
+import com.dlfsystems.yegg.server.mcp.Task
+import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.vm.Context
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

@@ -1,10 +1,10 @@
-package com.dlfsystems.compiler.ast.expr.literal
+package com.dlfsystems.yegg.compiler.ast.expr.literal
 
-import com.dlfsystems.compiler.Coder
-import com.dlfsystems.compiler.ast.expr.N_EXPR
-import com.dlfsystems.value.*
-import com.dlfsystems.vm.Opcode.*
-import com.dlfsystems.world.Obj
+import com.dlfsystems.yegg.compiler.Coder
+import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
+import com.dlfsystems.yegg.value.*
+import com.dlfsystems.yegg.vm.Opcode.*
+import com.dlfsystems.yegg.world.Obj
 
 // A literal value appearing in code.
 

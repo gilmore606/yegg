@@ -1,8 +1,8 @@
-package com.dlfsystems.server.parser
+package com.dlfsystems.yegg.server.parser
 
-import com.dlfsystems.value.Value
-import com.dlfsystems.world.Obj
-import com.dlfsystems.world.trait.Trait
+import com.dlfsystems.yegg.value.Value
+import com.dlfsystems.yegg.world.Obj
+import com.dlfsystems.yegg.world.trait.Trait
 
 // The successful result of matching a Command, which contains the info needed to execute it.
 

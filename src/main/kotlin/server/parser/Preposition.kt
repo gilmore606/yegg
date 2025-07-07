@@ -1,4 +1,4 @@
-package com.dlfsystems.server.parser
+package com.dlfsystems.yegg.server.parser
 
 import kotlinx.serialization.Serializable
 

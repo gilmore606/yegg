@@ -1,4 +1,4 @@
-package com.dlfsystems.value
+package com.dlfsystems.yegg.value
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

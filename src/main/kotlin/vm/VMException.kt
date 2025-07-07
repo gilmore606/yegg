@@ -1,4 +1,4 @@
-package com.dlfsystems.vm
+package com.dlfsystems.yegg.vm
 
 class VMException(val type: Type, val m: String): Exception() {
 
