@@ -37,7 +37,17 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         "random" -> if (v.isEmpty()) VVoid else v.random()
         "reversed" -> make(v.reversed())
         "shuffled" -> make(v.shuffled())
+        "sorted" -> propSorted()
         else -> null
+    }
+
+    private fun propSorted(): VList {
+        if (v.isEmpty()) return make(v)
+        return make(when (v[0]) {
+            is VInt -> v.sortedBy { (it as VInt).v }
+            is VFloat -> v.sortedBy { (it as VFloat).v }
+            else -> v.sortedBy { it.asString() }
+        })
     }
 
     override fun getIndex(index: Value): Value? {
@@ -220,7 +230,6 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
     }
 
     companion object {
-        // TODO: figure out consistent mutability semantics
         fun make(v: List<Value>) = VList(v.toMutableList())
     }
 }
