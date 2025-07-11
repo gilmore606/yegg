@@ -3,9 +3,11 @@ package com.dlfsystems.yegg.server.mcp
 import com.dlfsystems.yegg.server.Connection
 import com.dlfsystems.yegg.server.Yegg
 import com.dlfsystems.yegg.util.NanoID
+import com.dlfsystems.yegg.util.fail
 import com.dlfsystems.yegg.util.systemEpoch
 import com.dlfsystems.yegg.value.VObj
 import com.dlfsystems.yegg.value.VTask
+import com.dlfsystems.yegg.value.VVoid
 import com.dlfsystems.yegg.value.Value
 import com.dlfsystems.yegg.vm.*
 import com.dlfsystems.yegg.vm.VMException.Type.*
@@ -47,8 +49,8 @@ class Task(
 
 
     sealed interface Result {
-        data object Finished: Result
-        @JvmInline value class Suspend(val seconds: Int): Result
+        data class Finished(val v: Value?): Result
+        data class Suspend(val seconds: Int): Result
     }
 
     // Execute the top stack frame.
@@ -84,11 +86,10 @@ class Task(
             connection?.sendText(e.toString())
             connection?.sendText(stackDump())
         }
-        return Result.Finished
+        return Result.Finished(vReturn)
     }
 
-    // Add a VM to the stack to run an exe.
-    fun push(
+    private fun push(
         vThis: VObj,
         exe: Executable,
         args: List<Value>,
@@ -115,6 +116,17 @@ class Task(
         ) = Task(connection, vThis, vUser).apply {
                 push(vThis, exe, args)
             }
+
+        // Make a task and execute it immediately for a return value.  The task cannot suspend.
+        // Used by system functions to call verb code.
+        fun runForValue(
+            exe: Executable,
+            args: List<Value> = listOf(),
+            connection: Connection? = null,
+        ): Value = make(exe, args, connection, vUser = connection?.user?.vThis ?: Yegg.vNullObj).execute().let {
+            if (it is Result.Suspend) fail(E_LIMIT, "cannot suspend in verbcode called by system function")
+            return (it as Result.Finished).v ?: VVoid
+        }
     }
 
 }
