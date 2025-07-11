@@ -1,6 +1,7 @@
 package com.dlfsystems.yegg.value
 
 import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.server.mcp.Task
 import com.dlfsystems.yegg.util.fail
 import com.dlfsystems.yegg.vm.Context
 import com.dlfsystems.yegg.vm.VMException.Type.*
@@ -44,8 +45,8 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
     private fun propSorted(): VList {
         if (v.isEmpty()) return make(v)
         return make(when (v[0]) {
-            is VInt -> v.sortedBy { (it as VInt).v }
-            is VFloat -> v.sortedBy { (it as VFloat).v }
+            is VInt -> v.sortedBy { (it as? VInt)?.v ?: 0 }
+            is VFloat -> v.sortedBy { (it as? VFloat)?.v ?: 0f }
             else -> v.sortedBy { it.asString() }
         })
     }
@@ -109,6 +110,10 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         "clear" -> verbClear(args)
         "reverse" -> verbReverse(args)
         "shuffle" -> verbShuffle(args)
+        "first" -> verbFirst(c, args)
+        "filter" -> verbFilter(c, args)
+        "map" -> verbMap(c, args)
+        "sortedBy" -> verbSortedBy(c, args)
         else -> null
     }
 
@@ -222,6 +227,42 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         return VVoid
     }
 
+    private fun verbFirst(c: Context, args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        if (args[0] !is VFun) fail(E_TYPE, "${args[0].type} is not FUN")
+        v.forEach { ele ->
+            Task.runForValue(args[0] as VFun, listOf(ele), c.connection).also {
+                if (it.isTrue()) return ele
+            }
+        }
+        return VVoid
+    }
+
+    private fun verbFilter(c: Context, args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        if (args[0] !is VFun) fail(E_TYPE, "${args[0].type} is not FUN")
+        return make(v.filter { Task.runForValue(args[0] as VFun, listOf(it), c.connection).isTrue() })
+    }
+
+    private fun verbMap(c: Context, args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        if (args[0] !is VFun) fail(E_TYPE, "${args[0].type} is not FUN")
+        return make(v.map { Task.runForValue(args[0] as VFun, listOf(it), c.connection) })
+    }
+
+    private fun verbSortedBy(c: Context, args: List<Value>): Value {
+        requireArgCount(args, 1, 1)
+        if (args[0] !is VFun) fail(E_TYPE, "${args[0].type} is not FUN")
+        if (v.isEmpty()) return make(v)
+        val pairs = v.map { Pair(it, Task.runForValue(args[0] as VFun, listOf(it), c.connection)) }
+        return make(when (pairs[0].second) {
+            is VInt -> pairs.sortedBy { (it.second as? VInt)?.v ?: 0 }
+            is VFloat -> pairs.sortedBy { (it.second as? VFloat)?.v ?: 0f }
+            else -> pairs.sortedBy { it.second.asString() }
+        }.map { it.first })
+    }
+
+    // Check bounds of passed arg as a position in this list.
     private fun positionArg(arg: Value): Int {
         if (arg.type != Type.INT) fail(E_TYPE, "invalid ${arg.type} list position")
         val pos = (arg as VInt).v
