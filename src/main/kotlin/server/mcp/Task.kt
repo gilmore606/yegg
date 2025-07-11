@@ -11,13 +11,18 @@ import com.dlfsystems.yegg.vm.*
 import com.dlfsystems.yegg.vm.VMException.Type.*
 import kotlinx.serialization.Serializable
 
-class Task(val c: Context) {
+class Task(
+    override val connection: Connection? = null,
+    override val vThis: VObj = Yegg.vNullObj,
+    override var vUser: VObj = connection?.user?.vThis ?: Yegg.vNullObj,
+) : Context {
 
     @Serializable @JvmInline
     value class ID(val id: String) { override fun toString() = id }
     val id = ID(NanoID.newID())
     val vID = VTask(id)
-
+    override val taskID
+        get() = id
     // TimeID includes the schedule time, and changes with every rescheduling.
     var timeID = TimeID(0L)
     var atEpoch = 0
@@ -25,13 +30,15 @@ class Task(val c: Context) {
     // Result to push on stack before executing.  Set to return a result when resuming a suspend-for-result (i.e. readline).
     var resumeResult: Value? = null
 
+    override var ticksLeft: Int = Yegg.world.getSysInt("tickLimit")
+    override var callsLeft: Int = Yegg.world.getSysInt("callLimit")
+
+    val stack = ArrayDeque<VM>()
+
+
     fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
 
-    override fun toString() = c.stack.first().toString()
-
-    init {
-        c.taskID = id
-    }
+    override fun toString() = stack.first().toString()
 
     fun setTime(secondsInFuture: Int) {
         atEpoch = if (secondsInFuture == Int.MAX_VALUE) Int.MAX_VALUE else systemEpoch() + secondsInFuture
@@ -54,18 +61,18 @@ class Task(val c: Context) {
         var vReturn: Value? = resumeResult
         resumeResult = null
         try {
-            while (c.stack.isNotEmpty()) {
-                c.stack.first().execute(vReturn).also { result ->
+            while (stack.isNotEmpty()) {
+                stack.first().execute(vReturn).also { result ->
                     vReturn = null
                     when (result) {
                         is VM.Result.Return -> {
                             vReturn = result.v
-                            c.callsLeft++
-                            c.pop()
+                            callsLeft++
+                            pop()
                         }
                         is VM.Result.Call -> {
-                            if (--c.callsLeft < 0) fail(E_MAXREC, "too many nested verb calls")
-                            c.push(result.vThis, result.exe, result.args)
+                            if (--callsLeft < 0) fail(E_MAXREC, "too many nested verb calls")
+                            push(result.vThis, result.exe, result.args)
                         }
                         is VM.Result.Suspend -> {
                             return Result.Suspend(result.seconds)
@@ -74,11 +81,29 @@ class Task(val c: Context) {
                 }
             }
         } catch (e: Exception) {
-            c.connection?.sendText(e.toString())
-            c.connection?.sendText(c.stackDump())
+            connection?.sendText(e.toString())
+            connection?.sendText(stackDump())
         }
         return Result.Finished
     }
+
+    // Add a VM to the stack to run an exe.
+    fun push(
+        vThis: VObj,
+        exe: Executable,
+        args: List<Value>,
+    ) {
+        exe.jitCompile()
+        stack.addFirst(
+            VM(this, vThis, exe, args)
+        )
+    }
+
+    fun pop(): VM {
+        return stack.removeFirst()
+    }
+
+    fun stackDump() = stack.joinToString(prefix = "...", separator = "\n...", postfix = "\n")
 
     companion object {
         fun make(
@@ -87,11 +112,9 @@ class Task(val c: Context) {
             connection: Connection? = null,
             vThis: VObj = Yegg.vNullObj,
             vUser: VObj = Yegg.vNullObj,
-        ) = Task(
-            Context(connection, vThis, vUser).apply {
+        ) = Task(connection, vThis, vUser).apply {
                 push(vThis, exe, args)
             }
-        )
     }
 
 }
