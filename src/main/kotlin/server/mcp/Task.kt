@@ -3,7 +3,6 @@ package com.dlfsystems.yegg.server.mcp
 import com.dlfsystems.yegg.server.Connection
 import com.dlfsystems.yegg.server.Yegg
 import com.dlfsystems.yegg.util.NanoID
-import com.dlfsystems.yegg.util.fail
 import com.dlfsystems.yegg.util.systemEpoch
 import com.dlfsystems.yegg.value.VObj
 import com.dlfsystems.yegg.value.VTask
@@ -49,7 +48,7 @@ class Task(
 
 
     sealed interface Result {
-        data class Finished(val v: Value?): Result
+        data class Finished(val v: Value): Result
         data class Suspend(val seconds: Int): Result
     }
 
@@ -85,16 +84,16 @@ class Task(
             connection?.sendText(e.toString())
             connection?.sendText(stackDump())
         }
-        return Result.Finished(vReturn)
+        return Result.Finished(vReturn ?: VVoid)
     }
 
     // Execute an exe immediately for a return value.  The task cannot suspend.
-    // Used by system functions to call verb code.
-    override fun executeLambda(exe: Executable, args: List<Value>): Value {
+    // Used by system functions to call verb code in an existing Task.
+    override fun executeForResult(exe: Executable, args: List<Value>): Value {
         push(vThis, exe, args)
         execute(toDepth = stack.size - 1).also { result ->
             if (result is Result.Suspend) fail(E_LIMIT, "cannot suspend in verb called by system")
-            return (result as Result.Finished).v ?: VVoid
+            return (result as Result.Finished).v
         }
     }
 

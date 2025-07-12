@@ -16,6 +16,6 @@ interface Context {
     var ticksLeft: Int
     var callsLeft: Int
 
-    fun executeLambda(exe: Executable, args: List<Value>): Value
+    fun executeForResult(exe: Executable, args: List<Value>): Value
 
 }
