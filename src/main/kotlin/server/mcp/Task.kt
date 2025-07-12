@@ -58,12 +58,11 @@ class Task(
     // On a Call, push a new stack frame.
     // On a Return, pop a stack frame, and save the return value to pass to the next iteration (the previous frame).
     // Continue until the stack is empty.
-
-    fun execute(): Result {
+    fun execute(toDepth: Int = 0): Result {
         var vReturn: Value? = resumeResult
         resumeResult = null
         try {
-            while (stack.isNotEmpty()) {
+            while (stack.size > toDepth) {
                 stack.first().execute(vReturn).also { result ->
                     vReturn = null
                     when (result) {
@@ -89,6 +88,16 @@ class Task(
         return Result.Finished(vReturn)
     }
 
+    // Execute an exe immediately for a return value.  The task cannot suspend.
+    // Used by system functions to call verb code.
+    override fun executeLambda(exe: Executable, args: List<Value>): Value {
+        push(vThis, exe, args)
+        execute(toDepth = stack.size - 1).also { result ->
+            if (result is Result.Suspend) fail(E_LIMIT, "cannot suspend in verb called by system")
+            return (result as Result.Finished).v ?: VVoid
+        }
+    }
+
     private fun push(
         vThis: VObj,
         exe: Executable,
@@ -100,11 +109,12 @@ class Task(
         )
     }
 
-    fun pop(): VM {
+    private fun pop(): VM {
         return stack.removeFirst()
     }
 
     fun stackDump() = stack.joinToString(prefix = "...", separator = "\n...", postfix = "\n")
+
 
     companion object {
         fun make(
@@ -116,17 +126,6 @@ class Task(
         ) = Task(connection, vThis, vUser).apply {
                 push(vThis, exe, args)
             }
-
-        // Make a task and execute it immediately for a return value.  The task cannot suspend.
-        // Used by system functions to call verb code.
-        fun runForValue(
-            exe: Executable,
-            args: List<Value> = listOf(),
-            connection: Connection? = null,
-        ): Value = make(exe, args, connection, vUser = connection?.user?.vThis ?: Yegg.vNullObj).execute().let {
-            if (it is Result.Suspend) fail(E_LIMIT, "cannot suspend in verbcode called by system function")
-            return (it as Result.Finished).v ?: VVoid
-        }
     }
 
 }

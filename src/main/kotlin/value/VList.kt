@@ -231,7 +231,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         requireArgCount(args, 1, 1)
         if (args[0] !is VFun) fail(E_TYPE, "${args[0].type} is not FUN")
         v.forEach { ele ->
-            Task.runForValue(args[0] as VFun, listOf(ele), c.connection).also {
+            c.executeLambda(args[0] as VFun, listOf(ele)).also {
                 if (it.isTrue()) return ele
             }
         }
@@ -241,20 +241,20 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
     private fun verbFilter(c: Context, args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         if (args[0] !is VFun) fail(E_TYPE, "${args[0].type} is not FUN")
-        return make(v.filter { Task.runForValue(args[0] as VFun, listOf(it), c.connection).isTrue() })
+        return make(v.filter { c.executeLambda(args[0] as VFun, listOf(it)).isTrue() })
     }
 
     private fun verbMap(c: Context, args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         if (args[0] !is VFun) fail(E_TYPE, "${args[0].type} is not FUN")
-        return make(v.map { Task.runForValue(args[0] as VFun, listOf(it), c.connection) })
+        return make(v.map { c.executeLambda(args[0] as VFun, listOf(it)) })
     }
 
     private fun verbSortedBy(c: Context, args: List<Value>): Value {
         requireArgCount(args, 1, 1)
         if (args[0] !is VFun) fail(E_TYPE, "${args[0].type} is not FUN")
         if (v.isEmpty()) return make(v)
-        val pairs = v.map { Pair(it, Task.runForValue(args[0] as VFun, listOf(it), c.connection)) }
+        val pairs = v.map { Pair(it, c.executeLambda(args[0] as VFun, listOf(it))) }
         return make(when (pairs[0].second) {
             is VInt -> pairs.sortedBy { (it.second as? VInt)?.v ?: 0 }
             is VFloat -> pairs.sortedBy { (it.second as? VFloat)?.v ?: 0f }
