@@ -196,13 +196,17 @@ class LangTest: YeggTest() {
 
     @Test
     fun `List map`() = yeggTest {
+        verb("sys", "resultOf", $$"""
+            [input] = args
+            return input * 10
+        """)
         runForOutput($$"""
-            foo = [1,3,5].map({ "got $it" })
+            foo = [1,3,5].map({ "got ${$sys.resultOf(it)}" })
             for (x in foo) notifyConn("$x")
         """, """
-            got 1
-            got 3
-            got 5
+            got 10
+            got 30
+            got 50
         """)
     }
 
