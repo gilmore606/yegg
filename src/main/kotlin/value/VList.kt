@@ -253,7 +253,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
         requireArgCount(args, 1, 1)
         if (args[0] !is VFun) fail(E_TYPE, "${args[0].type} is not FUN")
         if (v.isEmpty()) return make(v)
-        val pairs = v.map { Pair(it, c.executeForResult(args[0] as VFun, listOf(it))) }
+        val pairs = v.map { it to c.executeForResult(args[0] as VFun, listOf(it)) }
         return make(when (pairs[0].second) {
             is VInt -> pairs.sortedBy { (it.second as? VInt)?.v ?: 0 }
             is VFloat -> pairs.sortedBy { (it.second as? VFloat)?.v ?: 0f }

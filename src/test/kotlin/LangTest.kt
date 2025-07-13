@@ -185,6 +185,16 @@ class LangTest: YeggTest() {
     }
 
     @Test
+    fun `Mixed list sorted by first value type`() = yeggTest {
+        runForOutput($$"""
+            foo = [36, 9, "hello", 88, 5.6]
+            notifyConn(foo.sorted)
+        """, """
+            "hello", 5.6, 9, 36, 88
+        """)
+    }
+
+    @Test
     fun `List filter`() = yeggTest {
         runForOutput($$"""
             foo = [1,5,7,12,26,31,74].filter({ it % 2 == 0 })
