@@ -8,7 +8,7 @@ import com.dlfsystems.yegg.vm.Opcode.O_MAPVAL
 
 class N_LITERAL_MAP(val value: Map<N_EXPR, N_EXPR>): N_LITERAL() {
     override fun kids() = (value.keys + value.values).toList()
-    override fun toText() = value.keys.joinToString(", ", "MAP[", "]") { "$it: ${value[it]}" }
+    override fun toString() = value.keys.joinToString(", ", "MAP[", "]") { "$it: ${value[it]}" }
     override fun constantValue(): Value? {
         val constant = mutableMapOf<Value, Value>()
         for (key in value.keys) {
@@ -22,13 +22,14 @@ class N_LITERAL_MAP(val value: Map<N_EXPR, N_EXPR>): N_LITERAL() {
         }
         return VMap(constant)
     }
-    override fun code(c: Coder) {
-        if (codeConstant(c)) return
-        value.keys.forEach { key ->
-            value[key]!!.code(c)
-            key.code(c)
+    override fun code(c: Coder) = with (c.use(this)) {
+        if (!codeConstant(c)) {
+            value.keys.forEach { key ->
+                code(value[key]!!)
+                code(key)
+            }
+            opcode(O_MAPVAL)
+            value(value.size)
         }
-        c.opcode(this, O_MAPVAL)
-        c.value(this, value.size)
     }
 }

@@ -8,7 +8,7 @@ import com.dlfsystems.yegg.vm.Opcode.*
 // An expression which reduces to a Value.
 
 abstract class N_EXPR: N_STATEMENT() {
-    // Code this expr as the left side of = assign.
+    // Code this expr as the left side of = assign.  Do not call directly; use Coder.codeAssign(Node).
     open fun codeAssign(c: Coder) { fail("illegal left side of assignment") }
     // Code this expr as the left side of [i]= assign.
     // TODO: is this used?  do we need to implement this or something?
@@ -17,10 +17,10 @@ abstract class N_EXPR: N_STATEMENT() {
     open fun constantValue(): Value? = null
     // If we have a constantValue(), code it and return true.
     // Any code() on an N_EXPR that can have a constant value should call this first (and terminate if true).
-    protected fun codeConstant(c: Coder): Boolean {
+    protected fun codeConstant(c: Coder): Boolean = with (c.use(this)) {
         constantValue()?.also { value ->
-            c.opcode(this, O_VAL)
-            c.value(this, value)
+            opcode(O_VAL)
+            value(value)
             return true
         }
         return false

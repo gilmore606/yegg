@@ -7,20 +7,20 @@ import com.dlfsystems.yegg.vm.Opcode.O_SETRANGE
 
 // A range index into a value: <expr>[<expr>..<expr>]
 class N_RANGE(val left: N_EXPR, val index1: N_EXPR, val index2: N_EXPR): N_EXPR() {
-    override fun toText() = "RANGE<$left[$index1..$index2]>"
+    override fun toString() = "RANGE<$left[$index1..$index2]>"
     override fun kids() = listOf(left, index1, index2)
 
-    override fun code(c: Coder) {
-        left.code(c)
-        index1.code(c)
-        index2.code(c)
-        c.opcode(this, O_GETRANGE)
+    override fun code(c: Coder) = with (c.use(this)) {
+        code(left)
+        code(index1)
+        code(index2)
+        opcode(O_GETRANGE)
     }
 
-    override fun codeAssign(c: Coder) {
-        left.code(c)
-        index1.code(c)
-        index2.code(c)
-        c.opcode(this, O_SETRANGE)
+    override fun codeAssign(c: Coder) = with (c.use(this)) {
+        code(left)
+        code(index1)
+        code(index2)
+        opcode(O_SETRANGE)
     }
 }

@@ -8,13 +8,13 @@ import com.dlfsystems.yegg.vm.Opcode.O_DESTRUCT
 import com.dlfsystems.yegg.vm.Opcode.O_VAL
 
 class N_DESTRUCT(val vars: List<N_IDENTIFIER>, val right: N_EXPR): N_STATEMENT() {
-    override fun toText() = "[${vars.joinToString(",")}] = $right"
+    override fun toString() = "[${vars.joinToString(",")}] = $right"
     override fun kids() = vars + listOf(right)
 
-    override fun code(c: Coder) {
-        c.opcode(this, O_VAL)
-        c.value(this, vars.map { VString(it.name) })
-        right.code(c)
-        c.opcode(this, O_DESTRUCT)
+    override fun code(c: Coder) = with (c.use(this)) {
+        opcode(O_VAL)
+        value(vars.map { VString(it.name) })
+        code(right)
+        opcode(O_DESTRUCT)
     }
 }

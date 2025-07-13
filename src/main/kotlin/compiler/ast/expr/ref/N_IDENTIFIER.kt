@@ -18,27 +18,25 @@ class N_IDENTIFIER(val name: String): N_EXPR() {
     fun isVariable() = type == Type.VARIABLE
     var variableID: Int? = null
 
-    override fun toText() = "$name"
-
     override fun variableName() = if (isVariable()) name else null
 
-    override fun code(c: Coder) {
+    override fun code(c: Coder) = with (c.use(this)) {
         when (type) {
             Type.VARIABLE -> {
-                c.opcode(this, O_GETVAR)
-                c.value(this, variableID!!)
+                opcode(O_GETVAR)
+                value(variableID!!)
             }
             else -> {
-                c.opcode(this, O_VAL)
-                c.value(this, name)
+                opcode(O_VAL)
+                value(name)
             }
         }
     }
 
-    override fun codeAssign(c: Coder) {
+    override fun codeAssign(c: Coder) = with (c.use(this)) {
         if (type == Type.VARIABLE) {
-            c.opcode(this, O_SETVAR)
-            c.value(this, variableID!!)
+            opcode(O_SETVAR)
+            value(variableID!!)
         } else fail("non-variable identifier on left of assignment!")
     }
 }

@@ -8,7 +8,7 @@ import com.dlfsystems.yegg.vm.Opcode.O_LISTVAL
 
 class N_LITERAL_LIST(val value: List<N_EXPR>): N_LITERAL() {
     override fun kids() = value
-    override fun toText() = value.joinToString(", ", "LIST[", "]")
+    override fun toString() = value.joinToString(", ", "LIST[", "]")
     override fun constantValue(): Value? {
         val constant = mutableListOf<Value>()
         for (expr in value) {
@@ -17,10 +17,11 @@ class N_LITERAL_LIST(val value: List<N_EXPR>): N_LITERAL() {
         }
         return VList(constant)
     }
-    override fun code(c: Coder) {
-        if (codeConstant(c)) return
-        value.forEach { it.code(c) }
-        c.opcode(this, O_LISTVAL)
-        c.value(this, value.size)
+    override fun code(c: Coder) = with (c.use(this)) {
+        if (!codeConstant(c)) {
+            value.forEach { code(it) }
+            opcode(O_LISTVAL)
+            value(value.size)
+        }
     }
 }

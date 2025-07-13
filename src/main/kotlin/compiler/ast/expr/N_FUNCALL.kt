@@ -8,10 +8,10 @@ import com.dlfsystems.yegg.vm.Opcode.O_FUNCALL
 class N_FUNCALL(val name: N_IDENTIFIER, val args: List<N_EXPR>): N_EXPR() {
     override fun kids() = listOf(name) + args
 
-    override fun code(c: Coder) {
-        args.forEach { it.code(c) }
-        c.opcode(this, O_FUNCALL)
-        c.value(this, name.name)
-        c.value(this, args.size)
+    override fun code(c: Coder) = with (c.use(this)) {
+        args.forEach { code(it) }
+        opcode(O_FUNCALL)
+        value(name.name)
+        value(args.size)
     }
 }

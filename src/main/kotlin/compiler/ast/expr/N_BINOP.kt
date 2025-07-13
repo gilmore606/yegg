@@ -9,7 +9,7 @@ import com.dlfsystems.yegg.vm.Opcode.*
 // A binary operation, popping two stack values and pushing one result.
 
 abstract class N_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR, val ops: List<Opcode>): N_EXPR() {
-    override fun toText() = "($left $opString $right)"
+    override fun toString() = "($left $opString $right)"
     override fun kids() = listOf(left, right)
     override fun constantValue(): Value? {
         left.constantValue()?.also { leftConstant ->
@@ -21,11 +21,12 @@ abstract class N_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR
     }
     open fun asConstant(l: Value, r: Value): Value? = null
 
-    override fun code(c: Coder) {
-        if (codeConstant(c)) return
-        left.code(c)
-        right.code(c)
-        ops.forEach { c.opcode(this, it) }
+    override fun code(c: Coder) = with (c.use(this)) {
+        if (!codeConstant(c)) {
+            code(left)
+            code(right)
+            ops.forEach { opcode(it) }
+        }
     }
 }
 
@@ -58,32 +59,32 @@ class N_CMP_GE(left: N_EXPR, right: N_EXPR): N_BINOP(">=", left, right, listOf(O
 class N_CMP_LE(left: N_EXPR, right: N_EXPR): N_BINOP("<=", left, right, listOf(O_CMP_LE))
 
 class N_AND(left: N_EXPR, right: N_EXPR): N_BINOP("&&", left, right, listOf()) {
-    override fun code(c: Coder) {
-        left.code(c)
-        c.opcode(this, O_IF)
-        c.jumpForward(this, "andskip")
-        right.code(c)
-        c.opcode(this, O_JUMP)
-        c.jumpForward(this, "andend")
-        c.setForwardJump(this, "andskip")
-        c.opcode(this, O_VAL)
-        c.value(this, false)
-        c.setForwardJump(this, "andend")
+    override fun code(c: Coder) = with (c.use(this)) {
+        code(left)
+        opcode(O_IF)
+        jumpForward("andskip")
+        code(right)
+        opcode(O_JUMP)
+        jumpForward("andend")
+        setForwardJump("andskip")
+        opcode(O_VAL)
+        value(false)
+        setForwardJump("andend")
     }
 }
 
 class N_OR(left: N_EXPR, right: N_EXPR): N_BINOP("||", left, right, listOf()) {
-    override fun code(c: Coder) {
-        left.code(c)
-        c.opcode(this, O_NEGATE)
-        c.opcode(this, O_IF)
-        c.jumpForward(this, "orskip")
-        right.code(c)
-        c.opcode(this, O_JUMP)
-        c.jumpForward(this, "orend")
-        c.setForwardJump(this, "orskip")
-        c.opcode(this, O_VAL)
-        c.value(this, true)
-        c.setForwardJump(this, "orend")
+    override fun code(c: Coder) = with (c.use(this)) {
+        code(left)
+        opcode(O_NEGATE)
+        opcode(O_IF)
+        jumpForward("orskip")
+        code(right)
+        opcode(O_JUMP)
+        jumpForward("orend")
+        setForwardJump("orskip")
+        opcode(O_VAL)
+        value(true)
+        setForwardJump("orend")
     }
 }

@@ -5,13 +5,13 @@ import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
 import com.dlfsystems.yegg.vm.Opcode.O_TRAIT
 
 class N_TRAITREF(val expr: N_EXPR): N_EXPR() {
-    override fun toText() = "\$$expr"
+    override fun toString() = "\$$expr"
     override fun kids() = listOf(expr)
 
     override fun identify() { (expr as? N_IDENTIFIER)?.markAsTrait() }
 
-    override fun code(c: Coder) {
-        expr.code(c)
-        c.opcode(this, O_TRAIT)
+    override fun code(c: Coder) = with (c.use(this)) {
+        code(expr)
+        opcode(O_TRAIT)
     }
 }

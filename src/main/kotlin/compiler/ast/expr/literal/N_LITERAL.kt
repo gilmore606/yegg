@@ -12,37 +12,39 @@ abstract class N_LITERAL: N_EXPR() {
     open fun codeValue(coder: Coder) { }
 
     override fun code(c: Coder) {
-        c.opcode(this, O_VAL)
-        codeValue(c)
+        with (c.use(this)) {
+            opcode(O_VAL)
+            codeValue(c)
+        }
     }
 }
 
 class N_LITERAL_BOOLEAN(val value: Boolean): N_LITERAL() {
-    override fun toText() = if (value) "true" else "false"
-    override fun codeValue(coder: Coder) { coder.value(this, value) }
+    override fun toString() = if (value) "true" else "false"
+    override fun codeValue(coder: Coder) { coder.value(value) }
     override fun constantValue() = VBool(value)
 }
 
 class N_LITERAL_INTEGER(val value: Int): N_LITERAL() {
-    override fun toText() = "$value"
-    override fun codeValue(coder: Coder) { coder.value(this, value) }
+    override fun toString() = "$value"
+    override fun codeValue(coder: Coder) { coder.value(value) }
     override fun constantValue() = VInt(value)
 }
 
 class N_LITERAL_FLOAT(val value: Float): N_LITERAL() {
-    override fun toText() = "$value"
-    override fun codeValue(coder: Coder) { coder.value(this, value) }
+    override fun toString() = "$value"
+    override fun codeValue(coder: Coder) { coder.value(value) }
     override fun constantValue() = VFloat(value)
 }
 
 class N_LITERAL_OBJ(val objID: Obj.ID): N_LITERAL() {
-    override fun toText() = "#$id"
-    override fun codeValue(coder: Coder) { coder.value(this, objID) }
+    override fun toString() = "#$id"
+    override fun codeValue(coder: Coder) { coder.value(objID) }
     override fun constantValue() = VObj(objID)
 }
 
 class N_LITERAL_STRING(val value: String): N_LITERAL() {
-    override fun toText() = "\"$value\""
-    override fun codeValue(coder: Coder) { coder.value(this, value) }
+    override fun toString() = "\"$value\""
+    override fun codeValue(coder: Coder) { coder.value(value) }
     override fun constantValue() = VString(value)
 }

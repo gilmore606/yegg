@@ -7,20 +7,22 @@ import com.dlfsystems.yegg.vm.Opcode.O_JUMP
 
 
 class N_IF(val condition: N_EXPR, val sThen: N_STATEMENT, val sElse: N_STATEMENT? = null): N_STATEMENT() {
-    override fun toText() = sElse?.let { "(if $condition $sThen else $sElse)" } ?: "if $condition $sThen"
+    override fun toString() = sElse?.let { "(if $condition $sThen else $sElse)" } ?: "if $condition $sThen"
     override fun kids() = mutableListOf(condition, sThen).apply { sElse?.also { add(it) }}
 
-    override fun code(c: Coder) {
-        condition.code(c)
-        c.opcode(this, O_IF)
-        c.jumpForward(this, "ifskip")
-        sThen.code(c)
-        sElse?.also { sElse ->
-            c.opcode(this, O_JUMP)
-            c.jumpForward(this, "elseskip")
-            c.setForwardJump(this, "ifskip")
-            sElse.code(c)
-            c.setForwardJump(this, "elseskip")
-        } ?: c.setForwardJump(this, "ifskip")
+    override fun code(c: Coder) = with (c.use(this)) {
+        code(condition)
+        opcode(O_IF)
+        jumpForward("ifskip")
+        code(sThen)
+        if (sElse != null) {
+            opcode(O_JUMP)
+            jumpForward("elseskip")
+            setForwardJump("ifskip")
+            code(sElse)
+            setForwardJump("elseskip")
+        } else {
+            setForwardJump("ifskip")
+        }
     }
 }

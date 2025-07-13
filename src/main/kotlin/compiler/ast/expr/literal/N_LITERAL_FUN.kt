@@ -8,18 +8,18 @@ import com.dlfsystems.yegg.vm.Opcode.*
 
 class N_LITERAL_FUN(val args: List<N_IDENTIFIER>, val block: N_STATEMENT): N_LITERAL() {
     override fun kids() = args + listOf(block)
-    override fun code(c: Coder) {
-        c.opcode(this, O_VAL)
-        c.value(this, args.map { VString(it.name) })
-        c.opcode(this, O_VAL)
-        c.value(this, block.collectVars().map { VString(it) })
-        c.opcode(this, O_FUNVAL)
-        val blockID = c.codeBlockStart(this)
-        c.opcode(this, O_JUMP)
-        c.jumpForward(this, "skipFun")
-        block.code(c)
-        c.opcode(this, O_RETURN)
-        c.codeBlockEnd(this, blockID)
-        c.setForwardJump(this, "skipFun")
+    override fun code(c: Coder) = with (c.use(this)) {
+        opcode(O_VAL)
+        value(args.map { VString(it.name) })
+        opcode(O_VAL)
+        value(block.collectVars().map { VString(it) })
+        opcode(O_FUNVAL)
+        val blockID = c.codeBlockStart()
+        opcode(O_JUMP)
+        jumpForward("skipFun")
+        code(block)
+        opcode(O_RETURN)
+        codeBlockEnd(blockID)
+        setForwardJump("skipFun")
     }
 }
