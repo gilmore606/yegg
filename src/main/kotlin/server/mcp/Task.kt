@@ -16,6 +16,7 @@ class Task(
     override val connection: Connection? = null,
     override val vThis: VObj = Yegg.vNullObj,
     override var vUser: VObj = connection?.user?.vThis ?: Yegg.vNullObj,
+    val onResult: ((Result) -> Unit)? = null,
 ) : Context {
 
     @Serializable @JvmInline
@@ -34,6 +35,7 @@ class Task(
     override var ticksLeft: Int = Yegg.world.getSysInt("tickLimit")
     override var callsLeft: Int = Yegg.world.getSysInt("callLimit")
 
+    // Stack of VMs awaiting return values.
     val stack = ArrayDeque<VM>()
 
 
@@ -102,20 +104,12 @@ class Task(
         return VVoid
     }
 
-    private fun push(
-        vThis: VObj,
-        exe: Executable,
-        args: List<Value>,
-    ) {
+    private fun push(vThis: VObj, exe: Executable, args: List<Value>) {
         exe.jitCompile()
-        stack.addFirst(
-            VM(this, vThis, exe, args)
-        )
+        stack.addFirst(VM(this, vThis, exe, args))
     }
 
-    private fun pop(): VM {
-        return stack.removeFirst()
-    }
+    private fun pop(): VM = stack.removeFirst()
 
     fun stackDump() = stack.joinToString(prefix = "...", separator = "\n...", postfix = "\n")
 
@@ -127,7 +121,8 @@ class Task(
             connection: Connection? = null,
             vThis: VObj = Yegg.vNullObj,
             vUser: VObj = Yegg.vNullObj,
-        ) = Task(connection, vThis, vUser).apply {
+            onResult: ((Result) -> Unit)? = null,
+        ) = Task(connection, vThis, vUser, onResult).apply {
                 push(vThis, exe, args)
             }
     }

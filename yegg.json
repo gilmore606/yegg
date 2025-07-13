@@ -2,6 +2,7 @@
   "worldName": "Minimal",
   "serverAddress": "127.0.0.1",
   "serverPort": 8888,
+  "debugMode": true,
   "logLevel": "DEBUG",
   "logToConsole": true,
   "optimizeCompiler": true,

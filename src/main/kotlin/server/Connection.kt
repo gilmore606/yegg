@@ -44,6 +44,15 @@ class Connection(
     var isScreenReader = false
     var isUtf8 = false
 
+    fun forceDisconnect() {
+        Yegg.removeConnection(this)
+        disconnectRemote.invoke()
+    }
+
+    fun onDisconnect() {
+        readRequest?.also { MCP.cancel(it.taskID) }
+    }
+
     fun changeColorSupport(mode: ColorMode, value: Boolean) {
         if (value) colorSupport.add(mode) else colorSupport.remove(mode)
     }
@@ -71,55 +80,44 @@ class Connection(
     }
 
     private fun processInput(text: String) {
-        readRequest?.also { readRequest ->
-            val singleLine = readRequest.singleLine
-            if (text == "." || singleLine) {
-                val input: Value = if (singleLine) VString(text)
+        when {
+            readRequest != null -> {
+                val singleLine = readRequest!!.singleLine
+                if (text == "." || singleLine) {
+                    val input: Value = if (singleLine) VString(text)
                     else VList.make(readBuffer.map { VString(it) })
-                readBuffer.clear()
-                val taskID = readRequest.taskID
-                this.readRequest = null
-                MCP.resumeWithResult(taskID, input)
-            } else {
-                readBuffer.add(text)
-                if (readBuffer.size > INPUT_BUFFER_MAX_LINES) {
-                    Log.w(TAG, "Read buffer size exceeded -- forcing disconnect")
-                    forceDisconnect()
+                    readBuffer.clear()
+                    val taskID = readRequest!!.taskID
+                    this.readRequest = null
+                    MCP.resumeWithResult(taskID, input)
+                } else {
+                    readBuffer.add(text)
+                    if (readBuffer.size > INPUT_BUFFER_MAX_LINES) {
+                        Log.w(TAG, "Read buffer size exceeded -- forcing disconnect")
+                        forceDisconnect()
+                    }
                 }
             }
-            return
-        }
-
-        if (text.startsWith(";")) {
-            // TODO: move this in-DB
-            val eval = text.substringAfter(";")
-            val source = if (eval.startsWith(";")) "notifyConn(${eval.substringAfter(";")})" else eval
-            try {
-                val verb = Verb("eval").apply { program(source) }
-                MCP.schedule(
-                    Task.Companion.make(
-                    exe = verb,
-                    connection = this,
-                ))
-            } catch (e: Exception) {
-                sendText("E_HUH: ${e.message}")
+            text.startsWith(";") && Yegg.conf.debugMode -> {
+                try {
+                    MCP.schedule(Task.make(
+                        exe = Verb("eval").apply { program(text.substringAfter(";")) },
+                        connection = this,
+                        onResult = {
+                            sendText(Yegg.EVAL_OUTPUT_PREFIX + (it as? Task.Result.Finished)?.v?.asString())
+                        }
+                    ))
+                } catch (e: Exception) {
+                    sendText("E_HUH: ${e.message}")
+                }
             }
-        } else if (text.isNotBlank()) {
-            parseCommand(text)
+            text.isNotBlank() -> {
+                parseCommand(text)
+            }
         }
-    }
-
-    fun forceDisconnect() {
-        Yegg.removeConnection(this)
-        disconnectRemote.invoke()
-    }
-
-    fun onDisconnect() {
-        readRequest?.also { MCP.cancel(it.taskID) }
     }
 
     private fun parseCommand(text: String) {
-        // Split command into string parts
         val splits = text.split("\\s+".toRegex(), 2)
         val cmdstr = splits[0]
         val argstr = if (splits.size < 2) "" else splits[1]

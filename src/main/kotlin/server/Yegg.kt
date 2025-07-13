@@ -19,6 +19,7 @@ object Yegg {
         val worldName: String,
         val serverAddress: String,
         val serverPort: Int,
+        val debugMode: Boolean,
         val logLevel: Log.Level,
         val logToConsole: Boolean,
         val optimizeCompiler: Boolean,
@@ -30,6 +31,7 @@ object Yegg {
     private const val CONNECT_MSG = "** Connected **"
     private const val DISCONNECT_MSG = "** Disconnected **"
     const val HUH_MSG = "I don't understand that."
+    const val EVAL_OUTPUT_PREFIX = "=> "
 
     private var inTestMode = false
 
