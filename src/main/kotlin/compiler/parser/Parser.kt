@@ -3,7 +3,7 @@
 package com.dlfsystems.yegg.compiler.parser
 
 import com.dlfsystems.yegg.compiler.CompileException
-import com.dlfsystems.yegg.compiler.parser.TokenType.*
+import com.dlfsystems.yegg.compiler.parser.Token.Type.*
 import com.dlfsystems.yegg.compiler.ast.*
 import com.dlfsystems.yegg.compiler.ast.expr.*
 import com.dlfsystems.yegg.compiler.ast.expr.identifier.*
@@ -36,16 +36,16 @@ class Parser(inputTokens: List<Token>) {
     }
 
     // Pull the next token if of the given type, else return null.
-    private inline fun consume(vararg types: TokenType) = if (nextIs(types.toList())) consume() else null
+    private inline fun consume(vararg types: Token.Type) = if (nextIs(types.toList())) consume() else null
 
     // Peek at the next token in the input stream.
     private inline fun nextToken(skip: Int = 0) = if (skip >= tokens.size) EOF() else tokens[skip]
 
     // Is the next token one of the given types?
-    private inline fun nextIs(vararg types: TokenType) = (nextToken().type in types)
-    private inline fun nextIs(types: List<TokenType>) = (nextToken().type in types)
+    private inline fun nextIs(vararg types: Token.Type) = (nextToken().type in types)
+    private inline fun nextIs(types: List<Token.Type>) = (nextToken().type in types)
     // Are the next tokens each of the given ordered types?
-    private inline fun nextAre(vararg types: TokenType): Boolean {
+    private inline fun nextAre(vararg types: Token.Type): Boolean {
         for (i in types.indices) {
             if (nextToken(i).type != types[i]) return false
         }

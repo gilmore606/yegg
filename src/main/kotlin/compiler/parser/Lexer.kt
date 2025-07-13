@@ -1,7 +1,7 @@
 package com.dlfsystems.yegg.compiler.parser
 
 import com.dlfsystems.yegg.compiler.CompileException
-import com.dlfsystems.yegg.compiler.parser.TokenType.*
+import com.dlfsystems.yegg.compiler.parser.Token.Type.*
 import com.dlfsystems.yegg.util.NanoID
 
 // Take an input string and produce a stream of tokens.
@@ -12,7 +12,7 @@ class Lexer(val source: String) {
     private val tokens = ArrayList<Token>()
 
     // Are we constructing some kind of token?
-    private var tokenType: TokenType? = null
+    private var tokenType: Token.Type? = null
     // If so, buffer its characters as we get them.
     private var tokenString: String = ""
 
@@ -186,7 +186,7 @@ class Lexer(val source: String) {
     private fun isIDChar(c: Char) = NanoID.CHARS.contains(c)
 
     // Begin a new accumulating token of (possibly) type.  Start with acc if given.
-    private fun begin(type: TokenType, acc: Char? = null) {
+    private fun begin(type: Token.Type, acc: Char? = null) {
         tokenType = type
         acc?.also { accumulate(it) }
     }
@@ -197,7 +197,7 @@ class Lexer(val source: String) {
     }
 
     // Emit a discovered token.  Reconsume the triggering character, if given.
-    private fun emit(tokenType: TokenType, reconsume: Char? = null) {
+    private fun emit(tokenType: Token.Type, reconsume: Char? = null) {
         var newType = tokenType
         if (tokenType == T_IDENTIFIER) {
             entries.firstOrNull { it.isKeyword && it.literal == tokenString }?.also {
