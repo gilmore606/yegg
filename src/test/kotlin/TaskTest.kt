@@ -63,7 +63,7 @@ class TaskTest: YeggTest() {
             task1.cancel()
             notifyConn("start")
             task2.resume()
-            suspend(0)
+            suspend(1)
             notifyConn("end")
         """, """
             start
