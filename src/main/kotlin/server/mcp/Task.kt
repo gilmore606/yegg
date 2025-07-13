@@ -84,6 +84,7 @@ class Task(
                 }
             }
             val result = Result.Finished(vReturn ?: VVoid)
+            if (stack.isEmpty()) onResult?.invoke(result)
             return result
         } catch (e: Exception) {
             return Result.Failed(e)

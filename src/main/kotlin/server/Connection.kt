@@ -104,7 +104,7 @@ class Connection(
                         exe = Verb("eval").apply { program(text.substringAfter(";")) },
                         connection = this,
                         onResult = {
-                            sendText(Yegg.EVAL_OUTPUT_PREFIX + (it as? Task.Result.Finished)?.v?.asString())
+                            sendText(Yegg.EVAL_OUTPUT_PREFIX + (it as? Task.Result.Finished)?.v?.toString())
                         }
                     ))
                 } catch (e: Exception) {
