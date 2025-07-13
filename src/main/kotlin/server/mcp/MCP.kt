@@ -75,10 +75,17 @@ object MCP {
                 timeMap.remove(task.timeID)
                 taskMap.remove(task.id)
                 val result = task.execute()
-                if (result is Task.Result.Suspend) {
-                    task.setTime(result.seconds)
-                    timeMap[task.timeID] = task
-                    taskMap[task.id] = task
+                when (result) {
+                    is Task.Result.Suspend -> {
+                        task.setTime(result.seconds)
+                        timeMap[task.timeID] = task
+                        taskMap[task.id] = task
+                    }
+                    is Task.Result.Failed -> {
+                        task.connection?.sendText(result.e.toString())
+                        task.connection?.sendText(task.stackDump())
+                    }
+                    is Task.Result.Finished -> { }
                 }
                 task = getNextTask()
             }

@@ -38,6 +38,9 @@ class VM(
     // Used by optimizer opcodes.
     private var dropReturnValue: Boolean = false
 
+    // Value of this execution as an expression. Returned if we have no other return value.
+    private var exprValue: Value = VVoid
+
     private inline fun push(v: Value) = stack.addFirst(v)
     private inline fun peek() = stack.first()
     private inline fun pop() = stack.removeFirst()
@@ -95,7 +98,7 @@ class VM(
             when (word.opcode) {
 
                 O_DISCARD -> {
-                    if (stack.isNotEmpty()) pop()
+                    if (stack.isNotEmpty()) exprValue = pop()
                 }
 
                 // Value ops
@@ -165,10 +168,10 @@ class VM(
                 O_JUMP -> {
                     val addr = next().address!!
                     // Unresolved jump dest means end-of-code
-                    if (addr >= 0) pc = addr else return Result.Return(VVoid)
+                    if (addr >= 0) pc = addr else return Result.Return(exprValue)
                 }
                 O_RETURN -> {
-                    if (stack.isEmpty()) return Result.Return(VVoid)
+                    if (stack.isEmpty()) return Result.Return(exprValue)
                     if (stack.size > 1) fail(E_SYS, "stack polluted on return!  ${dumpStack()}")
                     return Result.Return(pop())
                 }
@@ -397,7 +400,7 @@ class VM(
                 else -> fail(E_SYS, "unknown opcode $word")
             }
         }
-        return Result.Return(if (stack.isEmpty()) VVoid else pop())
+        return Result.Return(if (stack.isEmpty()) exprValue else pop())
     }
 
 }

@@ -6,6 +6,7 @@ import com.dlfsystems.yegg.util.NanoID
 import com.dlfsystems.yegg.util.systemEpoch
 import com.dlfsystems.yegg.value.VObj
 import com.dlfsystems.yegg.value.VTask
+import com.dlfsystems.yegg.value.VVoid
 import com.dlfsystems.yegg.value.Value
 import com.dlfsystems.yegg.vm.*
 import com.dlfsystems.yegg.vm.VMException.Type.*
@@ -47,8 +48,9 @@ class Task(
 
 
     sealed interface Result {
-        data object Finished: Result
-        @JvmInline value class Suspend(val seconds: Int): Result
+        data class Finished(val v: Value): Result
+        data class Suspend(val seconds: Int): Result
+        data class Failed(val e: Exception): Result
     }
 
     // Execute the top stack frame.
@@ -56,12 +58,11 @@ class Task(
     // On a Call, push a new stack frame.
     // On a Return, pop a stack frame, and save the return value to pass to the next iteration (the previous frame).
     // Continue until the stack is empty.
-
-    fun execute(): Result {
+    fun execute(toDepth: Int = 0): Result {
         var vReturn: Value? = resumeResult
         resumeResult = null
         try {
-            while (stack.isNotEmpty()) {
+            while (stack.size > toDepth) {
                 stack.first().execute(vReturn).also { result ->
                     vReturn = null
                     when (result) {
@@ -80,15 +81,28 @@ class Task(
                     }
                 }
             }
+            val result = Result.Finished(vReturn ?: VVoid)
+            return result
         } catch (e: Exception) {
-            connection?.sendText(e.toString())
-            connection?.sendText(stackDump())
+            return Result.Failed(e)
         }
-        return Result.Finished
     }
 
-    // Add a VM to the stack to run an exe.
-    fun push(
+    // Execute an exe immediately for a return value.  The task cannot suspend.
+    // Used by system functions to call verb code in an existing Task.
+    override fun executeForResult(exe: Executable, args: List<Value>): Value {
+        push(vThis, exe, args)
+        execute(toDepth = stack.size - 1).also { result ->
+            when (result) {
+                is Result.Suspend -> fail(E_LIMIT, "cannot suspend in verb called by system")
+                is Result.Failed -> throw result.e
+                is Result.Finished -> return result.v
+            }
+        }
+        return VVoid
+    }
+
+    private fun push(
         vThis: VObj,
         exe: Executable,
         args: List<Value>,
@@ -99,11 +113,12 @@ class Task(
         )
     }
 
-    fun pop(): VM {
+    private fun pop(): VM {
         return stack.removeFirst()
     }
 
     fun stackDump() = stack.joinToString(prefix = "...", separator = "\n...", postfix = "\n")
+
 
     companion object {
         fun make(

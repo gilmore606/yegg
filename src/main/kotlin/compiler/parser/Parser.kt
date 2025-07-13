@@ -655,14 +655,15 @@ class Parser(inputTokens: List<Token>) {
     // Parse lambda: { var, var -> ... } or { ... }
     private fun pLambdaFun(): N_EXPR? {
         consume(T_BRACE_OPEN)?.also {
-            var done = false
             val args = mutableListOf<N_IDENTIFIER>()
-            while (!done) {
-                done = true
+            while (nextAre(T_IDENTIFIER, T_COMMA)) {
                 consume(T_IDENTIFIER)?.also { args.add(N_IDENTIFIER(it.string)) }
-                consume(T_COMMA)?.also { done = false }
+                consume(T_COMMA)
             }
-            if (args.isNotEmpty()) consume(T_ARROW) ?: fail("missing arrow after function literal var declaration")
+            while (nextAre(T_IDENTIFIER, T_ARROW)) {
+                consume(T_IDENTIFIER)?.also { args.add(N_IDENTIFIER(it.string)) }
+            }
+            if (args.isNotEmpty()) consume(T_ARROW) ?: fail("missing arrow after function var declaration")
             val code = mutableListOf<N_STATEMENT>()
             while (!nextIs(T_BRACE_CLOSE)) {
                 pStatement()?.also { code.add(it) } ?: fail("non-statement in braces")

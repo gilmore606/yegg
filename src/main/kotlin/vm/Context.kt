@@ -2,6 +2,7 @@ package com.dlfsystems.yegg.vm
 
 import com.dlfsystems.yegg.server.mcp.Task
 import com.dlfsystems.yegg.value.VObj
+import com.dlfsystems.yegg.value.Value
 
 
 interface Context {
@@ -14,5 +15,7 @@ interface Context {
 
     var ticksLeft: Int
     var callsLeft: Int
+
+    fun executeForResult(exe: Executable, args: List<Value>): Value
 
 }

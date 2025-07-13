@@ -184,4 +184,52 @@ class LangTest: YeggTest() {
         """)
     }
 
+    @Test
+    fun `Mixed list sorted by first value type`() = yeggTest {
+        runForOutput($$"""
+            foo = [36, 9, "hello", 88, 5.6]
+            notifyConn(foo.sorted)
+        """, """
+            "hello", 5.6, 9, 36, 88
+        """)
+    }
+
+    @Test
+    fun `List filter`() = yeggTest {
+        runForOutput($$"""
+            foo = [1,5,7,12,26,31,74].filter({ it % 2 == 0 })
+            notifyConn(foo)
+        """, """
+            12, 26, 74
+        """)
+    }
+
+    @Test
+    fun `List map`() = yeggTest {
+        verb("sys", "resultOf", $$"""
+            [input] = args
+            return input * 10
+        """)
+        runForOutput($$"""
+            foo = [1,3,5].map({ "got ${$sys.resultOf(it)}" })
+            for (x in foo) notifyConn("$x")
+        """, """
+            got 10
+            got 30
+            got 50
+        """)
+    }
+
+    @Test
+    fun `List sortedBy`() = yeggTest {
+        runForOutput($$"""
+            foo = ["beer", "egg", "cheese", "me"].sortedBy({ it.length })
+            for (x in foo) notifyConn("$x")
+        """, """
+            me
+            egg
+            beer
+            cheese
+        """)
+    }
 }
