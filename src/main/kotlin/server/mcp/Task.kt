@@ -50,6 +50,7 @@ class Task(
     sealed interface Result {
         data class Finished(val v: Value): Result
         data class Suspend(val seconds: Int): Result
+        data class Failed(val e: Exception): Result
     }
 
     // Execute the top stack frame.
@@ -80,11 +81,11 @@ class Task(
                     }
                 }
             }
+            val result = Result.Finished(vReturn ?: VVoid)
+            return result
         } catch (e: Exception) {
-            connection?.sendText(e.toString())
-            connection?.sendText(stackDump())
+            return Result.Failed(e)
         }
-        return Result.Finished(vReturn ?: VVoid)
     }
 
     // Execute an exe immediately for a return value.  The task cannot suspend.
@@ -92,9 +93,13 @@ class Task(
     override fun executeForResult(exe: Executable, args: List<Value>): Value {
         push(vThis, exe, args)
         execute(toDepth = stack.size - 1).also { result ->
-            if (result is Result.Suspend) fail(E_LIMIT, "cannot suspend in verb called by system")
-            return (result as Result.Finished).v
+            when (result) {
+                is Result.Suspend -> fail(E_LIMIT, "cannot suspend in verb called by system")
+                is Result.Failed -> throw result.e
+                is Result.Finished -> return result.v
+            }
         }
+        return VVoid
     }
 
     private fun push(
