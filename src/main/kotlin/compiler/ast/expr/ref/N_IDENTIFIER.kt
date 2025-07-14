@@ -8,6 +8,7 @@ import com.dlfsystems.yegg.vm.Opcode.*
 // Without other context, assumed to refer to a variable.
 
 class N_IDENTIFIER(val name: String): N_EXPR() {
+
     enum class Type { VARIABLE, TRAIT_NAME, PROP_NAME, VERB_NAME }
     var type: Type = Type.VARIABLE
 
@@ -39,4 +40,5 @@ class N_IDENTIFIER(val name: String): N_EXPR() {
             value(variableID!!)
         } else fail("non-variable identifier on left of assignment!")
     }
+
 }

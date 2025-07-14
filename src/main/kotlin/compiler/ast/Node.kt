@@ -9,6 +9,7 @@ import com.dlfsystems.yegg.util.NanoID
 @JvmInline value class NodeID(val id: String) { override fun toString() = id }
 
 abstract class Node {
+
     val id: NodeID = NodeID(makeID())
 
     var lineNum = 0
@@ -40,4 +41,5 @@ abstract class Node {
     open fun code(c: Coder) { }
 
     fun makeID() = NanoID.newID()
+
 }

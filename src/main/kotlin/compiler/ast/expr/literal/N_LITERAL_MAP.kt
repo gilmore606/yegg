@@ -7,6 +7,7 @@ import com.dlfsystems.yegg.value.Value
 import com.dlfsystems.yegg.vm.Opcode.O_MAPVAL
 
 class N_LITERAL_MAP(val value: Map<N_EXPR, N_EXPR>): N_LITERAL() {
+
     override fun kids() = (value.keys + value.values).toList()
     override fun toString() = value.keys.joinToString(", ", "MAP[", "]") { "$it: ${value[it]}" }
     override fun constantValue(): Value? {
@@ -32,4 +33,5 @@ class N_LITERAL_MAP(val value: Map<N_EXPR, N_EXPR>): N_LITERAL() {
             value(value.size)
         }
     }
+
 }

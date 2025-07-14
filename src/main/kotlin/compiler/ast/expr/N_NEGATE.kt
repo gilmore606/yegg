@@ -5,6 +5,7 @@ import com.dlfsystems.yegg.vm.Opcode.O_NEGATE
 
 // Negation of a numeric or boolean.
 class N_NEGATE(val expr: N_EXPR): N_EXPR() {
+
     override fun toString() = "-$expr"
     override fun kids() = listOf(expr)
     override fun constantValue() = expr.constantValue()?.negate()
@@ -15,4 +16,5 @@ class N_NEGATE(val expr: N_EXPR): N_EXPR() {
             opcode(O_NEGATE)
         }
     }
+
 }

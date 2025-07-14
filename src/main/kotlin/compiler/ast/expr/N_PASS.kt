@@ -4,6 +4,7 @@ import com.dlfsystems.yegg.compiler.Coder
 import com.dlfsystems.yegg.vm.Opcode.O_PASS
 
 class N_PASS(val args: List<N_EXPR>): N_EXPR() {
+
     override fun kids() = args
 
     override fun code(c: Coder) = with (c.use(this)) {
@@ -11,4 +12,5 @@ class N_PASS(val args: List<N_EXPR>): N_EXPR() {
         opcode(O_PASS)
         value(args.size)
     }
+
 }

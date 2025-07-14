@@ -6,7 +6,11 @@ import com.dlfsystems.yegg.compiler.ast.statement.N_STATEMENT
 import com.dlfsystems.yegg.value.VString
 import com.dlfsystems.yegg.vm.Opcode.*
 
-class N_LITERAL_FUN(val args: List<N_IDENTIFIER>, val block: N_STATEMENT): N_LITERAL() {
+class N_LITERAL_FUN(
+    val args: List<N_IDENTIFIER>,
+    val block: N_STATEMENT
+): N_LITERAL() {
+
     override fun kids() = args + listOf(block)
     override fun code(c: Coder) = with (c.use(this)) {
         opcode(O_VAL)
@@ -22,4 +26,5 @@ class N_LITERAL_FUN(val args: List<N_IDENTIFIER>, val block: N_STATEMENT): N_LIT
         codeBlockEnd(blockID)
         setForwardJump("skipFun")
     }
+
 }
