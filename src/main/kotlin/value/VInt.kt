@@ -10,6 +10,7 @@ import kotlin.math.*
 @Serializable
 @SerialName("VInt")
 data class VInt(val v: Int): Value() {
+
     override fun equals(other: Any?) = other is VInt && v == other.v
     override fun hashCode() = javaClass.hashCode()
 
