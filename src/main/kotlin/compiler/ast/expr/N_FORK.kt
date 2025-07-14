@@ -7,6 +7,7 @@ import com.dlfsystems.yegg.vm.Opcode.O_FORK
 // fork <expr> { block }
 // Returns a VTask with the forked task ID.
 class N_FORK(val seconds: N_EXPR, val function: N_LITERAL_FUN): N_EXPR() {
+
     override fun toString() = "fork ($seconds) $function"
     override fun kids() = listOf(seconds, function)
 
@@ -15,4 +16,5 @@ class N_FORK(val seconds: N_EXPR, val function: N_LITERAL_FUN): N_EXPR() {
         code(function)
         opcode(O_FORK)
     }
+
 }

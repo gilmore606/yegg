@@ -4,7 +4,12 @@ import com.dlfsystems.yegg.compiler.Coder
 import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
 import com.dlfsystems.yegg.vm.Opcode.O_CALL
 
-class N_VERBREF(val left: N_EXPR, val right: N_EXPR, val args: List<N_EXPR>): N_EXPR() {
+class N_VERBREF(
+    val left: N_EXPR,
+    val right: N_EXPR,
+    val args: List<N_EXPR>
+): N_EXPR() {
+
     override fun toString() = "$left.$right($args)"
     override fun kids() = mutableListOf(left, right).apply { addAll(args) }
 
@@ -17,4 +22,5 @@ class N_VERBREF(val left: N_EXPR, val right: N_EXPR, val args: List<N_EXPR>): N_
         opcode(O_CALL)
         value(args.size)
     }
+
 }

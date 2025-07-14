@@ -8,7 +8,13 @@ import com.dlfsystems.yegg.vm.Opcode.*
 
 // A binary operation, popping two stack values and pushing one result.
 
-abstract class N_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR, val ops: List<Opcode>): N_EXPR() {
+abstract class N_BINOP(
+    val opString: String,
+    val left: N_EXPR,
+    val right: N_EXPR,
+    val ops: List<Opcode>
+): N_EXPR() {
+
     override fun toString() = "($left $opString $right)"
     override fun kids() = listOf(left, right)
     override fun constantValue(): Value? {
@@ -28,7 +34,9 @@ abstract class N_BINOP(val opString: String, val left: N_EXPR, val right: N_EXPR
             ops.forEach { opcode(it) }
         }
     }
+
 }
+
 
 class N_ADD(left: N_EXPR, right: N_EXPR): N_BINOP("+", left, right, listOf(O_ADD)) {
     override fun asConstant(l: Value, r: Value) = l.plus(r)

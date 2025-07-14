@@ -7,6 +7,7 @@ import com.dlfsystems.yegg.vm.Opcode.O_SETI
 
 // An index into a value: <expr>[<expr>]
 class N_INDEX(val left: N_EXPR, val index: N_EXPR): N_EXPR() {
+
     override fun toString() = "INDEX<$left[$index]>"
     override fun kids() = listOf(left, index)
 
@@ -21,4 +22,5 @@ class N_INDEX(val left: N_EXPR, val index: N_EXPR): N_EXPR() {
         code(index)
         opcode(O_SETI)
     }
+
 }

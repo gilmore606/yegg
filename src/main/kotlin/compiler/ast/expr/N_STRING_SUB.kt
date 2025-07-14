@@ -6,6 +6,7 @@ import com.dlfsystems.yegg.vm.Opcode.O_ADD
 
 // A string with code substitutions.
 class N_STRING_SUB(val parts: List<N_EXPR>): N_EXPR() {
+
     override fun toString() = parts.joinToString { if (it is N_LITERAL_STRING) it.value else "\${$it}" }
     override fun kids() = parts
 
@@ -24,4 +25,5 @@ class N_STRING_SUB(val parts: List<N_EXPR>): N_EXPR() {
     }
 
     private fun N_EXPR.isEmptyString() = (this is N_LITERAL_STRING) && (this.value == "")
+
 }

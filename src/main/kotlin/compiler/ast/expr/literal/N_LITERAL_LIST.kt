@@ -7,6 +7,7 @@ import com.dlfsystems.yegg.value.Value
 import com.dlfsystems.yegg.vm.Opcode.O_LISTVAL
 
 class N_LITERAL_LIST(val value: List<N_EXPR>): N_LITERAL() {
+
     override fun kids() = value
     override fun toString() = value.joinToString(", ", "LIST[", "]")
     override fun constantValue(): Value? {
@@ -24,4 +25,5 @@ class N_LITERAL_LIST(val value: List<N_EXPR>): N_LITERAL() {
             value(value.size)
         }
     }
+
 }

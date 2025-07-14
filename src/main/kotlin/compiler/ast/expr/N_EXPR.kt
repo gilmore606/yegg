@@ -8,6 +8,7 @@ import com.dlfsystems.yegg.vm.Opcode.*
 // An expression which reduces to a Value.
 
 abstract class N_EXPR: N_STATEMENT() {
+
     // Code this expr as the left side of = assign.  Do not call directly; use Coder.codeAssign(Node).
     open fun codeAssign(c: Coder) { fail("illegal left side of assignment") }
     // Code this expr as the left side of [i]= assign.
@@ -25,4 +26,5 @@ abstract class N_EXPR: N_STATEMENT() {
         }
         return false
     }
+
 }

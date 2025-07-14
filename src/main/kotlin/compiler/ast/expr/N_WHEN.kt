@@ -6,7 +6,12 @@ import com.dlfsystems.yegg.compiler.ast.statement.N_EXPRSTATEMENT
 import com.dlfsystems.yegg.vm.Opcode.*
 
 // when [expr] { option1 -> expr  option 2 -> { .... expr } else -> ...}
-class N_WHEN(val subject: N_EXPR?, val options: List<Pair<N_EXPR?, Node>>, val asStatement: Boolean = false): N_EXPR() {
+class N_WHEN(
+    val subject: N_EXPR?,
+    val options: List<Pair<N_EXPR?, Node>>,
+    val asStatement: Boolean = false
+): N_EXPR() {
+
     override fun kids() = buildList {
         subject?.also { add(it) }
         addAll(options.mapNotNull { it.first })
@@ -35,4 +40,5 @@ class N_WHEN(val subject: N_EXPR?, val options: List<Pair<N_EXPR?, Node>>, val a
         }
         setForwardJump("end")
     }
+
 }
