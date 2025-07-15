@@ -32,7 +32,12 @@ class VM(
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
     // Active exception handlers set by O_TRY.
-    class IRQ(val errors: Set<VMException.Type>, val errVarID: Int, val dest: Int)
+    class IRQ(
+        val errors: Set<VMException.Type>,
+        val errVarID: Int,
+        val dest: Int,
+        val stackDepth: Int
+    )
     private val irqs = ArrayDeque<IRQ>()
 
     // Preserve error position.
@@ -103,6 +108,7 @@ class VM(
                     // TODO: handle 'it' and no errvarid, further back?
                     if (irq.errVarID > -1) variables[irq.errVarID] = VErr(err.type, err.m)
                     pc = irq.dest
+                    while (stack.size > irq.stackDepth) pop()
                     return true
                 }
             }
@@ -220,7 +226,7 @@ class VM(
                     } }
                     val varID = next().intFromV
                     val irq = next().address!!
-                    irqs.push(IRQ(errs, varID, irq))
+                    irqs.push(IRQ(errs, varID, irq, stack.size))
                 }
                 O_TRYEND -> {
                     irqs.pop()
