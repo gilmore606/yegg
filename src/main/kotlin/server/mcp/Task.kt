@@ -93,9 +93,8 @@ class Task(
                 ))
                 var caught = false
                 while (stack.isNotEmpty() && !caught) {
-                    stack.removeFirst().also { vm ->
-                        if (vm.catchError(err)) caught = true
-                    }
+                    if (peek().catchError(err)) caught = true
+                    else pop()
                 }
                 if (!caught) return Result.Failed(e)
             }
@@ -121,6 +120,7 @@ class Task(
         stack.addFirst(VM(this, vThis, exe, args))
     }
 
+    private fun peek(): VM = stack.first()
     private fun pop(): VM = stack.removeFirst()
 
     fun stackDump() = stack.joinToString(prefix = "...", separator = "\n...", postfix = "\n")

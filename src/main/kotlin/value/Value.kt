@@ -17,7 +17,7 @@ sealed class Value {
     abstract val type: Type
 
     // String equivalent when added to a string.
-    open fun asString(): String = "VALUE"
+    open fun asString(): String = toString()
 
     // Is this value considered true/false/zero in code?
     open fun isTrue(): Boolean = false

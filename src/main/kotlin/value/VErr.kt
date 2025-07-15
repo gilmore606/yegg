@@ -18,7 +18,6 @@ data class VErr(
     override val type = Type.ERR
 
     override fun toString() = v.toString()
-    override fun asString() = v.toString()
 
     override fun cmpEq(a2: Value) = (a2 is VErr && v == a2.v)
 

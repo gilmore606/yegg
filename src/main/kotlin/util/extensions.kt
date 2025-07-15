@@ -20,3 +20,6 @@ fun String.matchesWildcard(pattern: String): Boolean {
 fun systemEpoch() = (System.currentTimeMillis() / 1000L).toInt()
 
 fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
+
+fun <T> ArrayDeque<T>.pop(): T = removeFirst()
+fun <T> ArrayDeque<T>.push(element: T) = addFirst(element)

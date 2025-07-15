@@ -5,6 +5,8 @@ package com.dlfsystems.yegg.vm
 import com.dlfsystems.yegg.server.mcp.MCP
 import com.dlfsystems.yegg.server.Yegg
 import com.dlfsystems.yegg.server.mcp.Task
+import com.dlfsystems.yegg.util.pop
+import com.dlfsystems.yegg.util.push
 import com.dlfsystems.yegg.value.Value
 import com.dlfsystems.yegg.vm.Opcode.*
 import com.dlfsystems.yegg.value.*
@@ -96,7 +98,7 @@ class VM(
 
     fun catchError(err: VMException): Boolean {
         while (irqs.isNotEmpty()) {
-            irqs.removeFirst().also { irq ->
+            irqs.pop().also { irq ->
                 if (irq.errors.isEmpty() || irq.errors.contains(err.type)) {
                     // TODO: handle 'it' and no errvarid, further back?
                     if (irq.errVarID > -1) variables[irq.errVarID] = VErr(err.type, err.m)
@@ -218,10 +220,10 @@ class VM(
                     } }
                     val varID = next().intFromV
                     val irq = next().address!!
-                    irqs.addFirst(IRQ(errs, varID, irq))
+                    irqs.push(IRQ(errs, varID, irq))
                 }
                 O_TRYEND -> {
-                    irqs.removeFirst()
+                    irqs.pop()
                 }
 
                 // Verb ops
