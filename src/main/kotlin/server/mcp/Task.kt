@@ -63,31 +63,42 @@ class Task(
     fun execute(toDepth: Int = 0): Result {
         var vReturn: Value? = resumeResult
         resumeResult = null
-        try {
-            while (stack.size > toDepth) {
-                stack.first().execute(vReturn).also { result ->
-                    vReturn = null
-                    when (result) {
-                        is VM.Result.Return -> {
-                            vReturn = result.v
-                            callsLeft++
-                            pop()
-                        }
-                        is VM.Result.Call -> {
-                            if (--callsLeft < 0) fail(E_MAXREC, "too many nested verb calls")
-                            push(result.vThis, result.exe, result.args)
-                        }
-                        is VM.Result.Suspend -> {
-                            return Result.Suspend(result.seconds)
+        while (true) {
+            try {
+                while (stack.size > toDepth) {
+                    stack.first().execute(vReturn).also { result ->
+                        vReturn = null
+                        when (result) {
+                            is VM.Result.Return -> {
+                                vReturn = result.v
+                                callsLeft++
+                                pop()
+                            }
+                            is VM.Result.Call -> {
+                                if (--callsLeft < 0) fail(E_MAXREC, "too many nested verb calls")
+                                push(result.vThis, result.exe, result.args)
+                            }
+                            is VM.Result.Suspend -> {
+                                return Result.Suspend(result.seconds)
+                            }
                         }
                     }
                 }
+                val result = Result.Finished(vReturn ?: VVoid)
+                if (stack.isEmpty()) onResult?.invoke(result)
+                return result
+            } catch (e: Exception) {
+                val err = (e as? VMException ?: VMException(
+                    E_SYS, "${e.message}\n${e.stackTraceToString()}"
+                ))
+                var caught = false
+                while (stack.isNotEmpty() && !caught) {
+                    stack.removeFirst().also { vm ->
+                        if (vm.catchError(err)) caught = true
+                    }
+                }
+                if (!caught) return Result.Failed(e)
             }
-            val result = Result.Finished(vReturn ?: VVoid)
-            if (stack.isEmpty()) onResult?.invoke(result)
-            return result
-        } catch (e: Exception) {
-            return Result.Failed(e)
         }
     }
 

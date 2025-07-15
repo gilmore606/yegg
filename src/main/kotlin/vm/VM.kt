@@ -29,6 +29,10 @@ class VM(
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
+    // Active exception handlers set by O_TRY.
+    class IRQ(val errors: Set<VMException.Type>, val errVarID: Int, val dest: Int)
+    private val irqs = ArrayDeque<IRQ>()
+
     // Preserve error position.
     var lineNum: Int = 0
     var charNum: Int = 0
@@ -77,13 +81,31 @@ class VM(
             if (dropReturnValue) dropReturnValue = false
             else push(it)
         }
-        try {
-            return executeCode()
-        } catch (e: Exception) {
-            throw (e as? VMException ?: VMException(E_SYS,
-                "${e.message} (mem $pc)\n${e.stackTraceToString()}"
-            )).withLocation(lineNum, charNum)
+        while (true) {
+            try {
+                return executeCode()
+            } catch (e: Exception) {
+                val err = (e as? VMException ?: VMException(
+                    E_SYS, "${e.message} (mem $pc)\n${e.stackTraceToString()}"
+                )).withLocation(lineNum, charNum)
+
+                catchError(err) || throw err
+            }
         }
+    }
+
+    fun catchError(err: VMException): Boolean {
+        while (irqs.isNotEmpty()) {
+            irqs.removeFirst().also { irq ->
+                if (irq.errors.isEmpty() || irq.errors.contains(err.type)) {
+                    // TODO: handle 'it' and no errvarid, further back?
+                    if (irq.errVarID > -1) variables[irq.errVarID] = VErr(err.type, err.m)
+                    pc = irq.dest
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     private fun executeCode(): Result {
@@ -191,18 +213,15 @@ class VM(
                 }
                 O_TRY -> {
                     val errCount = next().intFromV
-                    val errs = buildList { repeat(errCount) {
-                        (pop() as? VErr)?.also { add(it) } ?: fail(E_TYPE, "cannot catch non-ERR")
+                    val errs = buildSet { repeat(errCount) {
+                        (pop() as? VErr)?.also { add(it.v) } ?: fail(E_TYPE, "cannot catch non-ERR")
                     } }
                     val varID = next().intFromV
                     val irq = next().address!!
-
-
-
+                    irqs.addFirst(IRQ(errs, varID, irq))
                 }
                 O_TRYEND -> {
-
-
+                    irqs.removeFirst()
                 }
 
                 // Verb ops
