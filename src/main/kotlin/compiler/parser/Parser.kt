@@ -233,6 +233,7 @@ class Parser(inputTokens: List<Token>) {
                             pStatement()?.also { statements.add(it) } ?: fail("non-statement in braces")
                         }
                         catchBlock = node(N_BLOCK(statements))
+                        consume(T_BRACE_CLOSE) ?: fail("missing close brace on catch block")
                     }
                     nextIs(T_BRACE_OPEN) -> {
                         catchBlock = pBlock()
