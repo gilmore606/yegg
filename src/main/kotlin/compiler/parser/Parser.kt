@@ -203,7 +203,7 @@ class Parser(inputTokens: List<Token>) {
 
     private fun pTry(): N_STATEMENT? {
         consume(T_TRY) ?: return null
-        pBlock()?.also { tryBlock ->
+        (pStatement() ?: pBlock())?.also { tryBlock ->
             consume(T_CATCH)?.also {
                 var errors = listOf<N_EXPR>()
                 consume(T_PAREN_OPEN)?.also {
@@ -211,6 +211,7 @@ class Parser(inputTokens: List<Token>) {
                 }
                 var catchBlock: N_STATEMENT? = null
                 var errorName: N_IDENTIFIER? = null
+                // TODO if nextIs -- look ahead like in lambda parse
                 consume(T_BRACE_OPEN)?.also {
                     consume(T_IDENTIFIER)?.also {
                         errorName = node(N_IDENTIFIER(it.string))
@@ -222,6 +223,9 @@ class Parser(inputTokens: List<Token>) {
                     }
                     catchBlock = node(N_BLOCK(statements))
                     consume(T_BRACE_CLOSE) ?: fail("missing close brace")
+                // TODO add check for pLiteralError list if no brace
+                } ?: pStatement()?.also {
+                    catchBlock = node(it)
                 } ?: fail("missing catch expression")
                 return node(N_TRY(tryBlock, errors, catchBlock, errorName))
             } ?: fail("missing catch after try block")
@@ -632,12 +636,20 @@ class Parser(inputTokens: List<Token>) {
         consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }
         consume(T_OBJREF)?.also { return node(N_LITERAL_OBJECT(Obj.ID(it.string))) }
         consume(T_TRUE, T_FALSE)?.also { return node(N_LITERAL_BOOLEAN(it.type == T_TRUE)) }
-        consume(T_IDENTIFIER)?.also { ident ->
-            return VMException.Type.entries.firstOrNull { it.name == ident.string }?.let {
-                node(N_LITERAL_ERROR(it))
-            } ?: node(N_IDENTIFIER(ident.string))
-        }
+        pLiteralError()?.also { return it }
+        consume(T_IDENTIFIER)?.also { return node(N_IDENTIFIER(it.string)) }
         return next()
+    }
+
+    private fun pLiteralError(): N_LITERAL_ERROR? {
+        if (nextIs(T_IDENTIFIER)) {
+            val ident = (nextToken().string)
+            return VMException.Type.entries.firstOrNull { it.name == ident }?.let {
+                consume(T_IDENTIFIER)
+                node(N_LITERAL_ERROR(it))
+            }
+        }
+        return null
     }
 
     // Parse a literal list or map: [<expr>, ...] or [<expr>:<expr>, ...]

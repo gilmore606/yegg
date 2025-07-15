@@ -32,7 +32,7 @@ class VM(
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
     // Active exception handlers set by O_TRY.
-    class IRQ(
+    private data class IRQ(
         val errors: Set<VMException.Type>,
         val errVarID: Int,
         val dest: Int,
