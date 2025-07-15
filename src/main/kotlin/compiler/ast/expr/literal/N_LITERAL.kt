@@ -4,6 +4,7 @@ import com.dlfsystems.yegg.compiler.Coder
 import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
 import com.dlfsystems.yegg.value.*
 import com.dlfsystems.yegg.vm.Opcode.*
+import com.dlfsystems.yegg.vm.VMException
 import com.dlfsystems.yegg.world.Obj
 
 // A literal value appearing in code.
@@ -47,4 +48,10 @@ class N_LITERAL_STRING(val value: String): N_LITERAL() {
     override fun toString() = "\"$value\""
     override fun codeValue(coder: Coder) { coder.value(value) }
     override fun constantValue() = VString(value)
+}
+
+class N_LITERAL_ERR(val value: VMException.Type): N_LITERAL() {
+    override fun toString() = "\"$value\""
+    override fun codeValue(coder: Coder) { coder.value(value) }
+    override fun constantValue() = VErr(value)
 }

@@ -12,6 +12,7 @@ import com.dlfsystems.yegg.compiler.ast.expr.ref.N_INDEX
 import com.dlfsystems.yegg.compiler.ast.expr.ref.N_PROPREF
 import com.dlfsystems.yegg.compiler.ast.expr.ref.N_RANGE
 import com.dlfsystems.yegg.compiler.ast.statement.*
+import com.dlfsystems.yegg.vm.VMException
 import com.dlfsystems.yegg.world.Obj
 
 // Take a stream of input tokens from Lexer and produce a tree of syntax nodes.
@@ -628,8 +629,12 @@ class Parser(inputTokens: List<Token>) {
         consume(T_INTEGER)?.also { return node(N_LITERAL_INTEGER(it.string.toInt())) }
         consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }
         consume(T_OBJREF)?.also { return node(N_LITERAL_OBJ(Obj.ID(it.string))) }
-        consume(T_IDENTIFIER)?.also { return node(N_IDENTIFIER(it.string)) }
         consume(T_TRUE, T_FALSE)?.also { return node(N_LITERAL_BOOLEAN(it.type == T_TRUE)) }
+        consume(T_IDENTIFIER)?.also { ident ->
+            return VMException.Type.entries.firstOrNull { it.name == ident.string }?.let {
+                node(N_LITERAL_ERR(it))
+            } ?: node(N_IDENTIFIER(ident.string))
+        }
         return next()
     }
 

@@ -7,6 +7,7 @@ import com.dlfsystems.yegg.vm.Opcode
 import com.dlfsystems.yegg.vm.VMWord
 import com.dlfsystems.yegg.value.*
 import com.dlfsystems.yegg.vm.Executable
+import com.dlfsystems.yegg.vm.VMException
 import com.dlfsystems.yegg.world.Obj
 
 // Generate compiled bytecode by traversing the AST.
@@ -73,6 +74,7 @@ class Coder(val ast: Node) {
     fun value(objValue: Obj.ID) { value(VObj(objValue)) }
     fun value(listValue: List<Value>) { value(VList(listValue.toMutableList())) }
     fun value(mapValue: Map<Value, Value>) { value(VMap(mapValue.toMutableMap())) }
+    fun value(errValue: VMException.Type) { value(VErr(errValue)) }
 
     // Record a block start address of a literal VFun.
     // Code the block index (as arg for O_FUNVAL).
