@@ -205,28 +205,43 @@ class Parser(inputTokens: List<Token>) {
         consume(T_TRY) ?: return null
         (pStatement() ?: pBlock())?.also { tryBlock ->
             consume(T_CATCH)?.also {
-                var errors = listOf<N_EXPR>()
-                consume(T_PAREN_OPEN)?.also {
-                    errors = pArglist()
+                var errors = mutableListOf<N_EXPR>()
+                when (nextToken().type) {
+                    T_PAREN_OPEN -> {
+                        consume(T_PAREN_OPEN)
+                        errors.addAll(pArglist())
+                    }
+                    T_IDENTIFIER -> {
+                        pLiteralError()?.also {
+                            errors.add(it)
+                            while (consume(T_COMMA) != null) {
+                                pLiteralError()?.also { errors.add(it) } ?: fail("non-error in catch error list")
+                            }
+                        }
+                    }
+                    else -> { }
                 }
                 var catchBlock: N_STATEMENT? = null
                 var errorName: N_IDENTIFIER? = null
-                // TODO if nextIs -- look ahead like in lambda parse
-                consume(T_BRACE_OPEN)?.also {
-                    consume(T_IDENTIFIER)?.also {
-                        errorName = node(N_IDENTIFIER(it.string))
-                        consume(T_ARROW) ?: fail("missing arrow after error identifier")
+                when {
+                    nextAre(T_BRACE_OPEN, T_IDENTIFIER, T_ARROW) -> {
+                        consume(T_BRACE_OPEN)
+                        errorName = node(N_IDENTIFIER(consume(T_IDENTIFIER)!!.string))
+                        consume(T_ARROW)
+                        val statements = mutableListOf<N_STATEMENT>()
+                        while (!nextIs(T_BRACE_CLOSE)) {
+                            pStatement()?.also { statements.add(it) } ?: fail("non-statement in braces")
+                        }
+                        catchBlock = node(N_BLOCK(statements))
                     }
-                    val statements = mutableListOf<N_STATEMENT>()
-                    while (!nextIs(T_BRACE_CLOSE)) {
-                        pStatement()?.also { statements.add(it) } ?: fail("non-statement in braces")
+                    nextIs(T_BRACE_OPEN) -> {
+                        catchBlock = pBlock()
                     }
-                    catchBlock = node(N_BLOCK(statements))
-                    consume(T_BRACE_CLOSE) ?: fail("missing close brace")
-                // TODO add check for pLiteralError list if no brace
-                } ?: pStatement()?.also {
-                    catchBlock = node(it)
-                } ?: fail("missing catch expression")
+                    else -> {
+                        catchBlock = pStatement()
+                    }
+                }
+                if (catchBlock == null) fail("missing catch block")
                 return node(N_TRY(tryBlock, errors, catchBlock, errorName))
             } ?: fail("missing catch after try block")
         } ?: fail("missing block after try")
