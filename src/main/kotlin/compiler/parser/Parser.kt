@@ -213,14 +213,16 @@ class Parser(inputTokens: List<Token>) {
                 var errorName: N_IDENTIFIER? = null
                 consume(T_BRACE_OPEN)?.also {
                     consume(T_IDENTIFIER)?.also {
-                        consume(T_ARROW) ?: fail("missing arrow after error identifier")
                         errorName = node(N_IDENTIFIER(it.string))
+                        consume(T_ARROW) ?: fail("missing arrow after error identifier")
                     }
-                    pBlock()?.also { catchBlock = it }
+                    val statements = mutableListOf<N_STATEMENT>()
+                    while (!nextIs(T_BRACE_CLOSE)) {
+                        pStatement()?.also { statements.add(it) } ?: fail("non-statement in braces")
+                    }
+                    catchBlock = node(N_BLOCK(statements))
                     consume(T_BRACE_CLOSE) ?: fail("missing close brace")
-                } ?: run {
-                    pBlock()?.also { catchBlock = it } ?: fail("missing catch expression")
-                }
+                } ?: fail("missing catch expression")
                 return node(N_TRY(tryBlock, errors, catchBlock, errorName))
             } ?: fail("missing catch after try block")
         } ?: fail("missing block after try")
@@ -628,11 +630,11 @@ class Parser(inputTokens: List<Token>) {
         consume(T_STRING)?.also { return node(N_LITERAL_STRING(it.string)) }
         consume(T_INTEGER)?.also { return node(N_LITERAL_INTEGER(it.string.toInt())) }
         consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }
-        consume(T_OBJREF)?.also { return node(N_LITERAL_OBJ(Obj.ID(it.string))) }
+        consume(T_OBJREF)?.also { return node(N_LITERAL_OBJECT(Obj.ID(it.string))) }
         consume(T_TRUE, T_FALSE)?.also { return node(N_LITERAL_BOOLEAN(it.type == T_TRUE)) }
         consume(T_IDENTIFIER)?.also { ident ->
             return VMException.Type.entries.firstOrNull { it.name == ident.string }?.let {
-                node(N_LITERAL_ERR(it))
+                node(N_LITERAL_ERROR(it))
             } ?: node(N_IDENTIFIER(ident.string))
         }
         return next()

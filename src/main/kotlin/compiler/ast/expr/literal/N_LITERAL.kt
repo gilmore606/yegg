@@ -38,7 +38,7 @@ class N_LITERAL_FLOAT(val value: Float): N_LITERAL() {
     override fun constantValue() = VFloat(value)
 }
 
-class N_LITERAL_OBJ(val objID: Obj.ID): N_LITERAL() {
+class N_LITERAL_OBJECT(val objID: Obj.ID): N_LITERAL() {
     override fun toString() = "#$id"
     override fun codeValue(coder: Coder) { coder.value(objID) }
     override fun constantValue() = VObj(objID)
@@ -50,7 +50,7 @@ class N_LITERAL_STRING(val value: String): N_LITERAL() {
     override fun constantValue() = VString(value)
 }
 
-class N_LITERAL_ERR(val value: VMException.Type): N_LITERAL() {
+class N_LITERAL_ERROR(val value: VMException.Type): N_LITERAL() {
     override fun toString() = "\"$value\""
     override fun codeValue(coder: Coder) { coder.value(value) }
     override fun constantValue() = VErr(value)
