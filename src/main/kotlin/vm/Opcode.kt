@@ -65,6 +65,11 @@ enum class Opcode(val argCount: Int = 0) {
     O_READLINE,
     O_READLINES,
 
+    // Begin try for arg1 count of VErr on stack (or all err if arg1=0)
+    // Pass thrown err as variableID arg2 (or 'it' if -1) to catch handler at addr arg3
+    O_TRY(3),
+    O_TRYEND,
+
     // Push variable with ID arg1.
     O_GETVAR(1), // variable ID to fetch
 

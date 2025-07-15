@@ -75,6 +75,8 @@ data class Token(
         T_FORK("fork", true),
         T_BREAK("break", true),
         T_CONTINUE("continue", true),
+        T_TRY("try", true),
+        T_CATCH("catch", true),
 
         T_EOF("EOF");
     }

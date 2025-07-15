@@ -189,6 +189,21 @@ class VM(
                     val a = pop()
                     fail(E_USER, a.asString())
                 }
+                O_TRY -> {
+                    val errCount = next().intFromV
+                    val errs = buildList { repeat(errCount) {
+                        (pop() as? VErr)?.also { add(it) } ?: fail(E_TYPE, "cannot catch non-ERR")
+                    } }
+                    val varID = next().intFromV
+                    val irq = next().address!!
+
+
+
+                }
+                O_TRYEND -> {
+
+
+                }
 
                 // Verb ops
 

@@ -82,6 +82,7 @@ class Parser(inputTokens: List<Token>) {
         pIfElse()?.also { return it }
         pForLoop()?.also { return it }
         pWhile()?.also { return it }
+        pTry()?.also { return it }
         pReturn()?.also { return it }
         pFail()?.also { return it }
         pSuspend()?.also { return it }
@@ -196,6 +197,32 @@ class Parser(inputTokens: List<Token>) {
                 return node(N_WHILE(check, body))
             } ?: fail("missing while body")
         } ?: fail("missing while check expression")
+        return null
+    }
+
+    private fun pTry(): N_STATEMENT? {
+        consume(T_TRY) ?: return null
+        pBlock()?.also { tryBlock ->
+            consume(T_CATCH)?.also {
+                var errors = listOf<N_EXPR>()
+                consume(T_PAREN_OPEN)?.also {
+                    errors = pArglist()
+                }
+                var catchBlock: N_STATEMENT? = null
+                var errorName: N_IDENTIFIER? = null
+                consume(T_BRACE_OPEN)?.also {
+                    consume(T_IDENTIFIER)?.also {
+                        consume(T_ARROW) ?: fail("missing arrow after error identifier")
+                        errorName = node(N_IDENTIFIER(it.string))
+                    }
+                    pBlock()?.also { catchBlock = it }
+                    consume(T_BRACE_CLOSE) ?: fail("missing close brace")
+                } ?: run {
+                    pBlock()?.also { catchBlock = it } ?: fail("missing catch expression")
+                }
+                return node(N_TRY(tryBlock, errors, catchBlock, errorName))
+            } ?: fail("missing catch after try block")
+        } ?: fail("missing block after try")
         return null
     }
 
@@ -314,10 +341,7 @@ class Parser(inputTokens: List<Token>) {
             pExpression()?.also { seconds ->
                 pBlock()?.also { block ->
                     return node(
-                        N_FORK(
-                        seconds,
-                        node(N_LITERAL_FUN(listOf(), block))
-                    )
+                        N_FORK(seconds, node(N_LITERAL_FUN(listOf(), block)))
                     ) } ?: fail("missing block for fork")
             } ?: fail("missing time expression for fork")
         }
