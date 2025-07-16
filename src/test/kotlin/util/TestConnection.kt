@@ -1,4 +1,4 @@
-package com.dlfsystems.yegg
+package com.dlfsystems.yegg.util
 
 import com.dlfsystems.yegg.server.Connection
 import com.dlfsystems.yegg.server.Yegg

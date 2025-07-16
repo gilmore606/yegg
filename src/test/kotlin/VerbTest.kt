@@ -1,5 +1,6 @@
 package com.dlfsystems.yegg
 
+import com.dlfsystems.yegg.util.YeggTest
 import kotlin.test.Test
 
 class VerbTest: YeggTest() {
