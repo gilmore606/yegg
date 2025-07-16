@@ -1,4 +1,4 @@
-package com.dlfsystems.yegg
+package com.dlfsystems.yegg.util
 
 import com.dlfsystems.yegg.server.Yegg
 import kotlinx.coroutines.CoroutineScope
@@ -6,8 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.AfterClass
+import org.junit.Before
 import org.junit.BeforeClass
-import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 
 abstract class YeggTest {
@@ -15,16 +15,19 @@ abstract class YeggTest {
     companion object {
         val scope = CoroutineScope(Dispatchers.Default.limitedParallelism(1))
 
-        @BeforeClass @JvmStatic fun setup() {
+        @BeforeClass
+        @JvmStatic fun setup() {
             Yegg.start(testMode = true)
         }
 
-        @AfterClass @JvmStatic fun teardown() {
+        @AfterClass
+        @JvmStatic fun teardown() {
             Yegg.stop()
         }
     }
 
-    @BeforeTest fun start() {
+    @Before
+    fun start() {
         Yegg.resetForTest()
     }
 
