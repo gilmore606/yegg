@@ -93,9 +93,8 @@ class VM(
                 return executeCode()
             } catch (e: Exception) {
                 val err = (e as? VMException ?: VMException(
-                    E_SYS, "${e.message} (mem $pc)\n${e.stackTraceToString()}"
-                )).withLocation(lineNum, charNum)
-
+                        E_SYS, "${e.message} (mem $pc)\n${e.stackTraceToString()}"
+                    )).withLocation(lineNum, charNum)
                 catchError(err) || throw err
             }
         }
@@ -103,14 +102,13 @@ class VM(
 
     fun catchError(err: VMException): Boolean {
         while (irqs.isNotEmpty()) {
-            irqs.pop().also { irq ->
-                if (irq.errors.isEmpty() || irq.errors.contains(err.type)) {
-                    val varID = if (irq.errVarID > -1) irq.errVarID else (exe.symbols["it"] ?: -1)
-                    if (varID > -1) variables[varID] = VErr(err.type, err.m)
-                    pc = irq.dest
-                    while (stack.size > irq.stackDepth) pop()
-                    return true
-                }
+            val irq = irqs.pop()
+            if (irq.errors.isEmpty() || irq.errors.contains(err.type)) {
+                val varID = if (irq.errVarID > -1) irq.errVarID else (exe.symbols["it"] ?: -1)
+                if (varID > -1) variables[varID] = VErr(err.type, err.m)
+                pc = irq.dest
+                while (stack.size > irq.stackDepth) pop()
+                return true
             }
         }
         return false
