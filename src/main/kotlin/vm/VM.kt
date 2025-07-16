@@ -213,9 +213,10 @@ class VM(
                 O_RETVAR -> {
                     return Result.Return(variables[next().intFromV]!!)
                 }
-                O_FAIL -> {
+                O_THROW -> {
                     val a = pop()
-                    fail(E_USER, a.asString())
+                    if (a is VErr) fail(a.v, a.m ?: "")
+                    else fail(E_USER, a.asString())
                 }
                 O_TRY -> {
                     val errCount = next().intFromV

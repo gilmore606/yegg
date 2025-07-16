@@ -2,14 +2,14 @@ package com.dlfsystems.yegg.compiler.ast.statement
 
 import com.dlfsystems.yegg.compiler.Coder
 import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
-import com.dlfsystems.yegg.vm.Opcode.O_FAIL
+import com.dlfsystems.yegg.vm.Opcode.O_THROW
 
-class N_FAIL(val expr: N_EXPR): N_STATEMENT() {
-    override fun toString() = "fail $expr"
+class N_THROW(val expr: N_EXPR): N_STATEMENT() {
+    override fun toString() = "throw $expr"
     override fun kids() = listOf(expr)
 
     override fun code(c: Coder) = with (c.use(this)) {
         code(expr)
-        opcode(O_FAIL)
+        opcode(O_THROW)
     }
 }

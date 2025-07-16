@@ -85,7 +85,7 @@ class Parser(inputTokens: List<Token>) {
         pWhile()?.also { return it }
         pTry()?.also { return it }
         pReturn()?.also { return it }
-        pFail()?.also { return it }
+        pThrow()?.also { return it }
         pSuspend()?.also { return it }
         pWhen(asStatement = true)?.also { return node(N_EXPRSTATEMENT(it)) }
         pIncrement()?.also { return it }
@@ -255,10 +255,10 @@ class Parser(inputTokens: List<Token>) {
         return node(N_RETURN(pExpression()))
     }
 
-    // Parse: fail <expr>
-    private fun pFail(): N_STATEMENT? {
-        consume(T_FAIL) ?: return null
-        pExpression()?.also { return node(N_FAIL(it)) }
+    // Parse: throw <expr>
+    private fun pThrow(): N_STATEMENT? {
+        consume(T_THROW) ?: return null
+        pExpression()?.also { return node(N_THROW(it)) }
             ?: fail("missing message expression for fail")
         return null
     }

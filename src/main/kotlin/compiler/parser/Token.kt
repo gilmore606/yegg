@@ -71,7 +71,7 @@ data class Token(
         T_RETURN("return", true),
         T_TRUE("true", true),
         T_WHILE("while", true),
-        T_FAIL("fail", true),
+        T_THROW("throw", true),
         T_WHEN("when", true),
         T_SUSPEND("suspend", true),
         T_FORK("fork", true),
