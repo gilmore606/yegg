@@ -84,4 +84,24 @@ class ErrorTest: YeggTest() {
             end
         """)
     }
+
+    @Test
+    fun `Try expression`() = yeggTest {
+        verb("sys", "getWeight", $$"""
+            [input] = args
+            return 24 / input.length
+        """)
+
+        runForOutput($$"""
+            for x in ["dog", "duck", 42, ""] {
+                weight = `$sys.getWeight(x) ! E_PROPNF -> "???"'
+                notifyConn("$x weighs $weight")
+            }
+        ""","""
+            dog weighs 8
+            duck weighs 6
+            42 weighs ???
+            E_DIV: divide by zero  (l1 c24)
+        """)
+    }
 }
