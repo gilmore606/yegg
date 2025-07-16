@@ -1,10 +1,8 @@
 package com.dlfsystems.yegg.world.trait
 
 import com.dlfsystems.yegg.compiler.Compiler
-import com.dlfsystems.yegg.server.Log
 import com.dlfsystems.yegg.vm.VMWord
 import com.dlfsystems.yegg.vm.Executable
-import com.dlfsystems.yegg.vm.dumpText
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -34,7 +32,6 @@ class Verb(
             symbols = it.symbols
             blocks = it.blocks
         }
-        Log.d("Compiler", code.dumpText())
     }
 
     override fun getPassExe() = traitID?.trait()?.getPassVerb(name)
