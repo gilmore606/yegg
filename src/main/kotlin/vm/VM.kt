@@ -159,6 +159,11 @@ class VM(
                     val args = (pop() as VList).v.map { (it as VString).v }
                     push(exe.getLambda(block, c.vThis, args, withVars))
                 }
+                O_ERRVAL -> {
+                    val rawerr = next().value as VErr
+                    val m = pop()
+                    push(VErr(rawerr.v, m.asString()))
+                }
 
                 // Index/range ops
 

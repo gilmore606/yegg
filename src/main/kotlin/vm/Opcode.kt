@@ -24,6 +24,10 @@ enum class Opcode(val argCount: Int = 0) {
     // Aggregate these to create and push a VFun.
     O_FUNVAL(1),
 
+    // pop0 = message expression
+    // arg1 = un-messaged VErr
+    O_ERRVAL(1),
+
     // Push index result of pop0[pop1].
     O_GETI,
 

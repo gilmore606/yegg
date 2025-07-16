@@ -259,7 +259,7 @@ class Parser(inputTokens: List<Token>) {
     private fun pThrow(): N_STATEMENT? {
         consume(T_THROW) ?: return null
         pExpression()?.also { return node(N_THROW(it)) }
-            ?: fail("missing message expression for fail")
+            ?: fail("missing error expression for throw")
         return null
     }
 
@@ -685,9 +685,14 @@ class Parser(inputTokens: List<Token>) {
     private fun pLiteralError(): N_LITERAL_ERROR? {
         if (nextIs(T_IDENTIFIER)) {
             val ident = (nextToken().string)
+            var message: N_EXPR? = null
+            consume(T_PAREN_OPEN)?.also {
+                pExpression()?.also { message = it } ?: fail("missing error message expression")
+                consume(T_PAREN_CLOSE) ?: fail("missing close paren after error message")
+            }
             return VMException.Type.entries.firstOrNull { it.name == ident }?.let {
                 consume(T_IDENTIFIER)
-                node(N_LITERAL_ERROR(it))
+                node(N_LITERAL_ERROR(it, message))
             }
         }
         return null

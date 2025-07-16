@@ -49,9 +49,3 @@ class N_LITERAL_STRING(val value: String): N_LITERAL() {
     override fun codeValue(coder: Coder) { coder.value(value) }
     override fun constantValue() = VString(value)
 }
-
-class N_LITERAL_ERROR(val value: VMException.Type): N_LITERAL() {
-    override fun toString() = "\"$value\""
-    override fun codeValue(coder: Coder) { coder.value(value) }
-    override fun constantValue() = VErr(value)
-}
