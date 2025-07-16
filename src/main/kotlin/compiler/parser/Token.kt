@@ -49,6 +49,8 @@ data class Token(
         T_LOGIC_AND("&&"),
         T_COMMA(","),
         T_ARROW("->"),
+        T_TICK("'"),
+        T_BACKTICK("`"),
 
         // Literals
         T_IDENTIFIER("ident"),

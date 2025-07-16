@@ -359,7 +359,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse: fork <expr> { block }
     private fun pFork(): N_EXPR? {
-        val next = this::pWhenExpr
+        val next = this::pTryExpr
         consume(T_FORK)?.also {
             pExpression()?.also { seconds ->
                 pBlock()?.also { block ->
@@ -367,6 +367,31 @@ class Parser(inputTokens: List<Token>) {
                         N_FORK(seconds, node(N_LITERAL_FUN(listOf(), block)))
                     ) } ?: fail("missing block for fork")
             } ?: fail("missing time expression for fork")
+        }
+        return next()
+    }
+
+    // Parse: `expr ! [E_TYPE,... ->] expr'
+    private fun pTryExpr(): N_EXPR? {
+        val next = this::pWhenExpr
+        consume(T_BACKTICK)?.also {
+            pExpression()?.also { tryBlock ->
+                consume(T_BANG) ?: fail("missing bang for try expression")
+                var errors = mutableListOf<N_EXPR>()
+                if (nextIs(T_IDENTIFIER)) {
+                    pLiteralError()?.also {
+                        errors.add(it)
+                        while (consume(T_COMMA) != null) {
+                            pLiteralError()?.also { errors.add(it) } ?: fail("non-error in catch error list")
+                        }
+                        consume(T_ARROW) ?: fail("missing arrow after catch error list")
+                    }
+                }
+                pExpression()?.also { catchBlock ->
+                    consume(T_TICK) ?: fail("missing tick after catch block")
+                    return node(N_TRY(tryBlock, errors, catchBlock))
+                } ?: fail("missing catch block for try expression")
+            } ?: fail("missing try expression")
         }
         return next()
     }
