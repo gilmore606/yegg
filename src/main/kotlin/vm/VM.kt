@@ -105,8 +105,8 @@ class VM(
         while (irqs.isNotEmpty()) {
             irqs.pop().also { irq ->
                 if (irq.errors.isEmpty() || irq.errors.contains(err.type)) {
-                    // TODO: handle 'it' and no errvarid, further back?
-                    if (irq.errVarID > -1) variables[irq.errVarID] = VErr(err.type, err.m)
+                    val varID = if (irq.errVarID > -1) irq.errVarID else (exe.symbols["it"] ?: -1)
+                    if (varID > -1) variables[varID] = VErr(err.type, err.m)
                     pc = irq.dest
                     while (stack.size > irq.stackDepth) pop()
                     return true
