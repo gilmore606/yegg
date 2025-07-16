@@ -44,7 +44,7 @@ enum class Opcode(val argCount: Int = 0) {
     O_RETURN,
     O_RETURNNULL,
 
-    // Throw E_USER with pop0 as message.
+    // Throw pop0 if VErr, or E_USER with pop0.asString() message.
     O_THROW,
 
     // Suspend for pop0 seconds.

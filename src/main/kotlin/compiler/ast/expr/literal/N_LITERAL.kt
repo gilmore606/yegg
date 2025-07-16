@@ -4,7 +4,6 @@ import com.dlfsystems.yegg.compiler.Coder
 import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
 import com.dlfsystems.yegg.value.*
 import com.dlfsystems.yegg.vm.Opcode.*
-import com.dlfsystems.yegg.vm.VMException
 import com.dlfsystems.yegg.world.Obj
 
 // A literal value appearing in code.
@@ -38,7 +37,7 @@ class N_LITERAL_FLOAT(val value: Float): N_LITERAL() {
     override fun constantValue() = VFloat(value)
 }
 
-class N_LITERAL_OBJECT(val objID: Obj.ID): N_LITERAL() {
+class N_LITERAL_OBJ(val objID: Obj.ID): N_LITERAL() {
     override fun toString() = "#$id"
     override fun codeValue(coder: Coder) { coder.value(objID) }
     override fun constantValue() = VObj(objID)
