@@ -53,6 +53,16 @@ class VMException(val type: Type, val m: String): Exception() {
 
         // User-thrown exception
         E_USER,
+        E_USER0,
+        E_USER1,
+        E_USER2,
+        E_USER3,
+        E_USER4,
+        E_USER5,
+        E_USER6,
+        E_USER7,
+        E_USER8,
+        E_USER9,
     }
 
 }
