@@ -32,13 +32,13 @@ class VM(
     private val variables: MutableMap<Int, Value> = mutableMapOf()
 
     // Active exception handlers set by O_TRY.
-    private data class IRQ(
+    private data class ErrHandler(
         val errors: Set<VMException.Type>,
         val errVarID: Int,
         val dest: Int,
         val stackDepth: Int
     )
-    private val irqs = ArrayDeque<IRQ>()
+    private val errHandlers = ArrayDeque<ErrHandler>()
 
     // Preserve error position.
     var lineNum: Int = 0
@@ -101,13 +101,13 @@ class VM(
     }
 
     fun catchError(err: VMException): Boolean {
-        while (irqs.isNotEmpty()) {
-            val irq = irqs.pop()
-            if (irq.errors.isEmpty() || irq.errors.contains(err.type)) {
-                val varID = if (irq.errVarID > -1) irq.errVarID else (exe.symbols["it"] ?: -1)
+        while (errHandlers.isNotEmpty()) {
+            val handler = errHandlers.pop()
+            if (handler.errors.isEmpty() || handler.errors.contains(err.type)) {
+                val varID = if (handler.errVarID > -1) handler.errVarID else (exe.symbols["it"] ?: -1)
                 if (varID > -1) variables[varID] = VErr(err.type, err.m)
-                pc = irq.dest
-                while (stack.size > irq.stackDepth) pop()
+                pc = handler.dest
+                while (stack.size > handler.stackDepth) pop()
                 return true
             }
         }
@@ -230,10 +230,10 @@ class VM(
                     } }
                     val varID = next().intFromV
                     val irq = next().address!!
-                    irqs.push(IRQ(errs, varID, irq, stack.size))
+                    errHandlers.push(ErrHandler(errs, varID, irq, stack.size))
                 }
                 O_TRYEND -> {
-                    irqs.pop()
+                    errHandlers.pop()
                 }
 
                 // Verb ops
