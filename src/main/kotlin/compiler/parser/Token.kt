@@ -49,6 +49,8 @@ data class Token(
         T_LOGIC_AND("&&"),
         T_COMMA(","),
         T_ARROW("->"),
+        T_TICK("'"),
+        T_BACKTICK("`"),
 
         // Literals
         T_IDENTIFIER("ident"),
@@ -69,12 +71,14 @@ data class Token(
         T_RETURN("return", true),
         T_TRUE("true", true),
         T_WHILE("while", true),
-        T_FAIL("fail", true),
+        T_THROW("throw", true),
         T_WHEN("when", true),
         T_SUSPEND("suspend", true),
         T_FORK("fork", true),
         T_BREAK("break", true),
         T_CONTINUE("continue", true),
+        T_TRY("try", true),
+        T_CATCH("catch", true),
 
         T_EOF("EOF");
     }

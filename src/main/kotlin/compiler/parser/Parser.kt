@@ -12,6 +12,7 @@ import com.dlfsystems.yegg.compiler.ast.expr.ref.N_INDEX
 import com.dlfsystems.yegg.compiler.ast.expr.ref.N_PROPREF
 import com.dlfsystems.yegg.compiler.ast.expr.ref.N_RANGE
 import com.dlfsystems.yegg.compiler.ast.statement.*
+import com.dlfsystems.yegg.vm.VMException
 import com.dlfsystems.yegg.world.Obj
 
 // Take a stream of input tokens from Lexer and produce a tree of syntax nodes.
@@ -82,8 +83,9 @@ class Parser(inputTokens: List<Token>) {
         pIfElse()?.also { return it }
         pForLoop()?.also { return it }
         pWhile()?.also { return it }
+        pTry()?.also { return it }
         pReturn()?.also { return it }
-        pFail()?.also { return it }
+        pThrow()?.also { return it }
         pSuspend()?.also { return it }
         pWhen(asStatement = true)?.also { return node(N_EXPRSTATEMENT(it)) }
         pIncrement()?.also { return it }
@@ -199,17 +201,65 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
+    private fun pTry(): N_STATEMENT? {
+        consume(T_TRY) ?: return null
+        (pStatement() ?: pBlock())?.also { tryBlock ->
+            consume(T_CATCH)?.also {
+                var errors = mutableListOf<N_EXPR>()
+                when (nextToken().type) {
+                    T_PAREN_OPEN -> {
+                        consume(T_PAREN_OPEN)
+                        errors.addAll(pArglist())
+                    }
+                    T_IDENTIFIER -> {
+                        pLiteralError()?.also {
+                            errors.add(it)
+                            while (consume(T_COMMA) != null) {
+                                pLiteralError()?.also { errors.add(it) } ?: fail("non-error in catch error list")
+                            }
+                        }
+                    }
+                    else -> { }
+                }
+                var catchBlock: N_STATEMENT? = null
+                var errorName: N_IDENTIFIER? = null
+                when {
+                    nextAre(T_BRACE_OPEN, T_IDENTIFIER, T_ARROW) -> {
+                        consume(T_BRACE_OPEN)
+                        errorName = node(N_IDENTIFIER(consume(T_IDENTIFIER)!!.string))
+                        consume(T_ARROW)
+                        val statements = mutableListOf<N_STATEMENT>()
+                        while (!nextIs(T_BRACE_CLOSE)) {
+                            pStatement()?.also { statements.add(it) } ?: fail("non-statement in braces")
+                        }
+                        catchBlock = node(N_BLOCK(statements))
+                        consume(T_BRACE_CLOSE) ?: fail("missing close brace on catch block")
+                    }
+                    nextIs(T_BRACE_OPEN) -> {
+                        catchBlock = pBlock()
+                    }
+                    else -> {
+                        catchBlock = pStatement()
+                    }
+                }
+                if (catchBlock == null) fail("missing catch block")
+                return node(N_TRY(tryBlock, errors, catchBlock, errorName))
+            } ?: fail("missing catch after try block")
+        } ?: fail("missing block after try")
+        return null
+    }
+
     // Parse: return [<expr>]
     private fun pReturn(): N_STATEMENT? {
         consume(T_RETURN) ?: return null
         return node(N_RETURN(pExpression()))
     }
 
-    // Parse: fail <expr>
-    private fun pFail(): N_STATEMENT? {
-        consume(T_FAIL) ?: return null
-        pExpression()?.also { return node(N_FAIL(it)) }
-            ?: fail("missing message expression for fail")
+    // Parse: throw <expr>
+    private fun pThrow(): N_STATEMENT? {
+        consume(T_THROW) ?: return null
+        pExpression()?.also { return node(N_THROW(it)) }
+            ?: fail("missing error expression for throw")
         return null
     }
 
@@ -309,17 +359,39 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse: fork <expr> { block }
     private fun pFork(): N_EXPR? {
-        val next = this::pWhenExpr
+        val next = this::pTryExpr
         consume(T_FORK)?.also {
             pExpression()?.also { seconds ->
                 pBlock()?.also { block ->
                     return node(
-                        N_FORK(
-                        seconds,
-                        node(N_LITERAL_FUN(listOf(), block))
-                    )
+                        N_FORK(seconds, node(N_LITERAL_FUN(listOf(), block)))
                     ) } ?: fail("missing block for fork")
             } ?: fail("missing time expression for fork")
+        }
+        return next()
+    }
+
+    // Parse: `expr ! [E_TYPE,... ->] expr'
+    private fun pTryExpr(): N_EXPR? {
+        val next = this::pWhenExpr
+        consume(T_BACKTICK)?.also {
+            pExpression()?.also { tryBlock ->
+                consume(T_BANG) ?: fail("missing bang for try expression")
+                var errors = mutableListOf<N_EXPR>()
+                if (nextIs(T_IDENTIFIER)) {
+                    pLiteralError()?.also {
+                        errors.add(it)
+                        while (consume(T_COMMA) != null) {
+                            pLiteralError()?.also { errors.add(it) } ?: fail("non-error in catch error list")
+                        }
+                        consume(T_ARROW) ?: fail("missing arrow after catch error list")
+                    }
+                }
+                pExpression()?.also { catchBlock ->
+                    consume(T_TICK) ?: fail("missing tick after catch block")
+                    return node(N_TRY(tryBlock, errors, catchBlock))
+                } ?: fail("missing catch block for try expression")
+            } ?: fail("missing try expression")
         }
         return next()
     }
@@ -604,9 +676,26 @@ class Parser(inputTokens: List<Token>) {
         consume(T_INTEGER)?.also { return node(N_LITERAL_INTEGER(it.string.toInt())) }
         consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }
         consume(T_OBJREF)?.also { return node(N_LITERAL_OBJ(Obj.ID(it.string))) }
-        consume(T_IDENTIFIER)?.also { return node(N_IDENTIFIER(it.string)) }
         consume(T_TRUE, T_FALSE)?.also { return node(N_LITERAL_BOOLEAN(it.type == T_TRUE)) }
+        pLiteralError()?.also { return it }
+        consume(T_IDENTIFIER)?.also { return node(N_IDENTIFIER(it.string)) }
         return next()
+    }
+
+    private fun pLiteralError(): N_LITERAL_ERROR? {
+        if (nextIs(T_IDENTIFIER)) {
+            val ident = (nextToken().string)
+            var message: N_EXPR? = null
+            consume(T_PAREN_OPEN)?.also {
+                pExpression()?.also { message = it } ?: fail("missing error message expression")
+                consume(T_PAREN_CLOSE) ?: fail("missing close paren after error message")
+            }
+            return VMException.Type.entries.firstOrNull { it.name == ident }?.let {
+                consume(T_IDENTIFIER)
+                node(N_LITERAL_ERROR(it, message))
+            }
+        }
+        return null
     }
 
     // Parse a literal list or map: [<expr>, ...] or [<expr>:<expr>, ...]

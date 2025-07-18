@@ -24,6 +24,10 @@ enum class Opcode(val argCount: Int = 0) {
     // Aggregate these to create and push a VFun.
     O_FUNVAL(1),
 
+    // pop0 = message expression
+    // arg1 = un-messaged VErr
+    O_ERRVAL(1),
+
     // Push index result of pop0[pop1].
     O_GETI,
 
@@ -40,8 +44,8 @@ enum class Opcode(val argCount: Int = 0) {
     O_RETURN,
     O_RETURNNULL,
 
-    // Throw E_USER with pop0 as message.
-    O_FAIL,
+    // Throw pop0 if VErr, or E_USER with pop0.asString() message.
+    O_THROW,
 
     // Suspend for pop0 seconds.
     O_SUSPEND,
@@ -64,6 +68,11 @@ enum class Opcode(val argCount: Int = 0) {
     // Suspend task and wait for a line (or lines) of input.
     O_READLINE,
     O_READLINES,
+
+    // Begin try for arg1 count of VErr on stack (or all err if arg1=0)
+    // Pass thrown err as variableID arg2 (or 'it' if -1) to catch handler at addr arg3
+    O_TRY(3),
+    O_TRYEND,
 
     // Push variable with ID arg1.
     O_GETVAR(1), // variable ID to fetch

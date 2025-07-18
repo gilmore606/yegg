@@ -5,6 +5,8 @@ package com.dlfsystems.yegg.vm
 import com.dlfsystems.yegg.server.mcp.MCP
 import com.dlfsystems.yegg.server.Yegg
 import com.dlfsystems.yegg.server.mcp.Task
+import com.dlfsystems.yegg.util.pop
+import com.dlfsystems.yegg.util.push
 import com.dlfsystems.yegg.value.Value
 import com.dlfsystems.yegg.vm.Opcode.*
 import com.dlfsystems.yegg.value.*
@@ -28,6 +30,15 @@ class VM(
 
     // Local variables by ID.
     private val variables: MutableMap<Int, Value> = mutableMapOf()
+
+    // Active exception handlers set by O_TRY.
+    private data class ErrHandler(
+        val errors: Set<VMException.Type>,
+        val errVarID: Int,
+        val dest: Int,
+        val stackDepth: Int
+    )
+    private val errHandlers = ArrayDeque<ErrHandler>()
 
     // Preserve error position.
     var lineNum: Int = 0
@@ -77,13 +88,30 @@ class VM(
             if (dropReturnValue) dropReturnValue = false
             else push(it)
         }
-        try {
-            return executeCode()
-        } catch (e: Exception) {
-            throw (e as? VMException ?: VMException(E_SYS,
-                "${e.message} (mem $pc)\n${e.stackTraceToString()}"
-            )).withLocation(lineNum, charNum)
+        while (true) {
+            try {
+                return executeCode()
+            } catch (e: Exception) {
+                val err = (e as? VMException ?: VMException(
+                        E_SYS, "${e.message} (mem $pc)\n${e.stackTraceToString()}"
+                    )).withLocation(lineNum, charNum)
+                catchError(err) || throw err
+            }
         }
+    }
+
+    fun catchError(err: VMException): Boolean {
+        while (errHandlers.isNotEmpty()) {
+            val handler = errHandlers.pop()
+            if (handler.errors.isEmpty() || handler.errors.contains(err.type)) {
+                val varID = if (handler.errVarID > -1) handler.errVarID else (exe.symbols["it"] ?: -1)
+                if (varID > -1) variables[varID] = VErr(err.type, err.m)
+                pc = handler.dest
+                while (stack.size > handler.stackDepth) pop()
+                return true
+            }
+        }
+        return false
     }
 
     private fun executeCode(): Result {
@@ -130,6 +158,11 @@ class VM(
                     }
                     val args = (pop() as VList).v.map { (it as VString).v }
                     push(exe.getLambda(block, c.vThis, args, withVars))
+                }
+                O_ERRVAL -> {
+                    val rawerr = next().value as VErr
+                    val m = pop()
+                    push(VErr(rawerr.v, m.asString()))
                 }
 
                 // Index/range ops
@@ -185,9 +218,22 @@ class VM(
                 O_RETVAR -> {
                     return Result.Return(variables[next().intFromV]!!)
                 }
-                O_FAIL -> {
+                O_THROW -> {
                     val a = pop()
-                    fail(E_USER, a.asString())
+                    if (a is VErr) fail(a.v, a.m ?: "")
+                    else fail(E_USER, a.asString())
+                }
+                O_TRY -> {
+                    val errCount = next().intFromV
+                    val errs = buildSet { repeat(errCount) {
+                        (pop() as? VErr)?.also { add(it.v) } ?: fail(E_TYPE, "cannot catch non-ERR")
+                    } }
+                    val varID = next().intFromV
+                    val irq = next().address!!
+                    errHandlers.push(ErrHandler(errs, varID, irq, stack.size))
+                }
+                O_TRYEND -> {
+                    errHandlers.pop()
                 }
 
                 // Verb ops

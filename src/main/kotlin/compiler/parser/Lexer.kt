@@ -166,6 +166,8 @@ class Lexer(val source: String) {
                     '?' -> emit(T_QUESTION)
                     '^' -> emit(T_POWER)
                     '%' -> emit(T_MODULUS)
+                    '\'' -> emit(T_TICK)
+                    '`' -> emit(T_BACKTICK)
                     else -> {
                         if (isIdentifierChar(c)) begin(T_IDENTIFIER, c)
                         else fail("unexpected character: $c")
