@@ -4,10 +4,10 @@ val kotlin_version: String by project
 val logback_version: String by project
 
 plugins {
+    application
     kotlin("jvm") version "2.1.10"
     id("io.ktor.plugin") version "3.1.1"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
-    application
 }
 
 group = "com.dlfsystems.yegg"
@@ -20,7 +20,7 @@ kotlin {
 }
 
 application {
-    mainClass = "com.dlfsystems.yegg.ApplicationKt"
+    mainClass.set("com.dlfsystems.yegg.ApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
@@ -44,4 +44,10 @@ dependencies {
 
 tasks.named<KotlinCompilationTask<*>>("compileKotlin").configure {
     compilerOptions.optIn.add("kotlin.uuid.ExperimentalUuidApi")
+}
+
+ktor {
+    fatJar {
+        archiveFileName.set("${project.name}dist.jar")
+    }
 }
