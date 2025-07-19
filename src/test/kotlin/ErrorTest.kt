@@ -19,7 +19,7 @@ class ErrorTest: YeggTest() {
             notifyConn("end")
         ""","""
             start
-            WHOOPS! E_RANGE
+            WHOOPS! E_RANGE: list index 666 out of bounds
             end
         """)
     }
@@ -50,7 +50,7 @@ class ErrorTest: YeggTest() {
             notifyConn("done")
         ""","""
             1
-            WHOOPS! E_TYPE
+            WHOOPS! E_TYPE: cannot index into LIST with STRING
             done
         """)
     }

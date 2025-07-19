@@ -88,9 +88,10 @@ class Task(
                 if (stack.isEmpty()) onResult?.invoke(result)
                 return result
             } catch (e: Exception) {
+                val vm = stack.first()
                 val err = (e as? VMException ?: VMException(
                     E_SYS, "${e.message}\n${e.stackTraceToString()}"
-                ))
+                )).withLocation(vm.lineNum, vm.charNum)
                 var caught = false
                 while (stack.isNotEmpty() && !caught) {
                     if (peek().catchError(err)) caught = true

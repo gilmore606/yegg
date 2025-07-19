@@ -17,7 +17,7 @@ data class VErr(
     @SerialName("yType")
     override val type = Type.ERR
 
-    override fun toString() = v.toString() + m?.let { "($it)" }.orEmpty()
+    override fun toString() = v.toString() + m?.let { ": $it" }.orEmpty()
 
     override fun cmpEq(a2: Value) = (a2 is VErr && v == a2.v)
 
