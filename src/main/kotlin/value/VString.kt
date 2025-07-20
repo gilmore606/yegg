@@ -36,8 +36,11 @@ data class VString(var v: String): Value() {
         "asFloat" -> VFloat(v.toFloat())
         "isEmpty" -> if (v.isEmpty()) Yegg.vTrue else Yegg.vFalse
         "isNotEmpty" -> if (v.isNotEmpty()) Yegg.vTrue else Yegg.vFalse
+        "stripAnsi" -> propStripAnsi()
         else -> null
     }
+
+    private fun propStripAnsi() = VString(v.replace("[\\u001B\\[0-9;]*m".toRegex(), ""))
 
     override fun getIndex(index: Value): Value? {
         if (index is VInt) {
