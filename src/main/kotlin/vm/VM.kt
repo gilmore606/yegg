@@ -60,7 +60,8 @@ class VM(
     private inline fun popFour() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
     private inline fun next() = exe.code[pc++]
 
-    override fun toString() = " ($vThis) " + "$exe(${args.joinToString(",")})".padEnd(30, ' ') + "[at $lineNum:$charNum]"
+    override fun toString() = "$exe"
+
 
     init {
         exe.getInitialVars(args).forEach { (name, v) -> initVar(name, v) }

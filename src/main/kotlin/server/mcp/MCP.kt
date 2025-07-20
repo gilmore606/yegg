@@ -3,12 +3,19 @@ package com.dlfsystems.yegg.server.mcp
 import com.dlfsystems.yegg.server.Connection
 import com.dlfsystems.yegg.server.Log
 import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.util.spaces
+import com.dlfsystems.yegg.util.stripAnsi
 import com.dlfsystems.yegg.util.systemEpoch
+import com.dlfsystems.yegg.util.xColor
+import com.dlfsystems.yegg.util.xR
+import com.dlfsystems.yegg.util.xUnderline
 import com.dlfsystems.yegg.value.Value
 import com.dlfsystems.yegg.vm.VM
 import com.dlfsystems.yegg.vm.VMException
 import kotlinx.coroutines.*
 import java.util.*
+import kotlin.math.max
+import kotlin.math.min
 
 // The task scheduler.
 // Runs tasks at scheduled epoch times in a single thread.
@@ -116,12 +123,30 @@ object MCP {
         e: VMException,
         stack: List<VM>
     ) {
-        connection.sendText(e.toString())
-        stack.first().exe.getSourceLine(e.lineNum)?.also { line ->
-            connection.sendText(line)
+        val topVm = stack.first()
+        val errMsg = xColor(203, e.type.toString()) + xColor(210, ": ${e.m}")
+        val m = (topVm.exe.getSourceLine(e.lineNum) ?: "")
+        val c = max(0, min(topVm.charNum - 1, m.lastIndex))
+        val srcMsg = xColor(239, 235, "| ") + xColor(195, 235, m.substring(0, c)) +
+                xColor(225, 52, m.substring(c, c+1)) + xColor(195, 235, m.substring(c+1) + " ")
+        var srcTail = xColor(195, 234, " ") + xColor(195, 233, " ") + xColor(195, 232, " ")
+        val verbs = buildList { stack.forEach { add("${it.exe}" + xColor(244, "(" + it.args.joinToString(",") + ")")) } }
+        var maxLen = max(12, verbs.maxOf { it.stripAnsi().length })
+
+        connection.sendText("$errMsg  $srcMsg$srcTail" + xR())
+        verbs.forEachIndexed { i, verb ->
+            val vm = stack[i]
+            val vt = if (vm.vThis == Yegg.vNullObj) "#null " else "${vm.vThis}"
+            connection.sendText(
+                xColor(244, " ($vt) ") +
+                xColor(if (i == 0) 230 else 251, verb) +
+                spaces(maxLen - verb.stripAnsi().length) +
+                xColor(244, "  line ${vm.lineNum}") +
+                xR()
+            )
         }
-        connection.sendText(stack.joinToString("\n", "", "\n"))
     }
+
 
     private const val TAG = "MCP"
 

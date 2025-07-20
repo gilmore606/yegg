@@ -2,6 +2,7 @@ package com.dlfsystems.yegg.value
 
 import com.dlfsystems.yegg.server.Yegg
 import com.dlfsystems.yegg.util.fail
+import com.dlfsystems.yegg.util.stripAnsi
 import com.dlfsystems.yegg.vm.Context
 import com.dlfsystems.yegg.vm.VMException.Type.*
 import kotlinx.serialization.SerialName
@@ -36,11 +37,9 @@ data class VString(var v: String): Value() {
         "asFloat" -> VFloat(v.toFloat())
         "isEmpty" -> if (v.isEmpty()) Yegg.vTrue else Yegg.vFalse
         "isNotEmpty" -> if (v.isNotEmpty()) Yegg.vTrue else Yegg.vFalse
-        "stripAnsi" -> propStripAnsi()
+        "stripAnsi" -> VString(v.stripAnsi())
         else -> null
     }
-
-    private fun propStripAnsi() = VString(v.replace("[\\u001B\\[0-9;]*m".toRegex(), ""))
 
     override fun getIndex(index: Value): Value? {
         if (index is VInt) {
