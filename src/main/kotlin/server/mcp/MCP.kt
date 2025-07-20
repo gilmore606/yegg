@@ -1,9 +1,12 @@
 package com.dlfsystems.yegg.server.mcp
 
+import com.dlfsystems.yegg.server.Connection
 import com.dlfsystems.yegg.server.Log
 import com.dlfsystems.yegg.server.Yegg
 import com.dlfsystems.yegg.util.systemEpoch
 import com.dlfsystems.yegg.value.Value
+import com.dlfsystems.yegg.vm.VM
+import com.dlfsystems.yegg.vm.VMException
 import kotlinx.coroutines.*
 import java.util.*
 
@@ -82,8 +85,11 @@ object MCP {
                         taskMap[task.id] = task
                     }
                     is Task.Result.Failed -> {
-                        task.connection?.sendText(result.e.toString())
-                        task.connection?.sendText(task.stackDump())
+                        task.connection?.also {
+                            outputError(it, result.e, result.stack)
+                        } ?: run {
+                            Log.i(TAG, "Headless task exception:\n$ {result.e}\n$ {result.stack}")
+                        }
                     }
                     is Task.Result.Finished -> { }
                 }
@@ -103,6 +109,18 @@ object MCP {
             return nextTask
         }
         return null
+    }
+
+    private fun outputError(
+        connection: Connection,
+        e: VMException,
+        stack: List<VM>
+    ) {
+        connection.sendText(e.toString())
+        stack.first().exe.getSourceLine(e.lineNum)?.also { line ->
+            connection.sendText(line)
+        }
+        connection.sendText(stack.joinToString("\n", "", "\n"))
     }
 
     private const val TAG = "MCP"

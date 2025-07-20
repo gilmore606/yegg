@@ -52,7 +52,7 @@ class Task(
     sealed interface Result {
         data class Finished(val v: Value): Result
         data class Suspend(val seconds: Int): Result
-        data class Failed(val e: Exception): Result
+        data class Failed(val e: VMException, val stack: List<VM>): Result
     }
 
     // Execute the top stack frame.
@@ -93,11 +93,12 @@ class Task(
                     E_SYS, "${e.message}\n${e.stackTraceToString()}"
                 )).withLocation(vm.lineNum, vm.charNum)
                 var caught = false
+                val errorStack = buildList { addAll(stack) }
                 while (stack.isNotEmpty() && !caught) {
                     if (peek().catchError(err)) caught = true
                     else pop()
                 }
-                if (!caught) return Result.Failed(e)
+                if (!caught) return Result.Failed(err, errorStack)
             }
         }
     }
@@ -123,8 +124,6 @@ class Task(
 
     private fun peek(): VM = stack.first()
     private fun pop(): VM = stack.removeFirst()
-
-    fun stackDump() = stack.joinToString(prefix = "...", separator = "\n...", postfix = "\n")
 
 
     companion object {

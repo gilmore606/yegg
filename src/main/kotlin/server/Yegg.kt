@@ -120,7 +120,7 @@ object Yegg {
                     trait = $(traitName.replace("\$", ""))
                     notifyConn("Enter code for $trait:$verbName (end with .):")
                     code = readLines()
-                    setVerbCode(trait, verbName, code.join(" "))
+                    setVerbCode(trait, verbName, code.join("\n"))
                     notifyConn("Verb programmed.")
                 """)
                 setCommand(Command.fromString("@list string = cmdList")!!)

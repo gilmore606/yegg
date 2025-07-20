@@ -46,4 +46,7 @@ interface Executable {
     // Get parent executable for 'pass' expr
     fun getPassExe(): Executable? = null
 
+    // Get source line for stacktrace
+    fun getSourceLine(lineNum: Int): String? = null
+
 }

@@ -2,8 +2,8 @@ package com.dlfsystems.yegg.vm
 
 class VMException(val type: Type, val m: String): Exception() {
 
-    private var lineNum: Int = -1
-    private var charNum: Int = -1
+    var lineNum: Int = -1
+    var charNum: Int = -1
 
     fun withLocation(l: Int, c: Int): VMException {
         lineNum = l
@@ -11,7 +11,7 @@ class VMException(val type: Type, val m: String): Exception() {
         return this
     }
 
-    override fun toString() = "$type: $m  (l$lineNum c$charNum)"
+    override fun toString() = "$type: $m"
 
     enum class Type {
 

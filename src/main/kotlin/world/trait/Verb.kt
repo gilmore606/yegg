@@ -17,7 +17,7 @@ class Verb(
     @Transient override var symbols: Map<String, Int> = mapOf()
     @Transient override var blocks: List<Executable.Block> = listOf()
 
-    override fun toString() = name
+    override fun toString() = (traitID?.trait()?.let { "\$${it.name}"} ?: "") + ".$name"
 
     fun program(source: String) {
         this.source = source.trimIndent()
@@ -35,5 +35,7 @@ class Verb(
     }
 
     override fun getPassExe() = traitID?.trait()?.getPassVerb(name)
+
+    override fun getSourceLine(lineNum: Int) = source.split('\n').getOrNull(lineNum)
 
 }
