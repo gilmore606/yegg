@@ -3,12 +3,17 @@ package com.dlfsystems.yegg.server.mcp
 import com.dlfsystems.yegg.server.Connection
 import com.dlfsystems.yegg.server.Log
 import com.dlfsystems.yegg.server.Yegg
+import com.dlfsystems.yegg.util.stripAnsi
 import com.dlfsystems.yegg.util.systemEpoch
+import com.dlfsystems.yegg.util.xColor
+import com.dlfsystems.yegg.util.xUnderline
 import com.dlfsystems.yegg.value.Value
 import com.dlfsystems.yegg.vm.VM
 import com.dlfsystems.yegg.vm.VMException
 import kotlinx.coroutines.*
 import java.util.*
+import kotlin.math.max
+import kotlin.math.min
 
 // The task scheduler.
 // Runs tasks at scheduled epoch times in a single thread.
@@ -116,12 +121,40 @@ object MCP {
         e: VMException,
         stack: List<VM>
     ) {
-        connection.sendText(e.toString())
-        stack.first().exe.getSourceLine(e.lineNum)?.also { line ->
-            connection.sendText(line)
+        val em = xColor(203, e.type.toString()) +
+                xColor(210, ": ${e.m}") +
+                xColor(243, " in ") +
+                stack.first().toString() +
+                xColor(243, " [${stack.first().lineNum}:${stack.first().charNum}]")
+        val sm = stack.first().exe.getSourceLine(e.lineNum)?.let {
+            val c = max(0, min(stack.first().charNum - 1, it.lastIndex))
+            if (c == 0) {
+                xColor(225, 52, xUnderline(it.substring(0, 0))) + xColor(195, 236, it.substring(1))
+            } else if (c == it.lastIndex) {
+                xColor(195, 236, it.substring(0, c)) + xColor(225, 52, xUnderline(it.substring(c, c+1)))
+            } else {
+                xColor(195, 236, it.substring(0, c)) + xColor(225, 52, xUnderline(it.substring(c, c+1))) +
+                    xColor(195, 236, it.substring(c+1))
+            }
         }
-        connection.sendText(stack.joinToString("\n", "", "\n"))
+        val lines = buildList { stack.forEach { vm ->
+            add(
+                " (${vm.vThis}) " +
+                vm.exe.toString() +
+                "(" + vm.args.joinToString(",") + ")"
+            )
+        } }
+
+        var maxLen = 0
+        lines.forEach { maxLen = max(maxLen, it.stripAnsi().length) }
+
+        connection.sendText(em)
+        sm?.also { connection.sendText(it) }
+        lines.forEachIndexed { n, line ->
+            connection.sendText(line.padEnd(maxLen + 2) + xColor(243, " [" + stack[n].lineNum + "]"))
+        }
     }
+
 
     private const val TAG = "MCP"
 
