@@ -8,7 +8,6 @@ import com.dlfsystems.yegg.util.stripAnsi
 import com.dlfsystems.yegg.util.systemEpoch
 import com.dlfsystems.yegg.util.xColor
 import com.dlfsystems.yegg.util.xR
-import com.dlfsystems.yegg.util.xUnderline
 import com.dlfsystems.yegg.value.Value
 import com.dlfsystems.yegg.vm.VM
 import com.dlfsystems.yegg.vm.VMException
@@ -130,7 +129,8 @@ object MCP {
         val srcMsg = xColor(239, 235, "| ") + xColor(195, 235, m.substring(0, c)) +
                 xColor(225, 52, m.substring(c, c+1)) + xColor(195, 235, m.substring(c+1) + " ")
         var srcTail = xColor(195, 234, " ") + xColor(195, 233, " ") + xColor(195, 232, " ")
-        val verbs = buildList { stack.forEach { add("${it.exe}" + xColor(244, "(" + it.args.joinToString(",") + ")")) } }
+        val verbs = buildList { stack.forEach { add("${it.exe}" +
+                xColor(if (it == stack.first()) 187 else 244, "(" + it.args.joinToString(",") + ")")) } }
         var maxLen = max(12, verbs.maxOf { it.stripAnsi().length })
 
         connection.sendText("$errMsg  $srcMsg$srcTail" + xR())
@@ -139,7 +139,7 @@ object MCP {
             val vt = if (vm.vThis == Yegg.vNullObj) "#null " else "${vm.vThis}"
             connection.sendText(
                 xColor(244, " ($vt) ") +
-                xColor(if (i == 0) 230 else 251, verb) +
+                xColor(if (i == 0) 230 else 249, verb) +
                 spaces(maxLen - verb.stripAnsi().length) +
                 xColor(244, "  line ${vm.lineNum}") +
                 xR()
