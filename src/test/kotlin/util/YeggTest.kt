@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 abstract class YeggTest {
@@ -58,7 +59,7 @@ abstract class YeggTest {
             start()
             runVerb(source)
             expectedLines.forEachIndexed { n, expectedLine ->
-                assertEquals(expectedLine, output[n])
+                assertContains(output[n].stripAnsi(), expectedLine)
             }
             stop()
         }

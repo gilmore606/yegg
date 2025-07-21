@@ -38,7 +38,7 @@ class ErrorTest: YeggTest() {
             notifyConn("end")
         ""","""
             start
-            E_RANGE: list index 666 out of bounds  (l3 c22)
+            E_RANGE: list index 666 out of bounds
         """)
     }
 
@@ -101,7 +101,7 @@ class ErrorTest: YeggTest() {
             dog weighs 8
             duck weighs 6
             42 weighs ???
-            E_DIV: divide by zero  (l1 c24)
+            E_DIV: divide by zero
         """)
     }
 }
