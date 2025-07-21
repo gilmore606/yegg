@@ -8,7 +8,6 @@ import com.dlfsystems.yegg.util.stripAnsi
 import com.dlfsystems.yegg.util.systemEpoch
 import com.dlfsystems.yegg.util.xColor
 import com.dlfsystems.yegg.util.xR
-import com.dlfsystems.yegg.util.xUnderline
 import com.dlfsystems.yegg.value.Value
 import com.dlfsystems.yegg.vm.VM
 import com.dlfsystems.yegg.vm.VMException
