@@ -168,22 +168,22 @@ class VM(
                 // Index/range ops
 
                 O_GETI -> {
-                    val (a2, a1) = popTwo()
-                    a1.getIndex(a2)?.also { push(it) }
-                        ?: fail(E_TYPE, "cannot index into ${a1.type} with ${a2.type}")
+                    val (index, source) = popTwo()
+                    source.getIndex(index)?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot index into ${source.type} with ${index.type}")
                 }
                 O_GETRANGE -> {
-                    val (a3, a2, a1) = popThree()
-                    a1.getRange(a2, a3)?.also { push(it) }
-                        ?: fail(E_TYPE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
+                    val (end, start, source) = popThree()
+                    source.getRange(start, end)?.also { push(it) }
+                        ?: fail(E_TYPE, "cannot range into ${source.type} with ${start.type}..${end.type}")
                 }
                 O_SETI -> {
-                    val (a3, a2, a1) = popThree()
-                    if (!a2.setIndex(a3, a1)) fail(E_RANGE, "cannot index into ${a2.type} with ${a3.type}")
+                    val (index, target, v) = popThree()
+                    if (!target.setIndex(index, v)) fail(E_RANGE, "cannot index into ${target.type} with ${index.type}")
                 }
                 O_SETRANGE -> {
-                    val (a4, a3, a2, a1) = popFour()
-                    if (!a2.setRange(a3, a4, a1)) fail(E_RANGE, "cannot range into ${a1.type} with ${a2.type}..${a3.type}")
+                    val (end, start, target, v) = popFour()
+                    if (!target.setRange(start, end, v)) fail(E_RANGE, "cannot range into ${target.type} with ${target.type}..${start.type}")
                 }
 
                 // Control flow ops
@@ -219,9 +219,9 @@ class VM(
                     return Result.Return(variables[next().intFromV]!!)
                 }
                 O_THROW -> {
-                    val a = pop()
-                    if (a is VErr) fail(a.v, a.m ?: "")
-                    else fail(E_USER, a.asString())
+                    val err = pop()
+                    if (err is VErr) fail(err.v, err.m ?: "")
+                    else fail(E_USER, err.asString())
                 }
                 O_TRY -> {
                     val errCount = next().intFromV
@@ -240,16 +240,15 @@ class VM(
 
                 O_CALL, O_VCALL, O_VCALLST -> {
                     val argCount = next().intFromV
-                    val a2 = if (word.opcode == O_CALL) pop() else next().value!!
-                    val a1 = pop()
+                    val name = (if (word.opcode == O_CALL) pop() else next().value!!).asString()
+                    val subj = pop()
                     val args = buildList { repeat(argCount) { add(0, pop()) } }
-                    val name = a2.asString()
                     // If static built-in verb, call directly without returning
-                    a1.callStaticVerb(c, name, args)?.also {
+                    subj.callStaticVerb(c, name, args)?.also {
                         if (word.opcode != O_VCALLST) push(it)
-                    } ?: a1.getVerb(name)?.also { verb ->
+                    } ?: subj.getVerb(name)?.also { verb ->
                         if (word.opcode == O_VCALLST) dropReturnValue = true
-                        val vThis = a1 as? VObj ?: Yegg.vNullObj
+                        val vThis = subj as? VObj ?: Yegg.vNullObj
                         return Result.Call(verb, args, vThis)
                     } ?: fail(E_VERBNF, "no such verb $name")
                 }
@@ -279,18 +278,18 @@ class VM(
                 // Task ops
 
                 O_SUSPEND -> {
-                    val a = pop()
-                    return Result.Suspend((a as VInt).v)
+                    val sec = pop()
+                    return Result.Suspend((sec as VInt).v)
                 }
                 O_FORK -> {
-                    val (a2, a1) = popTwo()
+                    val (exe, sec) = popTwo()
                     val task = Task.make(
                         connection = c.connection,
-                        exe = a2 as VFun,
+                        exe = exe as VFun,
                         vThis = c.vThis,
                         vUser = c.vUser,
                     )
-                    MCP.schedule(task, (a1 as VInt).v)
+                    MCP.schedule(task, (sec as VInt).v)
                     push(task.vID)
                 }
                 O_READLINE, O_READLINES -> {
@@ -312,8 +311,8 @@ class VM(
                 }
                 O_SETVAR -> {
                     val varID = next().intFromV
-                    val a1 = pop()
-                    variables[varID] = a1
+                    val v = pop()
+                    variables[varID] = v
                 }
                 O_SETGETVAR -> {
                     variables[next().intFromV] = peek()
@@ -344,10 +343,10 @@ class VM(
                 // Iterator ops
 
                 O_ITERSIZE -> {
-                    val a1 = pop()
-                    a1.iterableSize()?.also {
+                    val subj = pop()
+                    subj.iterableSize()?.also {
                         push(VInt(it))
-                    } ?: fail(E_TYPE, "cannot iterate ${a1.type}")
+                    } ?: fail(E_TYPE, "cannot iterate ${subj.type}")
                 }
                 O_ITERPICK -> {
                     val sourceID = next().intFromV
@@ -359,34 +358,34 @@ class VM(
                 // Property ops
 
                 O_GETPROP, O_VGETPROP -> {
-                    val a2 = if (word.opcode == O_VGETPROP) next().value!! else pop()
-                    val a1 = pop()
-                    if (a2 is VString) {
-                        a1.getProp(a2.v)?.also { push(it) } ?: fail(E_PROPNF, "property not found")
+                    val name = if (word.opcode == O_VGETPROP) next().value!! else pop()
+                    val source = pop()
+                    if (name is VString) {
+                        source.getProp(name.v)?.also { push(it) } ?: fail(E_PROPNF, "property not found")
                     } else fail(E_PROPNF, "property name must be string")
                 }
                 O_SETPROP -> {
-                    val (a3, a2, a1) = popThree()
-                    if (!a2.setProp((a3 as VString).v, a1)) fail(E_PROPNF, "property not found")
+                    val (name, target, v) = popThree()
+                    if (!target.setProp((name as VString).v, v)) fail(E_PROPNF, "property not found")
                 }
                 O_TRAIT, O_VTRAIT -> {
-                    val a1 = if (word.opcode == O_VTRAIT) next().value!! else pop()
-                    if (a1 is VString) {
-                        Yegg.world.getTrait(a1.v)?.also { push(it.vTrait) }
-                            ?: fail (E_TRAITNF, "no such trait $a1")
+                    val name = if (word.opcode == O_VTRAIT) next().value!! else pop()
+                    if (name is VString) {
+                        Yegg.world.getTrait(name.v)?.also { push(it.vTrait) }
+                            ?: fail (E_TRAITNF, "no such trait $name")
                     } else fail(E_TRAITNF, "trait name must be string")
                 }
 
                 // Boolean ops
 
                 O_NEGATE -> {
-                    val a1 = pop()
-                    a1.negate()?.also { push(it) } ?: fail(E_TYPE, "cannot negate ${a1.type}")
+                    val v = pop()
+                    v.negate()?.also { push(it) } ?: fail(E_TYPE, "cannot negate ${v.type}")
                 }
                 O_IN -> {
-                    val (a2, a1) = popTwo()
-                    a1.isIn(a2)?.also { push(VBool(it)) }
-                        ?: fail(E_TYPE, "cannot check ${a1.type} in ${a2.type}")
+                    val (source, v) = popTwo()
+                    v.isIn(source)?.also { push(VBool(it)) }
+                        ?: fail(E_TYPE, "cannot check ${v.type} in ${source.type}")
                 }
                 O_CMP_EQ, O_CMP_GT, O_CMP_GE, O_CMP_LT, O_CMP_LE -> {
                     val (a2, a1) = popTwo()
