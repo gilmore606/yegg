@@ -64,13 +64,15 @@ class VM(
 
 
     init {
-        exe.getInitialVars(args).forEach { (name, v) -> initVar(name, v) }
-        initVar("args", VList.make(args))
-        initVar("this", c.vThis)
-        initVar("user", c.vUser)
+        exe.getInitialVars(args).forEach { (name, v) ->
+            setVar(name, v)
+        }
+        setVar("args", VList.make(args))
+        setVar("this", c.vThis)
+        setVar("user", c.vUser)
     }
 
-    private fun initVar(name: String, value: Value) {
+    private fun setVar(name: String, value: Value) {
         exe.symbols[name]?.also { variables[it] = value }
     }
 
@@ -336,7 +338,7 @@ class VM(
                             val t = Value.Type.entries[ti]
                             if (s.type != t) fail(E_INVARG, "${s.type} is not $t")
                         }
-                        exe.symbols[(vn as VString).v]?.also { variables[it] = s }
+                        setVar((vn as VString).v, s)
                     }
                 }
 

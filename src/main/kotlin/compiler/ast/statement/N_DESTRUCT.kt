@@ -5,7 +5,6 @@ import com.dlfsystems.yegg.compiler.ast.expr.N_EXPR
 import com.dlfsystems.yegg.compiler.ast.expr.identifier.N_IDENTIFIER
 import com.dlfsystems.yegg.value.VInt
 import com.dlfsystems.yegg.value.VString
-import com.dlfsystems.yegg.value.VVoid
 import com.dlfsystems.yegg.vm.Opcode.O_DESTRUCT
 import com.dlfsystems.yegg.vm.Opcode.O_VAL
 
