@@ -233,4 +233,24 @@ class LangTest: YeggTest() {
             cheese
         """)
     }
+
+    @Test
+    fun `List destructure with types`() = yeggTest {
+        verb("sys", "looseFun", $$"""
+            [foo, bar] = args
+            notifyConn("loose $foo and $bar")
+        """)
+        verb("sys", "tightFun", $$"""
+            [foo: FLOAT, bar: STRING] = args
+            notifyConn("tight $foo and $bar")
+        """)
+
+        runForOutput($$"""
+            $sys.looseFun(12.6, 74)
+            $sys.tightFun(12.6, 74)
+        """, """
+            loose 12.6 and 74
+            E_INVARG: INT is not STRING
+        """)
+    }
 }

@@ -64,13 +64,15 @@ class VM(
 
 
     init {
-        exe.getInitialVars(args).forEach { (name, v) -> initVar(name, v) }
-        initVar("args", VList.make(args))
-        initVar("this", c.vThis)
-        initVar("user", c.vUser)
+        exe.getInitialVars(args).forEach { (name, v) ->
+            setVar(name, v)
+        }
+        setVar("args", VList.make(args))
+        setVar("this", c.vThis)
+        setVar("user", c.vUser)
     }
 
-    private fun initVar(name: String, value: Value) {
+    private fun setVar(name: String, value: Value) {
         exe.symbols[name]?.also { variables[it] = value }
     }
 
@@ -326,11 +328,17 @@ class VM(
                     } ?: fail(E_VARNF, "variable not found")
                 }
                 O_DESTRUCT -> {
-                    val (a2, a1) = popTwo()
-                    if (a2 !is VList) fail(E_TYPE, "cannot destructure from non-list")
-                    if ((a2 as VList).v.size < (a1 as VList).v.size) fail(E_RANGE, "missing args")
-                    a1.v.forEachIndexed { i, vn ->
-                        exe.symbols[(vn as VString).v]?.also { variables[it] = a2.v[i] }
+                    val (source, types, vars) = popThree()
+                    if (source !is VList) fail(E_TYPE, "cannot destructure from non-list")
+                    if ((source as VList).v.size < (vars as VList).v.size) fail(E_RANGE, "missing args")
+                    vars.v.forEachIndexed { i, vn ->
+                        val s = source.v[i]
+                        val ti = ((types as VList).v[i] as VInt).v
+                        if (ti > -1) {
+                            val t = Value.Type.entries[ti]
+                            if (s.type != t) fail(E_INVARG, "${s.type} is not $t")
+                        }
+                        setVar((vn as VString).v, s)
                     }
                 }
 

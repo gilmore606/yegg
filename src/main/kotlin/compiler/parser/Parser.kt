@@ -12,6 +12,7 @@ import com.dlfsystems.yegg.compiler.ast.expr.ref.N_INDEX
 import com.dlfsystems.yegg.compiler.ast.expr.ref.N_PROPREF
 import com.dlfsystems.yegg.compiler.ast.expr.ref.N_RANGE
 import com.dlfsystems.yegg.compiler.ast.statement.*
+import com.dlfsystems.yegg.value.Value
 import com.dlfsystems.yegg.vm.VMException
 import com.dlfsystems.yegg.world.Obj
 
@@ -309,32 +310,47 @@ class Parser(inputTokens: List<Token>) {
         return null
     }
 
-    // Parse list destructure: [var1, var2...] = list
+    // Parse list destructure: [var1, var2: TYPE, ...] = list
     private fun pDestructure(): N_STATEMENT? {
         if (nextIs(T_BRACKET_OPEN)) {
             var i = 1
             var done = false
             while (!done) {
-                if (nextToken(i).type != T_IDENTIFIER) return null
-                if (nextToken(i+1).type == T_BRACKET_CLOSE) done = true
-                else if (nextToken(i+1).type != T_COMMA) fail("destructure list must contain only variable names")
-                i += 2
+                if (nextToken(i).type == T_IDENTIFIER) i++ else return null
+                if (nextToken(i).type == T_BRACKET_CLOSE) {
+                    i += 1
+                    done = true
+                } else if (nextToken(i).type == T_COMMA) {
+                    i += 1
+                } else if (nextToken(i).type == T_COLON && nextToken(i+1).type == T_IDENTIFIER) {
+                    if (nextToken(i+2).type == T_BRACKET_CLOSE) done = true
+                    i += 3
+                } else fail("destructure list must contain only variable names and types")
             }
             if (nextToken(i).type != T_ASSIGN) return null
             // Confirmed match, consume and produce
             consume(T_BRACKET_OPEN)
             val vars = mutableListOf<N_IDENTIFIER>()
+            val types = mutableListOf<Int>()
             done = false
             while (!done) {
-                consume(T_BRACKET_CLOSE)?.also { done = true }
-                    ?: consume(T_IDENTIFIER)?.also {
-                        vars.add(node(N_IDENTIFIER(it.string)))
-                        consume(T_COMMA)
+                consume(T_BRACKET_CLOSE)?.also { done = true } ?: consume(T_IDENTIFIER)?.also {
+                    vars.add(node(N_IDENTIFIER(it.string)))
+                    consume(T_COLON)?.also {
+                        val typeName = consume(T_IDENTIFIER)!!.string
+                        Value.Type.entries.indexOfFirst { it.name == typeName }.also { i ->
+                            if (i == -1) fail("$typeName is not a type")
+                            types.add(i)
+                        }
+                    } ?: run {
+                        types.add(-1)
                     }
+                    consume(T_COMMA)
+                }
             }
             consume(T_ASSIGN)
             pExpression()?.also { right ->
-                return node(N_DESTRUCT(vars, right))
+                return node(N_DESTRUCT(vars, types, right))
             } ?: fail("expression missing for list destructure")
         }
         return null
