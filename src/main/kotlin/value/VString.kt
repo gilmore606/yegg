@@ -92,6 +92,7 @@ data class VString(var v: String): Value() {
             "endsWith" -> return verbEndsWith(args)
             "indexOf" -> return verbIndexOf(args)
             "replace" -> return verbReplace(args)
+            "replaceMap" -> return verbReplaceMap(args)
             "capitalize" -> return verbCapitalize(args)
             "trim" -> return verbTrim(args)
             "pad" -> return verbPad(args)
@@ -140,6 +141,17 @@ data class VString(var v: String): Value() {
         requireArgCount(args, 2, 3)
         val ignoreCase = !(args.size == 2 || args[2].isFalse())
         return VString(v.replace(args[0].asString(), args[1].asString(), ignoreCase))
+    }
+
+    private fun verbReplaceMap(args: List<Value>): VString {
+        requireArgCount(args, 1, 1)
+        if (args[0].type != Value.Type.MAP) fail(E_TYPE, "${args[0].type} is not MAP")
+        var s = v
+        val map = (args[0] as VMap).v
+        for (k in map.keys) {
+            s = s.replace(k.asString(), map[k]!!.asString())
+        }
+        return VString(s)
     }
 
     private fun verbCapitalize(args: List<Value>): VString {

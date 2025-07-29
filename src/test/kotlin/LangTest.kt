@@ -253,4 +253,15 @@ class LangTest: YeggTest() {
             E_INVARG: INT is not STRING
         """)
     }
+
+    @Test
+    fun `String replaceMap`() = yeggTest {
+        runForOutput($$"""
+            template = "%N smacks %t in the face!"
+            final = template.replaceMap(["%t": "Jake Wharton", "%d": "Gilmore", "%N": "Spunky"])
+            notifyConn(final)
+        ""","""
+            Spunky smacks Jake Wharton in the face!
+        """)
+    }
 }
