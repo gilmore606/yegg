@@ -46,7 +46,7 @@ object Yegg {
     lateinit var world: World
 
     private val connections = mutableSetOf<Connection>()
-    val connectedUsers = mutableMapOf<Obj, Connection>()
+    val connectedPlayers = mutableMapOf<Obj, Connection>()
 
     var startTime: Int = 0
 
@@ -131,14 +131,14 @@ object Yegg {
                 """)
                 setCommand(Command.fromString("@quit = cmdQuit")!!)
                 programVerb("cmdQuit", $$"""
-                    disconnectUser()
+                    disconnectPlayer()
                 """)
             }
             val root = createTrait("root")!!.apply {
                 addProp("name", VString("thing"))
                 addProp("aliases", VList.make(listOf(VString("thing"))))
             }
-            createTrait("user")!!.apply {
+            createTrait("player")!!.apply {
                 addTrait(root)
                 addProp("username", VString(""))
                 addProp("password", VString(""))
@@ -153,22 +153,22 @@ object Yegg {
         conn.sendText(world.getSysValue("loginBanner").asString())
     }
 
-    fun connectUser(user: Obj, conn: Connection) {
-        conn.user = user
-        connectedUsers[user] = conn
+    fun connectPlayer(player: Obj, conn: Connection) {
+        conn.player = player
+        connectedPlayers[player] = conn
         conn.sendText(CONNECT_MSG)
-        Log.i(TAG, "User $user connected")
-        user.setProp("lastConnectTime", VInt(systemEpoch()))
-        user.setProp("lastActiveTime", VInt(systemEpoch()))
+        Log.i(TAG, "Player $player connected")
+        player.setProp("lastConnectTime", VInt(systemEpoch()))
+        player.setProp("lastActiveTime", VInt(systemEpoch()))
     }
 
     fun removeConnection(conn: Connection) {
         if (!connections.contains(conn)) return
         conn.sendText(DISCONNECT_MSG)
         connections.remove(conn)
-        connectedUsers.remove(conn.user)
+        connectedPlayers.remove(conn.player)
         conn.onDisconnect()
-        Log.i(TAG, "User ${conn.user} disconnected")
+        Log.i(TAG, "Player ${conn.player} disconnected")
     }
 
     fun processNextInputs() {
@@ -177,8 +177,8 @@ object Yegg {
         }
     }
 
-    fun notifyUser(user: Obj?, text: String) {
-        connectedUsers[user]?.sendText(text)
+    fun notifyPlayer(player: Obj?, text: String) {
+        connectedPlayers[player]?.sendText(text)
     }
 
     fun notifyConn(connID: String, text: String) {

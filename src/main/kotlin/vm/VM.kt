@@ -69,7 +69,7 @@ class VM(
         }
         setVar("args", VList.make(args))
         setVar("this", c.vThis)
-        setVar("user", c.vUser)
+        setVar("player", c.vPlayer)
     }
 
     private fun setVar(name: String, value: Value) {
@@ -289,7 +289,7 @@ class VM(
                         connection = c.connection,
                         exe = exe as VFun,
                         vThis = c.vThis,
-                        vUser = c.vUser,
+                        vPlayer = c.vPlayer,
                     )
                     MCP.schedule(task, (sec as VInt).v)
                     push(task.vID)

@@ -2,7 +2,7 @@ package com.dlfsystems.yegg.server.parser
 
 import kotlinx.serialization.Serializable
 
-// A user-typeable command on a trait.
+// A player-typeable command on a trait.
 
 @Serializable
 data class Command(

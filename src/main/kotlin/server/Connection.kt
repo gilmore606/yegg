@@ -24,10 +24,10 @@ class Connection(
     value class ID(val id: String) { override fun toString() = id }
     val id = ID(NanoID.newID())
 
-    var user: Obj? = null
+    var player: Obj? = null
 
     private val TAG: String
-        get() = "Conn:$id:${user?.id}"
+        get() = "Conn:$id:${player?.id}"
 
     data class ReadRequest(val taskID: Task.ID, val singleLine: Boolean)
     var readRequest: ReadRequest? = null
@@ -130,19 +130,19 @@ class Connection(
             } != null
         }
 
-        user?.also { user ->
-            user.setProp("lastActiveTime", VInt(systemEpoch()))
+        player?.also { player ->
+            player.setProp("lastActiveTime", VInt(systemEpoch()))
             // If logged in, match against all objs in scope
             val scope = buildList {
-                add(user)
-                addAll(user.contentsObjs)
-                user.locationObj?.also { loc ->
+                add(player)
+                addAll(player.contentsObjs)
+                player.locationObj?.also { loc ->
                     add(loc)
                     addAll(loc.contentsObjs)
                 }
             }
-            val dobj = matchObj(dobjstr, user, scope)
-            val iobj = matchObj(iobjstr, user, scope)
+            val dobj = matchObj(dobjstr, player, scope)
+            val iobj = matchObj(iobjstr, player, scope)
             for (target in scope) {
                 target.matchCommand(cmdstr, argstr, dobjstr, dobj, prep, iobjstr, iobj)?.also {
                     runCommand(it)

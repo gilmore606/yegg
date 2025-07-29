@@ -30,7 +30,7 @@ class SysTrait : Trait("sys") {
     override fun getProp(propName: String): Value? {
         when (propName) {
             "time" -> return propTime()
-            "connectedUsers" -> return propConnectedUsers()
+            "connectedPlayers" -> return propConnectedPlayers()
             "tasks" -> return propTasks()
             "allTraits" -> return propAllTraits()
         }
@@ -39,8 +39,8 @@ class SysTrait : Trait("sys") {
 
     override fun callStaticVerb(c: Context, verbName: String, args: List<Value>): Value? {
         when (verbName) {
-            "connectUser" -> return verbConnectUser(c, args)
-            "disconnectUser" -> return verbDisconnectUser(c, args)
+            "connectPlayer" -> return verbConnectPlayer(c, args)
+            "disconnectPlayer" -> return verbDisconnectPlayer(c, args)
             "notify" -> return verbNotify(args)
             "notifyConn" -> return verbNotifyConn(c, args)
             "createTrait" -> return verbCreateTrait(args)
@@ -75,30 +75,30 @@ class SysTrait : Trait("sys") {
     // $sys.time -> n
     private fun propTime() = VInt(systemEpoch())
 
-    // $sys.connectedUsers -> [#obj, #obj...]
-    private fun propConnectedUsers() = VList.make(Yegg.connectedUsers.keys.map { it.vThis })
+    // $sys.connectedPlayers -> [#obj, #obj...]
+    private fun propConnectedPlayers() = VList.make(Yegg.connectedPlayers.keys.map { it.vThis })
 
     // $sys.tasks ->
     private fun propTasks() = VList.make(MCP.taskList().map { it.vID })
 
-    // $sys.allTraits -> [$sys, $user, ...]
+    // $sys.allTraits -> [$sys, $player, ...]
     private fun propAllTraits() = VList.make(Yegg.world.traits.keys.map { VTrait(it) })
 
-    // $sys.connectUser("username", "password") -> true if connected
-    private fun verbConnectUser(c: Context, args: List<Value>): VBool {
+    // $sys.connectPlayer("username", "password") -> true if connected
+    private fun verbConnectPlayer(c: Context, args: List<Value>): VBool {
         requireArgTypes(args, STRING, STRING)
-        Yegg.world.getUserLogin((args[0] as VString).v, (args[1] as VString).v)?.also { user ->
+        Yegg.world.getPlayerLogin((args[0] as VString).v, (args[1] as VString).v)?.also { player ->
             c.connection?.also {
-                Yegg.connectUser(user, it)
-                c.vUser = user.vThis
+                Yegg.connectPlayer(player, it)
+                c.vPlayer = player.vThis
             }
             return Yegg.vTrue
         }
         return Yegg.vFalse
     }
 
-    // $sys.disconnectUser()
-    private fun verbDisconnectUser(c: Context, args: List<Value>): VVoid {
+    // $sys.disconnectPlayer()
+    private fun verbDisconnectPlayer(c: Context, args: List<Value>): VVoid {
         requireArgTypes(args)
         c.connection?.forceDisconnect()
         return VVoid
@@ -107,7 +107,7 @@ class SysTrait : Trait("sys") {
     // $sys.notify(#obj, "text")
     private fun verbNotify(args: List<Value>): VVoid {
         requireArgTypes(args, OBJ, null)
-        Yegg.notifyUser((args[0] as VObj).obj(), args[1].asString())
+        Yegg.notifyPlayer((args[0] as VObj).obj(), args[1].asString())
         return VVoid
     }
 

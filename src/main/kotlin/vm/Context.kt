@@ -11,7 +11,7 @@ interface Context {
     val taskID: Task.ID?
 
     val vThis: VObj
-    var vUser: VObj
+    var vPlayer: VObj
 
     var ticksLeft: Int
     var callsLeft: Int

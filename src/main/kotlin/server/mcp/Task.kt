@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
 class Task(
     override val connection: Connection? = null,
     override val vThis: VObj = Yegg.vNullObj,
-    override var vUser: VObj = connection?.user?.vThis ?: Yegg.vNullObj,
+    override var vPlayer: VObj = connection?.player?.vThis ?: Yegg.vNullObj,
     val onResult: ((Result) -> Unit)? = null,
 ) : Context {
 
@@ -132,9 +132,9 @@ class Task(
             args: List<Value> = listOf(),
             connection: Connection? = null,
             vThis: VObj = Yegg.vNullObj,
-            vUser: VObj = Yegg.vNullObj,
+            vPlayer: VObj = Yegg.vNullObj,
             onResult: ((Result) -> Unit)? = null,
-        ) = Task(connection, vThis, vUser, onResult).apply {
+        ) = Task(connection, vThis, vPlayer, onResult).apply {
                 push(vThis, exe, args)
             }
     }

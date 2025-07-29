@@ -17,8 +17,8 @@ data class World(val name: String) {
 
     val objs: MutableMap<Obj.ID, Obj> = mutableMapOf()
 
-    fun getUserLogin(name: String, password: String): Obj? {
-        getTrait("user")?.objects?.forEach { obj ->
+    fun getPlayerLogin(name: String, password: String): Obj? {
+        getTrait("player")?.objects?.forEach { obj ->
             objs[obj]?.getProp("username")?.also {
                 if (it == VString(name)) {
                     objs[obj]?.getProp("password")?.also {
@@ -45,7 +45,7 @@ data class World(val name: String) {
         } ?: run {
             return when (traitName) {
                 "sys" -> SysTrait()
-                "user" -> UserTrait()
+                "player" -> PlayerTrait()
                 else -> Trait.NTrait(traitName)
             }.also {
                 traits[it.id] = it

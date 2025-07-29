@@ -201,7 +201,7 @@ object Telnet {
 
         private suspend fun sendMSSP() {
             val vars = Yegg.conf.MSSP.toMutableMap().apply {
-                set("PLAYERS", Yegg.connectedUsers.size.toString())
+                set("PLAYERS", Yegg.connectedPlayers.size.toString())
                 set("UPTIME", Yegg.startTime.toString())
             }
             Log.d(TAG, "Sending MSSP vars: $vars")
