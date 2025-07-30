@@ -9,7 +9,7 @@ class TaskTest: YeggTest() {
     fun `Output arrives in order`() = yeggTest {
         runForOutput($$"""
             for (i in 0..99) {
-                notifyConn("$i")
+                cnotify("$i")
             }
         """, buildList { repeat(100) { add("$it")} }.joinToString("\n"))
     }
@@ -21,7 +21,7 @@ class TaskTest: YeggTest() {
             startTime = $sys.time
             suspend(2)
             elapsedTime = $sys.time - startTime
-            notifyConn("$foo in $elapsedTime seconds")
+            cnotify("$foo in $elapsedTime seconds")
         """, """
             20 in 2 seconds
         """)
@@ -35,19 +35,19 @@ class TaskTest: YeggTest() {
             fork (1) {
                 elapsed = $sys.time - startTime
                 foo *= 2
-                notifyConn("$foo in $elapsed seconds")
+                cnotify("$foo in $elapsed seconds")
             }
             fork (2) {
                 elapsed = $sys.time - startTime
                 foo *= 3
-                notifyConn("$foo in $elapsed seconds")
+                cnotify("$foo in $elapsed seconds")
                 fork (1) {
                     elapsed = $sys.time - startTime
                     foo = "ACK"
-                    notifyConn("$foo in $elapsed seconds")
+                    cnotify("$foo in $elapsed seconds")
                 }
             }
-            notifyConn("start $foo")
+            cnotify("start $foo")
         """, """
             start 20
             40 in 1 seconds
@@ -59,13 +59,13 @@ class TaskTest: YeggTest() {
     @Test
     fun `Cancel and resume`() = yeggTest {
         runForOutput($$"""
-            task1 = fork 10 { notifyConn("MERDE") }
-            task2 = fork 15 { notifyConn("SCHEIB") }
+            task1 = fork 10 { cnotify("MERDE") }
+            task2 = fork 15 { cnotify("SCHEIB") }
             task1.cancel()
-            notifyConn("start")
+            cnotify("start")
             task2.resume()
             suspend(1)
-            notifyConn("end")
+            cnotify("end")
         """, """
             start
             SCHEIB
@@ -76,9 +76,9 @@ class TaskTest: YeggTest() {
     @Test
     fun `Read single line`() = yeggTest {
         verb("sys", "readSingleLine", $$"""
-            notifyConn("Enter name:")
+            cnotify("Enter name:")
             name = readLine()
-            notifyConn("Hi $name!")
+            cnotify("Hi $name!")
         """)
 
         commandsForOutput($$"""
@@ -93,9 +93,9 @@ class TaskTest: YeggTest() {
     @Test
     fun `Read multiple lines`() = yeggTest {
         verb("sys", "readMultiLines", $$"""
-            notifyConn("Enter some things:")
+            cnotify("Enter some things:")
             things = readLines()
-            notifyConn("You entered ${things.size} things!")
+            cnotify("You entered ${things.size} things!")
         """)
 
         commandsForOutput($$"""

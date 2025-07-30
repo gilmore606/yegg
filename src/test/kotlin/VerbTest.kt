@@ -18,9 +18,9 @@ class VerbTest: YeggTest() {
 
         runForOutput($$"""
             o = create($dog)
-            notifyConn("Dog says: ${o.getNoise()}!")
+            cnotify("Dog says: ${o.getNoise()}!")
             a = create($animal)
-            notifyConn("Animal says: ${a.getNoise()}!")
+            cnotify("Animal says: ${a.getNoise()}!")
         """, """
             Dog says: bark!
             Animal says: generic noise!
@@ -31,23 +31,23 @@ class VerbTest: YeggTest() {
     fun `Verbs calling other verbs`() = yeggTest {
         verb("sys", "test", $$"""
             [input] = args
-            notifyConn("test for $input")
+            cnotify("test for $input")
             return 5 + $sys.test2(input)
         """)
         verb("sys", "test2", $$"""
             [input] = args
-            notifyConn("test2 for $input")
+            cnotify("test2 for $input")
             return 3 + $sys.test3(input)
         """)
         verb("sys", "test3", $$"""
             [input] = args
-            notifyConn("test3 for $input")
+            cnotify("test3 for $input")
             return 1 + input
         """)
 
         runForOutput($$"""
-            notifyConn("For 1 : ${$sys.test(1)}")
-            notifyConn("For 10: ${$sys.test(10)}")
+            cnotify("For 1 : ${$sys.test(1)}")
+            cnotify("For 10: ${$sys.test(10)}")
         """, """
             test for 1
             test2 for 1
@@ -72,7 +72,7 @@ class VerbTest: YeggTest() {
 
         runForOutput($$"""
             o = create($dog)
-            notifyConn("Dog is made of: ${o.madeOf()}!")
+            cnotify("Dog is made of: ${o.madeOf()}!")
         """, """
             Dog is made of: meat!
         """)
@@ -90,19 +90,19 @@ class VerbTest: YeggTest() {
         verb("dog", "getWeight", "return pass() + 2")
         verb("animal", "makeNoise", $$"""
             [vol] = args
-            notifyConn("NOISE volume $vol")
+            cnotify("NOISE volume $vol")
         """)
         verb("dog", "makeNoise", $$"""
             [vol] = args
-            notifyConn("BARK volume $vol")
+            cnotify("BARK volume $vol")
             return pass(vol)
         """)
 
         runForOutput($$"""
             o = create($dog)
-            notifyConn("Dog weighs: ${o.getWeight()}!")
+            cnotify("Dog weighs: ${o.getWeight()}!")
             a = create($animal)
-            notifyConn("Animal weighs: ${a.getWeight()}!")
+            cnotify("Animal weighs: ${a.getWeight()}!")
             o.makeNoise(10)
         """, """
             Dog weighs: 7!

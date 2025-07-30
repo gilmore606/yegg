@@ -9,14 +9,14 @@ class ErrorTest: YeggTest() {
     fun `Catch single error`() = yeggTest {
         runForOutput($$"""
             try {
-                notifyConn("start")
+                cnotify("start")
                 foo = [3,5]
-                notifyConn(foo[666])
-                notifyConn("got away with it!")
+                cnotify(foo[666])
+                cnotify("got away with it!")
             } catch E_RANGE, E_INVARG { e ->
-                notifyConn("WHOOPS! $e")
+                cnotify("WHOOPS! $e")
             }
-            notifyConn("end")
+            cnotify("end")
         ""","""
             start
             WHOOPS! E_RANGE: list index 666 out of bounds
@@ -28,14 +28,14 @@ class ErrorTest: YeggTest() {
     fun `Do not catch uncaught error`() = yeggTest {
         runForOutput($$"""
             try {
-                notifyConn("start")
+                cnotify("start")
                 foo = [3,5]
-                notifyConn(foo[666])
-                notifyConn("got away with it!")
+                cnotify(foo[666])
+                cnotify("got away with it!")
             } catch E_TYPE { e ->
-                notifyConn("WHOOPS! $e")
+                cnotify("WHOOPS! $e")
             }
-            notifyConn("end")
+            cnotify("end")
         ""","""
             start
             E_RANGE: list index 666 out of bounds
@@ -45,9 +45,9 @@ class ErrorTest: YeggTest() {
     @Test
     fun `Catch with shorter syntax`() = yeggTest {
         runForOutput($$"""
-            try notifyConn([1,2,3][0]) catch notifyConn("WHOOPS! $it")
-            try notifyConn([1,2,3]["foo"]) catch notifyConn("WHOOPS! $it")
-            notifyConn("done")
+            try cnotify([1,2,3][0]) catch cnotify("WHOOPS! $it")
+            try cnotify([1,2,3]["foo"]) catch cnotify("WHOOPS! $it")
+            cnotify("done")
         ""","""
             1
             WHOOPS! E_TYPE: cannot index into LIST with STRING
@@ -59,23 +59,23 @@ class ErrorTest: YeggTest() {
     fun `Catch from deep stack`() = yeggTest {
         verb("sys", "test", $$"""
             [input] = args
-            notifyConn("test for $input")
+            cnotify("test for $input")
             return 5 + $sys.test2(input)
         """)
         verb("sys", "test2", $$"""
             [input] = args
-            notifyConn("test2 for $input")
+            cnotify("test2 for $input")
             return 3 + $sys.VerbNotFound(input)
         """)
 
         runForOutput($$"""
             try {
-                notifyConn("start")
-                notifyConn($sys.test(10))
+                cnotify("start")
+                cnotify($sys.test(10))
             } catch E_VERBNF {
-                notifyConn("WHOOPS!")
+                cnotify("WHOOPS!")
             }
-            notifyConn("end")
+            cnotify("end")
         ""","""
             start
             test for 10
@@ -95,7 +95,7 @@ class ErrorTest: YeggTest() {
         runForOutput($$"""
             for x in ["dog", "duck", 42, ""] {
                 weight = `$sys.getWeight(x) ! E_PROPNF -> "???"'
-                notifyConn("$x weighs $weight")
+                cnotify("$x weighs $weight")
             }
         ""","""
             dog weighs 8

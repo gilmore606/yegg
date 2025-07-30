@@ -8,8 +8,8 @@ class LangTest: YeggTest() {
     @Test
     fun `Math`() = yeggTest {
         runForOutput($$"""
-            notifyConn(14 * 10 + 71 / 3 ^ 3)
-            notifyConn(500 - 100 / 2 * 5)
+            cnotify(14 * 10 + 71 / 3 ^ 3)
+            cnotify(500 - 100 / 2 * 5)
         """, """
             142
             250
@@ -21,10 +21,10 @@ class LangTest: YeggTest() {
         runForOutput($$"""
             foo = 27
             foo = 34
-            notifyConn("foo is $foo")
+            cnotify("foo is $foo")
             bar = foo
             foo = 13
-            notifyConn("bar is $bar")
+            cnotify("bar is $bar")
         """, """
             foo is 34
             bar is 34
@@ -37,9 +37,9 @@ class LangTest: YeggTest() {
             foo = "eggs"
             bag = [foo + "tom", foo + "dick", "$foo harry"]
             bar = bag.join(",")
-            notifyConn("$bar = ${bar.length}")
+            cnotify("$bar = ${bar.length}")
             newdick = bar.split(",")[1].replace("eggs", "cheese")
-            notifyConn(newdick)
+            cnotify(newdick)
         """, """
             eggstom,eggsdick,eggs harry = 27
             cheesedick
@@ -50,15 +50,15 @@ class LangTest: YeggTest() {
     fun `Lists`() = yeggTest {
         runForOutput($$"""
             foo = ["beef", "pork", "cheese"]
-            notifyConn(foo[1..2])
+            cnotify(foo[1..2])
             bar = ["eggs", "milk"]
-            notifyConn(foo + bar)
+            cnotify(foo + bar)
             baz = [foo[1], bar[1]]
-            notifyConn(baz)
+            cnotify(baz)
             baz.setAddAll(["milk", "pee"])
-            notifyConn(baz)
+            cnotify(baz)
             baz.push("poo")
-            if (baz.first == "poo") notifyConn("poohead")
+            if (baz.first == "poo") cnotify("poohead")
         ""","""
             "pork", "cheese"
             "beef", "pork", "cheese", "eggs", "milk"
@@ -72,7 +72,7 @@ class LangTest: YeggTest() {
     fun `Maps`() = yeggTest {
         runForOutput($$"""
             fooMap = ["rat": 12, "fox": 3, "otter": 9]
-            notifyConn("${fooMap.keys}")
+            cnotify("${fooMap.keys}")
             for (i=0;i<fooMap.keys.size;i++) {
                 j = 0
                 poo = 1
@@ -81,7 +81,7 @@ class LangTest: YeggTest() {
                     poo++
                     j++
                 }
-                notifyConn("$animal $poo")
+                cnotify("$animal $poo")
             }
         """, """
             "rat", "fox", "otter"
@@ -95,10 +95,10 @@ class LangTest: YeggTest() {
     fun `If-else`() = yeggTest {
         runForOutput($$"""
             for (i in 1..3) {
-                if (i == 1) notifyConn("one")
+                if (i == 1) cnotify("one")
                 else if (i == 3) { 
-                    notifyConn("three") 
-                } else notifyConn("two")
+                    cnotify("three") 
+                } else cnotify("two")
             }
         """, """
             one
@@ -120,7 +120,7 @@ class LangTest: YeggTest() {
                     while (baz > 20) baz--
                 }
                 if (x == "pork") continue
-                notifyConn("$bar $x $baz")
+                cnotify("$bar $x $baz")
             }
         """, """
             20 beef 20
@@ -132,10 +132,10 @@ class LangTest: YeggTest() {
     fun `For loop over empty list is skipped`() = yeggTest {
         runForOutput($$"""
             foo = []
-            for (x in foo) notifyConn("ACK")
+            for (x in foo) cnotify("ACK")
             foo = [1]
-            for (x in foo) notifyConn("BAR")
-            notifyConn("done")
+            for (x in foo) cnotify("BAR")
+            cnotify("done")
         """, """
             BAR
             done
@@ -154,10 +154,10 @@ class LangTest: YeggTest() {
                     else -> "???"
                 }
                 when {
-                    foo.contains("two") -> notifyConn("$foo has two")
+                    foo.contains("two") -> cnotify("$foo has two")
                 }
             }
-            notifyConn(foo)
+            cnotify(foo)
         """, """
             onetwo has two
             onetwothree has two
@@ -169,14 +169,14 @@ class LangTest: YeggTest() {
     @Test
     fun `Logical OR and AND short circuits right side`() = yeggTest {
         runForOutput($$"""
-            true || notifyConn("FAILED 1")
-            true && notifyConn("OK 1.")
-            false && notifyConn("FAILED 2")
-            false || notifyConn("OK 2.")
+            true || cnotify("FAILED 1")
+            true && cnotify("OK 1.")
+            false && cnotify("FAILED 2")
+            false || cnotify("OK 2.")
             foo = (1 == 1) && (false || true)
-            notifyConn("Foo is $foo.")
+            cnotify("Foo is $foo.")
             bar = (1 == 2) && true
-            notifyConn("Bar is $bar.")
+            cnotify("Bar is $bar.")
         """, """
             OK 1.
             OK 2.
@@ -189,7 +189,7 @@ class LangTest: YeggTest() {
     fun `Mixed list sorted by first value type`() = yeggTest {
         runForOutput($$"""
             foo = [36, 9, "hello", 88, 5.6]
-            notifyConn(foo.sorted)
+            cnotify(foo.sorted)
         """, """
             "hello", 5.6, 9, 36, 88
         """)
@@ -199,7 +199,7 @@ class LangTest: YeggTest() {
     fun `List filter`() = yeggTest {
         runForOutput($$"""
             foo = [1,5,7,12,26,31,74].filter({ it % 2 == 0 })
-            notifyConn(foo)
+            cnotify(foo)
         """, """
             12, 26, 74
         """)
@@ -213,7 +213,7 @@ class LangTest: YeggTest() {
         """)
         runForOutput($$"""
             foo = [1,3,5].map({ "got ${$sys.resultOf(it)}" })
-            for (x in foo) notifyConn("$x")
+            for (x in foo) cnotify("$x")
         """, """
             got 10
             got 30
@@ -225,7 +225,7 @@ class LangTest: YeggTest() {
     fun `List sortedBy`() = yeggTest {
         runForOutput($$"""
             foo = ["beer", "egg", "cheese", "me"].sortedBy({ it.length })
-            for (x in foo) notifyConn("$x")
+            for (x in foo) cnotify("$x")
         """, """
             me
             egg
@@ -238,11 +238,11 @@ class LangTest: YeggTest() {
     fun `List destructure with types`() = yeggTest {
         verb("sys", "looseFun", $$"""
             [foo, bar] = args
-            notifyConn("loose $foo and $bar")
+            cnotify("loose $foo and $bar")
         """)
         verb("sys", "tightFun", $$"""
             [foo: FLOAT, bar: STRING] = args
-            notifyConn("tight $foo and $bar")
+            cnotify("tight $foo and $bar")
         """)
 
         runForOutput($$"""
@@ -259,7 +259,7 @@ class LangTest: YeggTest() {
         runForOutput($$"""
             template = "%N smacks %t in the face!"
             final = template.replaceMap(["%t": "Jake Wharton", "%d": "Gilmore", "%N": "Spunky"])
-            notifyConn(final)
+            cnotify(final)
         ""","""
             Spunky smacks Jake Wharton in the face!
         """)

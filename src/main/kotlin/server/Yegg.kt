@@ -118,16 +118,16 @@ object Yegg {
                 programVerb("cmdProgram", $$"""
                     [traitName, verbName] = args[0].split(".")
                     trait = $(traitName.replace("\$", ""))
-                    notifyConn("Enter code for $trait:$verbName (end with .):")
+                    cnotify("Enter code for $trait:$verbName (end with .):")
                     code = readLines()
                     setVerbCode(trait, verbName, code.join("\n"))
-                    notifyConn("Verb programmed.")
+                    cnotify("Verb programmed.")
                 """)
                 setCommand(Command.fromString("@list string = cmdList")!!)
                 programVerb("cmdList", $$"""
                     [traitName, verbName] = args[0].split(".")
                     trait = $(traitName.replace("\$", ""))
-                    notifyConn(getVerbCode(trait, verbName))
+                    cnotify(getVerbCode(trait, verbName))
                 """)
                 setCommand(Command.fromString("@quit = cmdQuit")!!)
                 programVerb("cmdQuit", $$"""

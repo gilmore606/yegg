@@ -42,7 +42,7 @@ class SysTrait : Trait("sys") {
             "connectPlayer" -> return verbConnectPlayer(c, args)
             "disconnectPlayer" -> return verbDisconnectPlayer(c, args)
             "notify" -> return verbNotify(args)
-            "notifyConn" -> return verbNotifyConn(c, args)
+            "cnotify" -> return verbCnotify(c, args)
             "createTrait" -> return verbCreateTrait(args)
             "destroyTrait" -> return verbDestroyTrait(args)
             "addParent" -> return verbAddParent(args)
@@ -111,8 +111,8 @@ class SysTrait : Trait("sys") {
         return VVoid
     }
 
-    // $sys.notifyConn("text")
-    private fun verbNotifyConn(c: Context, args: List<Value>): VVoid {
+    // $sys.cnotify("text")
+    private fun verbCnotify(c: Context, args: List<Value>): VVoid {
         requireArgTypes(args, null)
         c.connection?.id?.id?.also { Yegg.notifyConn(it, args[0].asString()) }
         return VVoid

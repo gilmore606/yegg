@@ -10,15 +10,15 @@ class PropTest: YeggTest() {
         runForOutput($$"""
             createTrait("thing")
             addProp($thing, "weight", 4)
-            notifyConn($thing.weight)
+            cnotify($thing.weight)
             createTrait("weapon")
             addParent($weapon, $thing)
-            notifyConn($weapon.weight)
+            cnotify($weapon.weight)
             addProp($thing, "size", 1)
             $weapon.size = 5
-            notifyConn("weapon ${$weapon.size} thing ${$thing.size}")
+            cnotify("weapon ${$weapon.size} thing ${$thing.size}")
             clearProp($weapon, "size")
-            notifyConn("weapon now ${$weapon.size}")
+            cnotify("weapon now ${$weapon.size}")
         """, """
             4
             4
@@ -33,11 +33,11 @@ class PropTest: YeggTest() {
             createTrait("thing")
             o = create($thing)
             addProp($thing, "weight", 4)
-            notifyConn("it weighs ${o.weight}")
+            cnotify("it weighs ${o.weight}")
             o.weight = 12
-            notifyConn("it weighs ${o.weight}")
+            cnotify("it weighs ${o.weight}")
             o.clearProp("weight")
-            notifyConn("it weighs ${o.weight}")
+            cnotify("it weighs ${o.weight}")
         """, """
             it weighs 4
             it weighs 12
