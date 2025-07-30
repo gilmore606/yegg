@@ -1,13 +1,13 @@
 package com.dlfsystems.yegg.vm
 
+import com.dlfsystems.yegg.compiler.CodePos
+
 class VMException(val type: Type, val m: String): Exception() {
 
-    var lineNum: Int = -1
-    var charNum: Int = -1
+    var pos: CodePos = CodePos(0, 0, 0)
 
-    fun withLocation(l: Int, c: Int): VMException {
-        lineNum = l
-        charNum = c
+    fun withPos(withPos: CodePos): VMException {
+        pos = withPos
         return this
     }
 

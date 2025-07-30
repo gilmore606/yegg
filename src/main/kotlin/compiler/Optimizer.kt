@@ -165,14 +165,14 @@ class Optimizer(private val coder: Coder) {
 
     private fun code(op: Opcode) {
         val oldword = mem[pc - lastMatchSize]
-        outMem.add(VMWord(oldword.lineNum, oldword.charNum, op))
+        outMem.add(VMWord(oldword.pos, op))
     }
     private fun value(v: Value) {
         val oldword = mem[pc - lastMatchSize]
-        outMem.add(VMWord(oldword.lineNum, oldword.charNum, value = v))
+        outMem.add(VMWord(oldword.pos, value = v))
     }
     private fun address(a: Int) {
         val oldword = mem[pc - lastMatchSize]
-        outMem.add(VMWord(oldword.lineNum, oldword.charNum, address = a))
+        outMem.add(VMWord(oldword.pos, address = a))
     }
 }

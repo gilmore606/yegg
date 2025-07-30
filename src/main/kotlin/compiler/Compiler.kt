@@ -41,7 +41,7 @@ object Compiler {
         } catch (e: CompileException) {
             throw e.withInfo(code, symbols, tokens, ast)
         } catch (e: Exception) {
-            throw CompileException("GURU: " + e.stackTraceToString(), 0, 0)
+            throw CompileException("GURU: " + e.stackTraceToString(), CodePos(0, 0, 0))
                 .withInfo(code, symbols, tokens, ast)
         }
     }

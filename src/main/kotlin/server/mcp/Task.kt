@@ -91,7 +91,7 @@ class Task(
                 val vm = stack.first()
                 val err = (e as? VMException ?: VMException(
                     E_SYS, "${e.message}\n${e.stackTraceToString()}"
-                )).withLocation(vm.lineNum, vm.charNum)
+                )).withPos(vm.pos)
                 var caught = false
                 val errorStack = buildList { addAll(stack) }
                 while (stack.isNotEmpty() && !caught) {

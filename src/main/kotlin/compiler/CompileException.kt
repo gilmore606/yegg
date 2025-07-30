@@ -4,7 +4,7 @@ import com.dlfsystems.yegg.compiler.ast.Node
 import com.dlfsystems.yegg.compiler.parser.Token
 import com.dlfsystems.yegg.vm.VMWord
 
-class CompileException(m: String, lineNum: Int, charNum: Int): Exception("$m at line $lineNum c$charNum") {
+class CompileException(m: String, pos: CodePos): Exception("$m at line ${pos.l} c${pos.c0}") {
     var code: List<VMWord>? = null
     var symbols: Map<String, Int>? = null
     var tokens: List<Token>? = null

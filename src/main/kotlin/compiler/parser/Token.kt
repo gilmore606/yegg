@@ -1,13 +1,13 @@
 package com.dlfsystems.yegg.compiler.parser
 
+import com.dlfsystems.yegg.compiler.CodePos
 
 
 // A token lexed from a verb source string, with its source string and line/char position for tracebacks.
 data class Token(
     val type: Type,
     val string: String,
-    val lineNum: Int,
-    val charNum: Int,
+    val pos: CodePos
 ) {
     enum class Type(val literal: String, val isKeyword: Boolean = false) {
         // Groupers

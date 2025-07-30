@@ -1,5 +1,6 @@
 package com.dlfsystems.yegg.vm
 
+import com.dlfsystems.yegg.compiler.CodePos
 import com.dlfsystems.yegg.value.VInt
 import com.dlfsystems.yegg.value.Value
 import kotlinx.serialization.SerialName
@@ -9,8 +10,7 @@ import kotlinx.serialization.Serializable
 // Can hold an Opcode, a Value, or an int representing a memory address (for jumps).
 @Serializable
 data class VMWord(
-    @SerialName("l") val lineNum: Int,
-    @SerialName("c") val charNum: Int,
+    @SerialName("p") val pos: CodePos = CodePos(0, 0, 0),
     @SerialName("o") val opcode: Opcode? = null,
     @SerialName("v") val value: Value? = null,
     @SerialName("a") var address: Int? = null,

@@ -27,8 +27,7 @@ interface Executable {
         val lambdaCode = code.subList(blocks[block].start, blocks[block].end).map { word ->
             // Rewrite jump dests with offset
             word.address?.let { VMWord(
-                lineNum = word.lineNum,
-                charNum = word.charNum,
+                pos = word.pos,
                 address = it - offset
             ) } ?: word
         }

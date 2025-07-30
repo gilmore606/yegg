@@ -124,10 +124,11 @@ object MCP {
     ) {
         val topVm = stack.first()
         val errMsg = xColor(203, e.type.toString()) + xColor(210, ": ${e.m}")
-        val m = (topVm.exe.getSourceLine(e.lineNum) ?: "")
-        val c = max(0, min(topVm.charNum - 1, m.lastIndex))
-        val srcMsg = xColor(239, 235, "| ") + xColor(195, 235, m.substring(0, c)) +
-                xColor(225, 52, m.substring(c, c+1)) + xColor(195, 235, m.substring(c+1) + " ")
+        val m = (topVm.exe.getSourceLine(e.pos.l) ?: "")
+        val c0 = max(0, min(topVm.pos.c0, m.lastIndex))
+        val c1 = max(0, min(topVm.pos.c1, m.length))
+        val srcMsg = xColor(239, 235, "| ") + xColor(195, 235, m.substring(0, c0)) +
+                xColor(225, 52, m.substring(c0, c1)) + xColor(195, 235, m.substring(c1) + " ")
         var srcTail = xColor(195, 234, " ") + xColor(195, 233, " ") + xColor(195, 232, " ")
         val verbs = buildList { stack.forEach { add("${it.exe}" +
                 xColor(if (it == stack.first()) 187 else 244, "(" + it.args.joinToString(",") + ")")) } }
@@ -141,7 +142,7 @@ object MCP {
                 xColor(244, " ($vt) ") +
                 xColor(if (i == 0) 230 else 249, verb) +
                 spaces(maxLen - verb.stripAnsi().length) +
-                xColor(244, "  line ${vm.lineNum}") +
+                xColor(244, "  line ${vm.pos.l}") +
                 xR()
             )
         }

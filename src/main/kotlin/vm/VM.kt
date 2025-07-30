@@ -2,6 +2,7 @@
 
 package com.dlfsystems.yegg.vm
 
+import com.dlfsystems.yegg.compiler.CodePos
 import com.dlfsystems.yegg.server.mcp.MCP
 import com.dlfsystems.yegg.server.Yegg
 import com.dlfsystems.yegg.server.mcp.Task
@@ -41,8 +42,7 @@ class VM(
     private val errHandlers = ArrayDeque<ErrHandler>()
 
     // Preserve error position.
-    var lineNum: Int = 0
-    var charNum: Int = 0
+    var pos: CodePos = CodePos(0, 0, 0)
     private fun fail(type: VMException.Type, m: String) { throw VMException(type, m) }
 
     // Set true on Result.Call return to drop the return value (i.e. don't put it on stack).
@@ -96,7 +96,7 @@ class VM(
             } catch (e: Exception) {
                 val err = (e as? VMException ?: VMException(
                         E_SYS, "${e.message} (mem $pc)\n${e.stackTraceToString()}"
-                    )).withLocation(lineNum, charNum)
+                    )).withPos(pos)
                 catchError(err) || throw err
             }
         }
@@ -122,8 +122,7 @@ class VM(
             if (stack.size > stackLimit) fail(E_MAXREC, "stack depth exceeded")
 
             val word = next()
-            lineNum = word.lineNum
-            charNum = word.charNum
+            pos = word.pos
 
             when (word.opcode) {
 

@@ -1,5 +1,6 @@
 package com.dlfsystems.yegg.compiler.parser
 
+import com.dlfsystems.yegg.compiler.CodePos
 import com.dlfsystems.yegg.compiler.CompileException
 import com.dlfsystems.yegg.compiler.parser.Token.Type.*
 import com.dlfsystems.yegg.util.NanoID
@@ -27,7 +28,10 @@ class Lexer(val source: String) {
     var lineNum: Int = 0
     var charNum: Int = 0
 
-    private fun fail(m: String) { throw CompileException(m, lineNum, charNum) }
+    // Track starting char position of a token as we accumulate it.
+    private var beginCharNum: Int = 0
+
+    private fun fail(m: String) { throw CompileException(m, CodePos(lineNum, charNum, charNum)) }
 
 
     //
@@ -190,6 +194,7 @@ class Lexer(val source: String) {
     // Begin a new accumulating token of (possibly) type.  Start with acc if given.
     private fun begin(type: Token.Type, acc: Char? = null) {
         tokenType = type
+        beginCharNum = charNum
         acc?.also { accumulate(it) }
     }
 
@@ -207,10 +212,11 @@ class Lexer(val source: String) {
             }
         }
         if (tokenType != T_COMMENT) { // don't actually emit comment tokens at all
-            tokens.add(Token(newType, tokenString, lineNum, charNum))
+            tokens.add(Token(newType, tokenString, CodePos(lineNum, beginCharNum, charNum)))
         }
         tokenString = ""
         this.tokenType = null
+        beginCharNum = charNum
         reconsume?.also { consume(it) }
     }
 

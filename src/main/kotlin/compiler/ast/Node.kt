@@ -1,5 +1,6 @@
 package com.dlfsystems.yegg.compiler.ast
 
+import com.dlfsystems.yegg.compiler.CodePos
 import com.dlfsystems.yegg.compiler.Coder
 import com.dlfsystems.yegg.compiler.CompileException
 import com.dlfsystems.yegg.util.NanoID
@@ -12,10 +13,9 @@ abstract class Node {
 
     val id: NodeID = NodeID(makeID())
 
-    var lineNum = 0
-    var charNum = 0
+    var pos: CodePos = CodePos(0, 0, 0)
 
-    fun fail(m: String) { throw CompileException(m, lineNum, charNum)}
+    fun fail(m: String) { throw CompileException(m, pos)}
 
     open fun kids(): List<Node> = listOf()
 

@@ -2,6 +2,7 @@
 
 package com.dlfsystems.yegg.compiler.parser
 
+import com.dlfsystems.yegg.compiler.CodePos
 import com.dlfsystems.yegg.compiler.CompileException
 import com.dlfsystems.yegg.compiler.parser.Token.Type.*
 import com.dlfsystems.yegg.compiler.ast.*
@@ -24,18 +25,17 @@ class Parser(inputTokens: List<Token>) {
     private val tokens = inputTokens.toMutableList()
 
     // Track line and char position as we go, to tag nodes for tracebacks.
-    private var lineNum: Int = 0
-    private var charNum: Int = 0
+    private var pos: CodePos = CodePos(0, 0, 0)
 
-    private inline fun EOF() = Token(T_EOF, "", lineNum, charNum)
-    private inline fun fail(m: String) { throw CompileException(m, lineNum, charNum) }
+    private inline fun EOF() = Token(T_EOF, "", pos)
+    private inline fun fail(m: String) { throw CompileException(m, pos) }
     private inline fun expectCloseParen() { consume(T_PAREN_CLOSE) ?: fail("unclosed parentheses") }
 
     // Pull the next token from the input stream.
     private inline fun consume() = (if (tokens.isEmpty()) EOF() else tokens.removeAt(0)).also {
-        lineNum = it.lineNum
-        charNum = it.charNum
+        pos = it.pos
     }
+
 
     // Pull the next token if of the given type, else return null.
     private inline fun consume(vararg types: Token.Type) = if (nextIs(types.toList())) consume() else null
@@ -56,8 +56,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Tag returned nodes with the current lineNum and charNum for tracebacks.
     private inline fun <T: Node>node(n: T): T = n.apply {
-        lineNum = this@Parser.lineNum
-        charNum = this@Parser.charNum
+        pos = this@Parser.pos
     }
 
     //
