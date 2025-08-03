@@ -388,6 +388,21 @@ class VM(
                     v.isIn(source)?.also { push(VBool(it)) }
                         ?: fail(E_TYPE, "cannot check ${v.type} in ${source.type}")
                 }
+                O_ISTRAIT -> {
+                    val (v, target) = popTwo()
+                    if (v.type != Value.Type.TRAIT) fail(E_TYPE, "${v.type} is not TRAIT")
+                    if (target.type != Value.Type.OBJ) fail(E_TYPE, "${target.type} cannot have traits")
+                    (v as VTrait).trait()?.also { trait ->
+                        (target as VObj).obj()?.also { obj ->
+                            push(VBool(obj.inheritsTrait(trait.id)))
+                        } ?: run { push(Yegg.vFalse) }
+                    } ?: run { push(Yegg.vFalse) }
+                }
+                O_ISTYPE -> {
+                    val target = pop()
+                    val typeID = next().value!!
+                    push(VBool(target.type == Value.Type.entries[(typeID as VInt).v]))
+                }
                 O_CMP_EQ, O_CMP_GT, O_CMP_GE, O_CMP_LT, O_CMP_LE -> {
                     val (a2, a1) = popTwo()
                     when (word.opcode) {

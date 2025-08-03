@@ -68,6 +68,7 @@ data class Token(
         T_FOR("for", true),
         T_IF("if", true),
         T_IN("in", true),
+        T_IS("is", true),
         T_RETURN("return", true),
         T_TRUE("true", true),
         T_WHILE("while", true),

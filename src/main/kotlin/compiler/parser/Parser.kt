@@ -10,6 +10,8 @@ import com.dlfsystems.yegg.compiler.ast.expr.*
 import com.dlfsystems.yegg.compiler.ast.expr.identifier.*
 import com.dlfsystems.yegg.compiler.ast.expr.literal.*
 import com.dlfsystems.yegg.compiler.ast.expr.ref.N_INDEX
+import com.dlfsystems.yegg.compiler.ast.expr.N_ISTRAIT
+import com.dlfsystems.yegg.compiler.ast.expr.N_ISTYPE
 import com.dlfsystems.yegg.compiler.ast.expr.ref.N_PROPREF
 import com.dlfsystems.yegg.compiler.ast.expr.ref.N_RANGE
 import com.dlfsystems.yegg.compiler.ast.statement.*
@@ -413,7 +415,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse 'when' as expr
     private fun pWhenExpr(): N_EXPR? {
-        val next = this::pAndOr
+        val next = this::pIs
         pWhen(asStatement = false)?.also { return it }
         return next()
     }
@@ -446,6 +448,22 @@ class Parser(inputTokens: List<Token>) {
             return node(N_WHEN(subject, options, asStatement))
         }
         return null
+    }
+
+    private fun pIs(): N_EXPR? {
+        val next = this::pAndOr
+        var left = next() ?: return null
+        consume(T_IS)?.also {
+            consume(T_IDENTIFIER)?.also { typeName ->
+                Value.Type.entries.indexOfFirst { it.name == typeName.string }.also { i ->
+                    if (i == -1) fail("${typeName.string} is not a type")
+                    left = node(N_ISTYPE(left, i))
+                }
+            } ?: next()?.also { right ->
+                left = node(N_ISTRAIT(left, right))
+            }
+        }
+        return left
     }
 
     // Parse: <expr> and|or <expr>
