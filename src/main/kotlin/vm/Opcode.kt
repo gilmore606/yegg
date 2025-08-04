@@ -113,11 +113,15 @@ enum class Opcode(val argCount: Int = 0) {
 
     // Push the boolean result of pop0 and pop1.
     O_IN,
+    O_ISTRAIT,
     O_CMP_EQ,
     O_CMP_GT,
     O_CMP_GE,
     O_CMP_LT,
     O_CMP_LE,
+
+    // Push the boolean result of 'pop0 is <type ID arg1>'
+    O_ISTYPE(1),
 
     // Push the math result of pop0 and pop1.
     O_ADD,

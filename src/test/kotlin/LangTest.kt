@@ -264,4 +264,35 @@ class LangTest: YeggTest() {
             Spunky smacks Jake Wharton in the face!
         """)
     }
+
+    @Test
+    fun `x is TYPE`() = yeggTest {
+        verb("sys", "isString", $$"""
+            [foo] = args
+            return foo is STRING
+        """)
+        runForOutput($$"""
+            for (x in ["egg", "beer", 42, $sys]) {
+                if ($sys.isString(x)) cnotify("$x is a string")
+            }
+        ""","""
+            egg is a string
+            beer is a string
+        """)
+    }
+
+    @Test
+    fun `x is trait`() = yeggTest {
+        runForOutput($$"""
+            createTrait("animal")
+            createTrait("dog")
+            addParent($dog, $animal)
+            dog = create($dog)
+            bob = create($player)
+            if (bob is $animal) cnotify("Bob's an animal!")
+            if (dog is $animal) cnotify("Dogs are animals.")
+        """, """
+            Dogs are animals.
+        """)
+    }
 }
