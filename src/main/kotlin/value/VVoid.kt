@@ -11,13 +11,5 @@ data object VVoid: Value() {
     override val type = Type.VOID
 
     override fun toString() = "<VOID>"
-    override fun asString() = ""
-
-    override fun cmpEq(a2: Value): Boolean = a2 is VVoid
-
-    override fun getProp(name: String) = when (name) {
-        "asString" -> VString(asString())
-        else -> null
-    }
 
 }

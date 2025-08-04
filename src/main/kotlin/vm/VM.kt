@@ -54,10 +54,10 @@ class VM(
 
     private inline fun push(v: Value) = stack.addFirst(v)
     private inline fun peek() = stack.first()
-    private inline fun pop() = stack.removeFirst()
-    private inline fun popTwo() = listOf(stack.removeFirst(), stack.removeFirst())
-    private inline fun popThree() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
-    private inline fun popFour() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
+    private inline fun pop() = stack.removeFirst().also { if (it.type == Value.Type.VOID) fail(E_VOID, "void in expression") }
+    private inline fun popTwo() = listOf(pop(), pop())
+    private inline fun popThree() = listOf(pop(), pop(), pop())
+    private inline fun popFour() = listOf(pop(), pop(), pop(), pop())
     private inline fun next() = exe.code[pc++]
 
     override fun toString() = "$exe"
@@ -127,7 +127,7 @@ class VM(
             when (word.opcode) {
 
                 O_DISCARD -> {
-                    if (stack.isNotEmpty()) exprValue = pop()
+                    if (stack.isNotEmpty()) exprValue = stack.removeFirst()
                 }
 
                 // Value ops
