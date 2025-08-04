@@ -1,0 +1,19 @@
+package com.dlfsystems.yegg.value
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+@SerialName("VNull")
+data object VNull: Value() {
+
+    @SerialName("yType")
+    override val type = Type.NULL
+
+    override fun toString() = "null"
+
+    override fun cmpEq(a2: Value) = a2 == this
+    override fun cmpGt(a2: Value) = a2 != this
+    override fun cmpGe(a2: Value) = a2 == this
+
+}

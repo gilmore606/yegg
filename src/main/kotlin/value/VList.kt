@@ -234,7 +234,7 @@ data class VList(var v: MutableList<Value> = mutableListOf()): Value() {
                 if (it.isTrue()) return ele
             }
         }
-        return VVoid
+        return VNull
     }
 
     private fun verbFilter(c: Context, args: List<Value>): Value {

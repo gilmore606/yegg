@@ -80,6 +80,7 @@ data class Token(
         T_CONTINUE("continue", true),
         T_TRY("try", true),
         T_CATCH("catch", true),
+        T_NULL("null", true),
 
         T_EOF("EOF");
     }

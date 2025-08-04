@@ -705,6 +705,7 @@ class Parser(inputTokens: List<Token>) {
     // Parse a bare value (a literal, or a variable identifier)
     private fun pValue(): N_EXPR? {
         val next = this::pCollection
+        consume(T_NULL)?.also { return node(N_LITERAL_NULL()) }
         consume(T_STRING)?.also { return node(N_LITERAL_STRING(it.string)) }
         consume(T_INTEGER)?.also { return node(N_LITERAL_INTEGER(it.string.toInt())) }
         consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }
