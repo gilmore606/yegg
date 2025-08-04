@@ -283,14 +283,11 @@ class LangTest: YeggTest() {
 
     @Test
     fun `x is trait`() = yeggTest {
-        run($$"""
+        runForOutput($$"""
             createTrait("animal")
             createTrait("dog")
             addParent($dog, $animal)
-        """)
-        runForOutput($$"""
             dog = create($dog)
-            animal = create($animal)
             bob = create($player)
             if (bob is $animal) cnotify("Bob's an animal!")
             if (dog is $animal) cnotify("Dogs are animals.")
