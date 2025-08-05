@@ -468,7 +468,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse: <expr> and|or <expr>
     private fun pAndOr(): N_EXPR? {
-        val next = this::pConditional
+        val next = this::pNullCoalesce
         var left = next() ?: return null
         while (nextIs(T_LOGIC_AND, T_LOGIC_OR)) {
             val operator = consume()
@@ -476,6 +476,18 @@ class Parser(inputTokens: List<Token>) {
                 left = node(if (operator.type == T_LOGIC_AND) N_AND(left, right)
                             else N_OR(left, right)
                 )
+            }
+        }
+        return left
+    }
+
+    // Parse: <expr> ?: <expr>
+    private fun pNullCoalesce(): N_EXPR? {
+        val next = this::pConditional
+        var left = next() ?: return null
+        consume(T_ELVIS)?.also {
+            next()?.also { right ->
+                left = node(N_NULLCOAL(left, right))
             }
         }
         return left

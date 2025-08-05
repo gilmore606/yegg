@@ -114,6 +114,7 @@ enum class Opcode(val argCount: Int = 0) {
     // Push the boolean result of pop0 and pop1.
     O_IN,
     O_ISTRAIT,
+    O_NULLCOAL,
     O_CMP_EQ,
     O_CMP_GT,
     O_CMP_GE,

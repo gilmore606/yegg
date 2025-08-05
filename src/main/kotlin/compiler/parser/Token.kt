@@ -51,6 +51,7 @@ data class Token(
         T_ARROW("->"),
         T_TICK("'"),
         T_BACKTICK("`"),
+        T_ELVIS("?:"),
 
         // Literals
         T_IDENTIFIER("ident"),

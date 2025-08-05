@@ -403,6 +403,10 @@ class VM(
                     val typeID = next().value!!
                     push(VBool(target.type == Value.Type.entries[(typeID as VInt).v]))
                 }
+                O_NULLCOAL -> {
+                    val (default, source) = popTwo()
+                    push(if (source == VNull) default else source)
+                }
                 O_CMP_EQ, O_CMP_GT, O_CMP_GE, O_CMP_LT, O_CMP_LE -> {
                     val (a2, a1) = popTwo()
                     when (word.opcode) {
