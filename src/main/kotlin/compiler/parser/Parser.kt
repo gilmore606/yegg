@@ -4,6 +4,7 @@ package com.dlfsystems.yegg.compiler.parser
 
 import com.dlfsystems.yegg.compiler.CodePos
 import com.dlfsystems.yegg.compiler.CompileException
+import com.dlfsystems.yegg.compiler.TypeSpec
 import com.dlfsystems.yegg.compiler.parser.Token.Type.*
 import com.dlfsystems.yegg.compiler.ast.*
 import com.dlfsystems.yegg.compiler.ast.expr.*
@@ -324,6 +325,7 @@ class Parser(inputTokens: List<Token>) {
                 } else if (nextToken(i).type == T_COMMA) {
                     i += 1
                 } else if (nextToken(i).type == T_COLON && nextToken(i+1).type == T_IDENTIFIER) {
+                    if (nextToken(i+2).type == T_QUESTION) i++
                     if (nextToken(i+2).type == T_BRACKET_CLOSE) done = true
                     i += 3
                 } else fail("destructure list must contain only variable names and types")
@@ -332,19 +334,20 @@ class Parser(inputTokens: List<Token>) {
             // Confirmed match, consume and produce
             consume(T_BRACKET_OPEN)
             val vars = mutableListOf<N_IDENTIFIER>()
-            val types = mutableListOf<Int>()
+            val types = mutableListOf<TypeSpec>()
             done = false
             while (!done) {
                 consume(T_BRACKET_CLOSE)?.also { done = true } ?: consume(T_IDENTIFIER)?.also {
                     vars.add(node(N_IDENTIFIER(it.string)))
                     consume(T_COLON)?.also {
                         val typeName = consume(T_IDENTIFIER)!!.string
+                        val nullable = consume(T_QUESTION) != null
                         Value.Type.entries.indexOfFirst { it.name == typeName }.also { i ->
                             if (i == -1) fail("$typeName is not a type")
-                            types.add(i)
+                            types.add(TypeSpec(i, nullable))
                         }
                     } ?: run {
-                        types.add(-1)
+                        types.add(TypeSpec())
                     }
                     consume(T_COMMA)
                 }

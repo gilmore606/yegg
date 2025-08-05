@@ -3,6 +3,7 @@
 package com.dlfsystems.yegg.vm
 
 import com.dlfsystems.yegg.compiler.CodePos
+import com.dlfsystems.yegg.compiler.TypeSpec
 import com.dlfsystems.yegg.server.mcp.MCP
 import com.dlfsystems.yegg.server.Yegg
 import com.dlfsystems.yegg.server.mcp.Task
@@ -332,11 +333,8 @@ class VM(
                     if ((source as VList).v.size < (vars as VList).v.size) fail(E_RANGE, "missing args")
                     vars.v.forEachIndexed { i, vn ->
                         val s = source.v[i]
-                        val ti = ((types as VList).v[i] as VInt).v
-                        if (ti > -1) {
-                            val t = Value.Type.entries[ti]
-                            if (s.type != t) fail(E_INVARG, "${s.type} is not $t")
-                        }
+                        val type = TypeSpec.fromVInt((types as VList).v[i] as VInt)
+                        if (!type.matches(s)) fail(E_TYPE, "${s.type} is not $type")
                         setVar((vn as VString).v, s)
                     }
                 }
