@@ -19,6 +19,12 @@ abstract class N_LITERAL: N_EXPR() {
     }
 }
 
+class N_LITERAL_NULL(): N_LITERAL() {
+    override fun toString() = "null"
+    override fun codeValue(coder: Coder) { coder.value(VNull) }
+    override fun constantValue() = VNull
+}
+
 class N_LITERAL_BOOLEAN(val value: Boolean): N_LITERAL() {
     override fun toString() = if (value) "true" else "false"
     override fun codeValue(coder: Coder) { coder.value(value) }

@@ -3,6 +3,7 @@
 package com.dlfsystems.yegg.vm
 
 import com.dlfsystems.yegg.compiler.CodePos
+import com.dlfsystems.yegg.compiler.TypeSpec
 import com.dlfsystems.yegg.server.mcp.MCP
 import com.dlfsystems.yegg.server.Yegg
 import com.dlfsystems.yegg.server.mcp.Task
@@ -54,10 +55,12 @@ class VM(
 
     private inline fun push(v: Value) = stack.addFirst(v)
     private inline fun peek() = stack.first()
-    private inline fun pop() = stack.removeFirst()
-    private inline fun popTwo() = listOf(stack.removeFirst(), stack.removeFirst())
-    private inline fun popThree() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
-    private inline fun popFour() = listOf(stack.removeFirst(), stack.removeFirst(), stack.removeFirst(), stack.removeFirst())
+    private inline fun pop() = stack.removeFirst().also {
+        if (it.type == Value.Type.VOID) fail(E_VOID, "void in expression")
+    }
+    private inline fun popTwo() = listOf(pop(), pop())
+    private inline fun popThree() = listOf(pop(), pop(), pop())
+    private inline fun popFour() = listOf(pop(), pop(), pop(), pop())
     private inline fun next() = exe.code[pc++]
 
     override fun toString() = "$exe"
@@ -127,7 +130,7 @@ class VM(
             when (word.opcode) {
 
                 O_DISCARD -> {
-                    if (stack.isNotEmpty()) exprValue = pop()
+                    if (stack.isNotEmpty()) exprValue = stack.removeFirst()
                 }
 
                 // Value ops
@@ -193,6 +196,10 @@ class VM(
                     val elseAddr = next().address!!
                     val condition = pop()
                     if (condition.isFalse()) pc = elseAddr
+                }
+                O_IFNON -> {
+                    val elseAddr = next().address!!
+                    if (peek() == VNull) pop() else pc = elseAddr
                 }
                 O_IFVAREQ -> {
                     val varID = next().intFromV
@@ -332,11 +339,8 @@ class VM(
                     if ((source as VList).v.size < (vars as VList).v.size) fail(E_RANGE, "missing args")
                     vars.v.forEachIndexed { i, vn ->
                         val s = source.v[i]
-                        val ti = ((types as VList).v[i] as VInt).v
-                        if (ti > -1) {
-                            val t = Value.Type.entries[ti]
-                            if (s.type != t) fail(E_INVARG, "${s.type} is not $t")
-                        }
+                        val type = TypeSpec.fromVInt((types as VList).v[i] as VInt)
+                        if (!type.matches(s)) fail(E_TYPE, "${s.type} is not $type")
                         setVar((vn as VString).v, s)
                     }
                 }

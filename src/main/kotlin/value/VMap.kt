@@ -75,7 +75,7 @@ data class VMap(val v: MutableMap<Value, Value>): Value() {
             v.remove(args[0])
             return removed!!
         }
-        return VVoid
+        return VNull
     }
 
 

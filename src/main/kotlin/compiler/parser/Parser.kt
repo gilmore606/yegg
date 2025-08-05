@@ -4,6 +4,7 @@ package com.dlfsystems.yegg.compiler.parser
 
 import com.dlfsystems.yegg.compiler.CodePos
 import com.dlfsystems.yegg.compiler.CompileException
+import com.dlfsystems.yegg.compiler.TypeSpec
 import com.dlfsystems.yegg.compiler.parser.Token.Type.*
 import com.dlfsystems.yegg.compiler.ast.*
 import com.dlfsystems.yegg.compiler.ast.expr.*
@@ -324,6 +325,7 @@ class Parser(inputTokens: List<Token>) {
                 } else if (nextToken(i).type == T_COMMA) {
                     i += 1
                 } else if (nextToken(i).type == T_COLON && nextToken(i+1).type == T_IDENTIFIER) {
+                    if (nextToken(i+2).type == T_QUESTION) i++
                     if (nextToken(i+2).type == T_BRACKET_CLOSE) done = true
                     i += 3
                 } else fail("destructure list must contain only variable names and types")
@@ -332,19 +334,19 @@ class Parser(inputTokens: List<Token>) {
             // Confirmed match, consume and produce
             consume(T_BRACKET_OPEN)
             val vars = mutableListOf<N_IDENTIFIER>()
-            val types = mutableListOf<Int>()
+            val types = mutableListOf<TypeSpec>()
             done = false
             while (!done) {
                 consume(T_BRACKET_CLOSE)?.also { done = true } ?: consume(T_IDENTIFIER)?.also {
                     vars.add(node(N_IDENTIFIER(it.string)))
                     consume(T_COLON)?.also {
                         val typeName = consume(T_IDENTIFIER)!!.string
-                        Value.Type.entries.indexOfFirst { it.name == typeName }.also { i ->
-                            if (i == -1) fail("$typeName is not a type")
-                            types.add(i)
-                        }
+                        val nullable = consume(T_QUESTION) != null
+                        Value.Type.entries.firstOrNull { it.name == typeName }?.also {
+                            types.add(TypeSpec(it, nullable))
+                        } ?: fail("$typeName is not a type")
                     } ?: run {
-                        types.add(-1)
+                        types.add(TypeSpec())
                     }
                     consume(T_COMMA)
                 }
@@ -468,7 +470,7 @@ class Parser(inputTokens: List<Token>) {
 
     // Parse: <expr> and|or <expr>
     private fun pAndOr(): N_EXPR? {
-        val next = this::pConditional
+        val next = this::pNullCoalesce
         var left = next() ?: return null
         while (nextIs(T_LOGIC_AND, T_LOGIC_OR)) {
             val operator = consume()
@@ -476,6 +478,18 @@ class Parser(inputTokens: List<Token>) {
                 left = node(if (operator.type == T_LOGIC_AND) N_AND(left, right)
                             else N_OR(left, right)
                 )
+            }
+        }
+        return left
+    }
+
+    // Parse: <expr> ?: <expr>
+    private fun pNullCoalesce(): N_EXPR? {
+        val next = this::pConditional
+        var left = next() ?: return null
+        consume(T_ELVIS)?.also {
+            next()?.also { right ->
+                left = node(N_NULLCOAL(left, right))
             }
         }
         return left
@@ -705,6 +719,7 @@ class Parser(inputTokens: List<Token>) {
     // Parse a bare value (a literal, or a variable identifier)
     private fun pValue(): N_EXPR? {
         val next = this::pCollection
+        consume(T_NULL)?.also { return node(N_LITERAL_NULL()) }
         consume(T_STRING)?.also { return node(N_LITERAL_STRING(it.string)) }
         consume(T_INTEGER)?.also { return node(N_LITERAL_INTEGER(it.string.toInt())) }
         consume(T_FLOAT)?.also { return node(N_LITERAL_FLOAT(it.string.toFloat())) }

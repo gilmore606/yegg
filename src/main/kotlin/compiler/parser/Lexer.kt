@@ -136,6 +136,10 @@ class Lexer(val source: String) {
             T_OBJREF -> {
                 if (isIDChar(c)) accumulate(c) else emit(T_OBJREF, c)
             }
+            T_ELVIS -> when (c) {
+                ':' -> emit(T_ELVIS)
+                else -> emit(T_QUESTION, c)
+            }
             T_IDENTIFIER -> {
                 if (isIdentifierChar(c)) accumulate(c) else emit(T_IDENTIFIER, c)
             }
@@ -158,6 +162,7 @@ class Lexer(val source: String) {
                     '|' -> begin(T_LOGIC_OR)
                     '&' -> begin(T_LOGIC_AND)
                     '.' -> begin(T_DOT)
+                    '?' -> begin(T_ELVIS)
                     '(' -> emit(T_PAREN_OPEN)
                     ')' -> emit(T_PAREN_CLOSE)
                     '[' -> emit(T_BRACKET_OPEN)
@@ -167,7 +172,6 @@ class Lexer(val source: String) {
                     ';' -> emit(T_SEMICOLON)
                     '$' -> emit(T_DOLLAR)
                     ',' -> emit(T_COMMA)
-                    '?' -> emit(T_QUESTION)
                     '^' -> emit(T_POWER)
                     '%' -> emit(T_MODULUS)
                     '\'' -> emit(T_TICK)

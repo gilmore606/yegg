@@ -48,6 +48,9 @@ class VMException(val type: Type, val m: String): Exception() {
         // Callstack recursion limit exceeded
         E_MAXREC,
 
+        // void value generated in expression
+        E_VOID,
+
         // Other system failures
         E_SYS,
 
