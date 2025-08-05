@@ -33,13 +33,14 @@ data class TypeSpec(
         private const val NULLABLE_MULT = 1000
 
         // Decode from a VInt at runtime.
-        fun fromVInt(vi: VInt) =
-            if (vi.v == -1)
+        fun fromVInt(vi: VInt) = when {
+            vi.v == -1 ->
                 TypeSpec()
-            else if (vi.v >= NULLABLE_MULT)
+            vi.v >= NULLABLE_MULT ->
                 TypeSpec(Value.Type.entries[vi.v - NULLABLE_MULT], true)
-            else
+            else ->
                 TypeSpec(Value.Type.entries[vi.v], false)
+        }
     }
 
 }
