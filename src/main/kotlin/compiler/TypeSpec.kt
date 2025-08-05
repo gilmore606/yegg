@@ -8,25 +8,23 @@ import com.dlfsystems.yegg.value.Value
 // A value type specifier.
 
 data class TypeSpec(
-    // Index into Value.Type.entries (null for ANY).
-    val i: Int? = null,
-    // Is null allowed instead of the type?
+    val t: Value.Type? = null,
     val nullable: Boolean? = null,
 ) {
 
-    override fun toString() = i?.let {
-        Value.Type.entries[it].toString() + if (nullable == true) "?" else ""
+    override fun toString() = t?.let {
+        it.toString() + if (nullable == true) "?" else ""
     } ?: "ANY"
 
     // Does the given value match this type?
     fun matches(v: Value) =
-        (i == null) ||
+        (t == null) ||
         (nullable == true && v == VNull) ||
-        (v.type == Value.Type.entries[i])
+        (v.type == t)
 
     // Encode to a VInt for inclusion in VM code.
     fun toVInt() = VInt(
-        (i ?: -1) +
+        (t?.let { Value.Type.entries.indexOf(it) } ?: -1) +
         (if (nullable == true) NULLABLE_MULT else 0)
     )
 
@@ -35,13 +33,13 @@ data class TypeSpec(
         private const val NULLABLE_MULT = 1000
 
         // Decode from a VInt at runtime.
-        fun fromVInt(vi: VInt): TypeSpec {
-            if (vi.v == -1) return TypeSpec()
-            return if (vi.v >= NULLABLE_MULT)
-                TypeSpec(vi.v - NULLABLE_MULT, true)
+        fun fromVInt(vi: VInt) =
+            if (vi.v == -1)
+                TypeSpec()
+            else if (vi.v >= NULLABLE_MULT)
+                TypeSpec(Value.Type.entries[vi.v - NULLABLE_MULT], true)
             else
-                TypeSpec(vi.v, false)
-        }
+                TypeSpec(Value.Type.entries[vi.v], false)
     }
 
 }

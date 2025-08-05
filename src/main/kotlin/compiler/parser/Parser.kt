@@ -342,10 +342,9 @@ class Parser(inputTokens: List<Token>) {
                     consume(T_COLON)?.also {
                         val typeName = consume(T_IDENTIFIER)!!.string
                         val nullable = consume(T_QUESTION) != null
-                        Value.Type.entries.indexOfFirst { it.name == typeName }.also { i ->
-                            if (i == -1) fail("$typeName is not a type")
-                            types.add(TypeSpec(i, nullable))
-                        }
+                        Value.Type.entries.firstOrNull { it.name == typeName }?.also {
+                            types.add(TypeSpec(it, nullable))
+                        } ?: fail("$typeName is not a type")
                     } ?: run {
                         types.add(TypeSpec())
                     }

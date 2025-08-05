@@ -250,7 +250,7 @@ class LangTest: YeggTest() {
             $sys.tightFun(12.6, 74)
         """, """
             loose 12.6 and 74
-            E_INVARG: INT is not STRING
+            E_TYPE: INT is not STRING
         """)
     }
 
