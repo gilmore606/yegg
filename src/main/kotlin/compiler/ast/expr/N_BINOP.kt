@@ -59,8 +59,6 @@ class N_MODULUS(left: N_EXPR, right: N_EXPR): N_BINOP("%", left, right, listOf(O
 
 class N_IN(left: N_EXPR, right: N_EXPR): N_BINOP("in", left, right, listOf(O_IN))
 
-class N_NULLCOAL(left: N_EXPR, right: N_EXPR): N_BINOP("?:", left, right, listOf(O_NULLCOAL))
-
 class N_CMP_EQ(left: N_EXPR, right: N_EXPR): N_BINOP("==", left, right, listOf(O_CMP_EQ))
 class N_CMP_NEQ(left: N_EXPR, right: N_EXPR): N_BINOP("!=", left, right, listOf(O_CMP_EQ, O_NEGATE))
 class N_CMP_GT(left: N_EXPR, right: N_EXPR): N_BINOP(">", left, right, listOf(O_CMP_GT))
@@ -96,5 +94,15 @@ class N_OR(left: N_EXPR, right: N_EXPR): N_BINOP("||", left, right, listOf()) {
         opcode(O_VAL)
         value(true)
         setForwardJump("orend")
+    }
+}
+
+class N_NULLCOAL(left: N_EXPR, right: N_EXPR): N_BINOP("?:", left, right, listOf()) {
+    override fun code(c: Coder) = with (c.use(this)) {
+        code(left)
+        opcode(O_IFNON)
+        jumpForward("nullskip")
+        code(right)
+        setForwardJump("nullskip")
     }
 }

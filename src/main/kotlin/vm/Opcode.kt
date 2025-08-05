@@ -37,6 +37,9 @@ enum class Opcode(val argCount: Int = 0) {
     // Jump to arg1 address if pop0 is false.
     O_IF(1),
 
+    // Jump to arg1 address if peek0 is non-null, otherwise pop the null.
+    O_IFNON(1),
+
     // Jump to arg1 address.
     O_JUMP(1),
 
@@ -114,7 +117,6 @@ enum class Opcode(val argCount: Int = 0) {
     // Push the boolean result of pop0 and pop1.
     O_IN,
     O_ISTRAIT,
-    O_NULLCOAL,
     O_CMP_EQ,
     O_CMP_GT,
     O_CMP_GE,
