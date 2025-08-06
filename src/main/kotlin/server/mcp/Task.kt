@@ -117,7 +117,7 @@ class Task(
         return VVoid
     }
 
-    private fun push(vThis: VObj, exe: Executable, args: List<Value>) {
+    private fun push(vThis: VObj?, exe: Executable, args: List<Value>) {
         exe.jitCompile()
         stack.addFirst(VM(this, vThis, exe, args))
     }
