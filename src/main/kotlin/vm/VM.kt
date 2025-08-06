@@ -71,7 +71,7 @@ class VM(
             setVar(name, v)
         }
         setVar("args", VList.make(args))
-        setVar("this", c.vThis)
+        setVar("this", vThis)
         setVar("player", c.vPlayer)
     }
 
