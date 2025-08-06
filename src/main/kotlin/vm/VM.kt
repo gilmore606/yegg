@@ -201,6 +201,10 @@ class VM(
                     val elseAddr = next().address!!
                     if (peek() == VNull) pop() else pc = elseAddr
                 }
+                O_IFNULL -> {
+                    val elseAddr = next().address!!
+                    if (peek() == VNull) pc = elseAddr
+                }
                 O_IFVAREQ -> {
                     val varID = next().intFromV
                     val elseAddr = next().address!!
@@ -249,8 +253,8 @@ class VM(
                 O_CALL, O_VCALL, O_VCALLST -> {
                     val argCount = next().intFromV
                     val name = (if (word.opcode == O_CALL) pop() else next().value!!).asString()
-                    val subj = pop()
                     val args = buildList { repeat(argCount) { add(0, pop()) } }
+                    val subj = pop()
                     // If static built-in verb, call directly without returning
                     subj.callStaticVerb(c, name, args)?.also {
                         if (word.opcode != O_VCALLST) push(it)

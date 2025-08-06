@@ -40,6 +40,9 @@ enum class Opcode(val argCount: Int = 0) {
     // Jump to arg1 address if peek0 is non-null, otherwise pop the null.
     O_IFNON(1),
 
+    // Jump to arg1 address if peek0 is null.
+    O_IFNULL(1),
+
     // Jump to arg1 address.
     O_JUMP(1),
 

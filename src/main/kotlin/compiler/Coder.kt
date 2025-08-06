@@ -111,7 +111,7 @@ class Coder(val ast: Node) {
     fun setForwardJump(name: String) {
         val dest = mem.size
         val fullname = "$name${writer.id}"
-        forwardJumps[fullname]!!.forEach { loc ->
+        forwardJumps[fullname]?.forEach { loc ->
             mem[loc].address = dest
         }
         forwardJumps.remove(fullname)

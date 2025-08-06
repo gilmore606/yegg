@@ -650,14 +650,14 @@ class Parser(inputTokens: List<Token>) {
             return newLeft
         }
 
-        fun pDotref(left: N_EXPR): N_EXPR {
-            consume(T_DOT)
+        fun pDotref(left: N_EXPR, isNullsafe: Boolean): N_EXPR {
+            if (isNullsafe) consume(T_DOT) ?: fail("missing ref after nullsafe")
             var newLeft = left
             pStringSub()?.also { right ->
                 consume(T_PAREN_OPEN)?.also {
-                    newLeft = node(N_VERBREF(left, right, pArglist()))
+                    newLeft = node(N_VERBREF(isNullsafe, left, right, pArglist()))
                 } ?: run {
-                    newLeft = node(N_PROPREF(left, right))
+                    newLeft = node(N_PROPREF(isNullsafe, left, right))
                 }
             } ?: fail("expression expected after dot reference")
             return newLeft
@@ -665,11 +665,12 @@ class Parser(inputTokens: List<Token>) {
 
         val next = this::pTrait
         var left = next() ?: return null
-        while (nextIs(T_BRACKET_OPEN, T_DOT)) {
+        while (nextIs(T_BRACKET_OPEN, T_DOT, T_QUESTION)) {
             val operator = consume()
             when (operator.type) {
                 T_BRACKET_OPEN -> { left = pIndex(left) }
-                T_DOT -> { left = pDotref(left) }
+                T_DOT -> { left = pDotref(left, false) }
+                T_QUESTION -> { left = pDotref(left, true) }
                 else -> { }
             }
         }
