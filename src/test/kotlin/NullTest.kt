@@ -34,4 +34,33 @@ class NullTest: YeggTest() {
             E_TYPE: INT is not STRING
         """)
     }
+
+    @Test
+    fun `Null-safe verb and prop refs`() = yeggTest {
+        run($$"""
+            createTrait("animal")
+            addProp($animal, "weight", 10)
+        """)
+        verb("animal", "getSize", "return this.weight * 3")
+        runForOutput($$"""
+            a1 = create($animal)
+            a1.weight = 4
+            a2 = create($animal)
+            a2.weight = 7
+            a3 = create($animal)
+            a3.weight = 10
+            for (x in [a1, a2, null, a3]) {
+                w = x?.weight ?: 666
+                size = x?.getSize() ?: 0
+                cnotify("$w and $size")
+                x?.weight = 12
+                if ((x?.weight ?: 12) != 12) cnotify("OH NO!")
+            }
+        ""","""
+            4 and 12
+            7 and 21
+            666 and 0
+            10 and 30
+        """)
+    }
 }
