@@ -199,11 +199,11 @@ class VM(
                 }
                 O_IFNON -> {
                     val elseAddr = next().address!!
-                    if (peek() == VNull) pop() else pc = elseAddr
+                    if (peek().isNull()) pop() else pc = elseAddr
                 }
                 O_IFNULL -> {
                     val elseAddr = next().address!!
-                    if (peek() == VNull) pc = elseAddr
+                    if (peek().isNull()) pc = elseAddr
                 }
                 O_IFVAREQ -> {
                     val varID = next().intFromV

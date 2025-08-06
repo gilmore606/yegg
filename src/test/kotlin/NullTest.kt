@@ -49,6 +49,7 @@ class NullTest: YeggTest() {
             a2.weight = 7
             a3 = create($animal)
             a3.weight = 10
+            destroy(a1)
             for (x in [a1, a2, null, a3]) {
                 w = x?.weight ?: 666
                 size = x?.getSize() ?: 0
@@ -57,7 +58,7 @@ class NullTest: YeggTest() {
                 if ((x?.weight ?: 12) != 12) cnotify("OH NO!")
             }
         ""","""
-            4 and 12
+            666 and 0
             7 and 21
             666 and 0
             10 and 30

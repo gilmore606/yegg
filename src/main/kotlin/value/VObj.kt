@@ -28,6 +28,7 @@ data class VObj(val v: Obj.ID?): Value() {
     override fun asString() = "OBJ" // TODO: use name
 
     override fun isTrue() = v != null
+    override fun isNull() = !Yegg.world.objs.contains(v)
 
     override fun cmpEq(a2: Value) = (a2 is VObj) && (v == a2.v)
 
