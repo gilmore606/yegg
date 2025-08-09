@@ -13,6 +13,7 @@ data object VNull: Value() {
 
     override fun toString() = "null"
 
+    override fun isNull() = true
     override fun negate() = Yegg.vTrue
     override fun cmpEq(a2: Value) = a2 == this
     override fun cmpGt(a2: Value) = a2 != this

@@ -19,10 +19,11 @@ sealed class Value {
     // String equivalent when added to a string.
     open fun asString(): String = toString()
 
-    // Is this value considered true/false/zero in code?
+    // Is this value considered true/false/zero/null in code?
     open fun isTrue(): Boolean = false
     fun isFalse(): Boolean = !isTrue()
     open fun isZero(): Boolean = false
+    open fun isNull(): Boolean = false
 
     // How many elements do I have for iteration?
     open fun iterableSize(): Int? = null

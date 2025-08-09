@@ -18,7 +18,7 @@ import com.dlfsystems.yegg.vm.VMException.Type.*
 
 class VM(
     val c: Context,
-    val vThis: VObj,
+    val vThis: VObj?,
     val exe: Executable,
     val args: List<Value> = listOf(),
 ) {
@@ -71,7 +71,7 @@ class VM(
             setVar(name, v)
         }
         setVar("args", VList.make(args))
-        setVar("this", c.vThis)
+        setVar("this", vThis ?: VNull)
         setVar("player", c.vPlayer)
     }
 
@@ -82,7 +82,7 @@ class VM(
 
     sealed interface Result {
         @JvmInline value class Return(val v: Value) : Result
-        data class Call(val exe: Executable, val args: List<Value>, val vThis: VObj = Yegg.vNullObj): Result
+        data class Call(val exe: Executable, val args: List<Value>, val vThis: VObj? = null): Result
         @JvmInline value class Suspend(val seconds: Int): Result
     }
 
@@ -199,7 +199,11 @@ class VM(
                 }
                 O_IFNON -> {
                     val elseAddr = next().address!!
-                    if (peek() == VNull) pop() else pc = elseAddr
+                    if (peek().isNull()) pop() else pc = elseAddr
+                }
+                O_IFNULL -> {
+                    val elseAddr = next().address!!
+                    if (peek().isNull()) pc = elseAddr
                 }
                 O_IFVAREQ -> {
                     val varID = next().intFromV
@@ -249,15 +253,14 @@ class VM(
                 O_CALL, O_VCALL, O_VCALLST -> {
                     val argCount = next().intFromV
                     val name = (if (word.opcode == O_CALL) pop() else next().value!!).asString()
-                    val subj = pop()
                     val args = buildList { repeat(argCount) { add(0, pop()) } }
+                    val subj = pop()
                     // If static built-in verb, call directly without returning
                     subj.callStaticVerb(c, name, args)?.also {
                         if (word.opcode != O_VCALLST) push(it)
                     } ?: subj.getVerb(name)?.also { verb ->
                         if (word.opcode == O_VCALLST) dropReturnValue = true
-                        val vThis = subj as? VObj ?: Yegg.vNullObj
-                        return Result.Call(verb, args, vThis)
+                        return Result.Call(verb, args, subj as? VObj)
                     } ?: fail(E_VERBNF, "no such verb $name")
                 }
                 O_FUNCALL, O_FUNCALLST -> {
