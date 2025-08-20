@@ -34,6 +34,8 @@ data class World(val name: String) {
 
     fun getTrait(named: String) = traits[traitIDs[named]]
 
+    fun getObjByID(id: String) = objs[Obj.ID(id)]
+
     val sys: Trait
         get() = getTrait("sys")!!
     fun getSysValue(name: String): Value = sys.getProp(name) ?: VVoid

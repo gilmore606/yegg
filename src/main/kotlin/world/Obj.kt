@@ -70,6 +70,8 @@ class Obj {
         return false
     }
 
+    fun isPlayer() = Yegg.world.getTrait("player")?.let { inheritsTrait(it.id) } ?: false
+
     // Props
 
     fun hasProp(propName: String) = props.containsKey(propName)
