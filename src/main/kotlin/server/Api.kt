@@ -22,7 +22,7 @@ object Api {
     //
     // The decrypted token string is two strings separated by a space: the player ID, and the issue time.
 
-    const val COOKIE_NAME = "localhost"
+    const val COOKIE_NAME = "yegg"
 
     // Algorithm and key for encrypting the token.
     private const val CIPHER_ALGO = "AES"
@@ -75,6 +75,7 @@ object Api {
     fun setVerbCode(traitName: String, verbName: String, verbCode: String): String {
         Yegg.world.getTrait(traitName)?.also { trait ->
             try {
+                Log.i(TAG, "Programmed $traitName.$verbName : \n$verbCode")
                 trait.programVerb(verbName, verbCode)
                 return "OK"
             } catch (e: CompileException) {
