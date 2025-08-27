@@ -5,11 +5,12 @@ class App extends React.Component<any, any> {
 
   render() {
     return (
-        <div class="ideContainer">
-          <div class="projectPane">
+        <div className="ideContainer">
+          <div className="projectPane">
             PROJECT
           </div>
-          <div class="editorPane">
+          <div className="editorPane">
+            EDIT
             <CodeEditor />
           </div>
         </div>
