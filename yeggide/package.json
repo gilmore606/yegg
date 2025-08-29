@@ -11,10 +11,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "allotment": "^1.20.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-monaco-editor": "^0.59.0",
-    "react-split-pane": "^0.1.92"
+    "react-monaco-editor": "^0.59.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
